@@ -1,50 +1,32 @@
 import { css } from '@emotion/react';
+import { useGameStore } from '../services/gameState';
 import { Tile } from './Tile';
-import { TileState } from '../types';
-import { useState } from 'react';
 
 export function GameBoard() {
-  const [boardState, setBoardState] = useState<TileState[]>([
-    undefined,
-    'X',
-    'O',
-
-    'X',
-    undefined,
-    'O',
-
-    'X',
-    'O',
-    undefined,
-  ]);
+  const gameStore = useGameStore();
 
   const handleTileClick = (index: number) => {
-    const curState = boardState[index];
-    const nextState =
-      curState === undefined ? 'X' : curState === 'X' ? 'O' : undefined;
-
-    const newBoardState = [...boardState];
-    newBoardState[index] = nextState;
-    setBoardState(newBoardState);
+    gameStore.setTileState(index, gameStore.turn);
+    gameStore.setTurn(gameStore.turn === 'X' ? 'O' : 'X');
   };
 
-  const borderRight = `
+  const borderForTile = (index: number) => {
+    const borderRight = `
     border-right: 2px solid black;
   `;
 
-  const borderBottom = `
+    const borderBottom = `
     border-bottom: 2px solid black;
   `;
 
-  const borderLeft = `
+    const borderLeft = `
     border-left: 2px solid black;
   `;
 
-  const borderTop = `
+    const borderTop = `
     border-top: 2px solid black;
   `;
 
-  const borderForTile = (index: number) => {
     switch (index) {
       case 0:
         return borderBottom + borderRight;
@@ -74,12 +56,20 @@ export function GameBoard() {
         grid-template-columns: repeat(3, 1fr);
         grid-template-rows: repeat(3, 1fr);
         grid: 1em;
+        width: 100%;
       `}
     >
-      {boardState.map((state, index) => (
-        <div css={css`${borderForTile(index)}}`}>
+      {gameStore.boardState.map((state, index) => (
+        <div
+          key={index}
+          css={css`
+            aspect-ratio: 1/1;
+            flex: 1 1 auto;
+            display: flex;
+            ${borderForTile(index)}
+          `}
+        >
           <Tile
-            key={index}
             state={state}
             onClick={() => {
               handleTileClick(index);
