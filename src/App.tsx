@@ -2,6 +2,8 @@ import { css } from '@emotion/react';
 import { GameBoard } from './components/GameBoard';
 import { useGameStore } from './services/gameState';
 import { useEffect } from 'react';
+import { Player } from './components/Player';
+import { Score } from './components/Score';
 
 function App() {
   const gameStore = useGameStore();
@@ -12,7 +14,25 @@ function App() {
 
   return (
     <div>
-      <code>{JSON.stringify(gameStore, null, 2)}</code>
+      <div
+        css={css`
+          display: flex;
+          flex-direction: row;
+          justify-content: space-evenly;
+        `}
+      >
+        <Player
+          player={'X'}
+          isCPU={false}
+          playersTurn={gameStore.turn === 'X'}
+        ></Player>
+        <Score></Score>
+        <Player
+          player={'O'}
+          isCPU={true}
+          playersTurn={gameStore.turn === 'O'}
+        ></Player>
+      </div>
 
       <div
         css={css`

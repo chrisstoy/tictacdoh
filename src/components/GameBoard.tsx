@@ -6,6 +6,12 @@ export function GameBoard() {
   const gameStore = useGameStore();
 
   const handleTileClick = (index: number) => {
+    if (
+      gameStore.boardState[index] !== undefined ||
+      gameStore.winner !== 'none'
+    ) {
+      return;
+    }
     gameStore.setTileState(index, gameStore.turn);
     gameStore.setTurn(gameStore.turn === 'X' ? 'O' : 'X');
   };
@@ -71,6 +77,7 @@ export function GameBoard() {
         >
           <Tile
             state={state}
+            allowMove={state === undefined}
             onClick={() => {
               handleTileClick(index);
             }}

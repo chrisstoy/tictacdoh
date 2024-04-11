@@ -3,10 +3,11 @@ import { TileState } from '../types';
 
 interface Props {
   state: TileState;
+  allowMove: boolean;
   onClick?: () => void;
 }
 
-export function Tile({ state, onClick }: Props) {
+export function Tile({ state, allowMove, onClick }: Props) {
   return (
     <div
       css={css`
@@ -19,7 +20,7 @@ export function Tile({ state, onClick }: Props) {
           cursor: pointer;
           border-style: solid;
           border-width: 3px;
-          border-color: rgba(0, 255, 0, 0.5);
+          border-color: ${allowMove ? 'lightgreen' : 'red'};
         }
       `}
       onClick={() => onClick?.()}
