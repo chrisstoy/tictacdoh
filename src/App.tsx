@@ -15,6 +15,7 @@ export default function App() {
       css={css`
         display: flex;
         flex: 1 1 auto;
+        background-color: antiquewhite;
       `}
     >
       {gameMode === 'play' && (

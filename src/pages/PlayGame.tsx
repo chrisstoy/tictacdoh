@@ -43,14 +43,22 @@ export function PlayGame({ onSetupGame, onReplayGame }: Props) {
           flex-direction: column;
         `}
       >
-        {gameStore.isDraw && <div>Draw</div>}
-        {gameStore.winner !== undefined && (
-          <div>
-            <div>{gameStore.winner.player} won</div>
-          </div>
-        )}
-        <button onClick={onSetupGame}>New Game</button>
-        <button onClick={onReplayGame}>Replay</button>
+        <div
+          css={css`
+            display: flex;
+            flex-direction: row;
+            justify-content: space-around;
+            width: 100%;
+          `}
+        >
+          <button onClick={onSetupGame}>New Game</button>
+          <button
+            disabled={gameStore.winner === undefined}
+            onClick={onReplayGame}
+          >
+            Replay
+          </button>
+        </div>
       </div>
     </div>
   );

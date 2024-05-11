@@ -12,6 +12,7 @@ export function Scoreboard() {
         display: flex;
         flex-direction: row;
         justify-content: space-evenly;
+        margin: 1rem;
       `}
     >
       <Player

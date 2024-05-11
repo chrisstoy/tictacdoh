@@ -20,7 +20,13 @@ export function SetupGame({ onStartGame }: Props) {
         justify-content: center;
       `}
     >
-      <h1>Tic Tac DOH!</h1>
+      <h1
+        css={css`
+          font-size: xxx-large;
+        `}
+      >
+        Tic Tac DOH!
+      </h1>
       <div
         css={css`
           justify-content: center;
