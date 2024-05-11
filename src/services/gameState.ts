@@ -1,18 +1,18 @@
 import { create } from 'zustand';
 import { PlayerId, TileState } from '../types';
-import { determineWinner } from './game';
+import { Winner, determineWinner } from './game';
 
 export interface GameState {
   boardState: TileState[];
   turn: PlayerId;
-  winner: PlayerId | 'none';
+  winner: Winner | undefined;
   isDraw: boolean;
 
   reset(): void;
 
   setBoardState(boardState: TileState[]): void;
   setTurn(turn: PlayerId): void;
-  setWinner(winner: PlayerId | 'none'): void;
+  setWinner(winner: Winner | undefined): void;
   setIsDraw(isDraw: boolean): void;
 
   setTileState(index: number, owner: PlayerId | undefined): void;
@@ -21,21 +21,21 @@ export interface GameState {
 export const useGameStore = create<GameState>()((set) => ({
   boardState: [],
   turn: 'X',
-  winner: 'none',
+  winner: undefined,
   isDraw: false,
 
   reset() {
     set({
       boardState: new Array(9).fill(undefined),
       turn: 'X',
-      winner: 'none',
+      winner: undefined,
       isDraw: false,
     });
   },
 
   setBoardState: (boardState: TileState[]) => set({ boardState }),
   setTurn: (turn: 'X' | 'O') => set({ turn }),
-  setWinner: (winner: 'X' | 'O' | 'none') => set({ winner }),
+  setWinner: (winner: Winner | undefined) => set({ winner }),
   setIsDraw: (isDraw: boolean) => set({ isDraw }),
 
   setTileState(index: number, owner: PlayerId | undefined) {
@@ -44,7 +44,7 @@ export const useGameStore = create<GameState>()((set) => ({
     this.setBoardState(newBoardState);
 
     const winner = determineWinner(newBoardState);
-    if (winner !== 'none') {
+    if (winner) {
       this.setWinner(winner);
     } else if (!newBoardState.includes(undefined)) {
       this.setIsDraw(true);

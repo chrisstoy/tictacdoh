@@ -8,7 +8,7 @@ export function GameBoard() {
   const handleTileClick = (index: number) => {
     if (
       gameStore.boardState[index] !== undefined ||
-      gameStore.winner !== 'none'
+      gameStore.winner !== undefined
     ) {
       return;
     }
@@ -78,6 +78,7 @@ export function GameBoard() {
           <Tile
             state={state}
             allowMove={state === undefined}
+            isOnWinningLine={gameStore.winner?.line?.includes(index) ?? false}
             onClick={() => {
               handleTileClick(index);
             }}

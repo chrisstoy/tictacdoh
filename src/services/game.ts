@@ -1,6 +1,11 @@
 import { BoardState, PlayerId, TileState } from '../types';
 
-export function determineWinner(boardState: TileState[]): PlayerId | 'none' {
+export interface Winner {
+  player: PlayerId;
+  line: number[];
+}
+
+export function determineWinner(boardState: TileState[]): Winner | undefined {
   const lines = [
     [0, 1, 2],
     [3, 4, 5],
@@ -18,13 +23,16 @@ export function determineWinner(boardState: TileState[]): PlayerId | 'none' {
       boardState[a] === boardState[b] &&
       boardState[a] === boardState[c]
     ) {
-      return boardState[a] ?? 'none';
+      return {
+        player: boardState[a] as PlayerId,
+        line: lines[i],
+      };
     }
   }
   if (!boardState.includes(undefined)) {
-    return 'none';
+    return undefined;
   }
-  return 'none';
+  return undefined;
 }
 
 export function solveBoard(
@@ -33,10 +41,10 @@ export function solveBoard(
   player: PlayerId
 ): BoardState {
   const winner = determineWinner(boardState.board);
-  if (winner !== 'none') {
+  if (winner) {
     return {
       ...boardState,
-      victoryState: winner === player ? 'win' : 'lose',
+      victoryState: winner.player === player ? 'win' : 'lose',
     };
   }
 

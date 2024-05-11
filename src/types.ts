@@ -6,5 +6,6 @@ export interface BoardState {
   player: PlayerId; // who made the move on this board
   move: number; // the location the player made the move
   victoryState: 'win' | 'lose' | 'draw' | 'none'; // is this board a win, lose, or draw
+  victoryLines?: number[]; // if this board is a win, what lines did it win on
   children: BoardState[]; // all possible boards resulting from this move
 }

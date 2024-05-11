@@ -1,13 +1,25 @@
 import { css } from '@emotion/react';
 import { TileState } from '../types';
+import { XTile } from './XTile';
+import { OTile } from './OTile';
 
 interface Props {
   state: TileState;
   allowMove: boolean;
+  isOnWinningLine: boolean;
   onClick?: () => void;
 }
 
-export function Tile({ state, allowMove, onClick }: Props) {
+const hoverCss = css`
+  &:hover {
+    cursor: pointer;
+    border-style: solid;
+    border-width: 3px;
+    border-color: lightgreen;
+  }
+`;
+
+export function Tile({ state, allowMove, onClick, isOnWinningLine }: Props) {
   return (
     <div
       css={css`
@@ -15,40 +27,14 @@ export function Tile({ state, allowMove, onClick }: Props) {
         align-items: center;
         display: flex;
         flex: 1 1 auto;
+        background-color: ${isOnWinningLine ? 'lightgreen' : 'transparent'};
 
-        &:hover {
-          cursor: pointer;
-          border-style: solid;
-          border-width: 3px;
-          border-color: ${allowMove ? 'lightgreen' : 'red'};
-        }
+        ${allowMove && hoverCss}
       `}
       onClick={() => onClick?.()}
     >
       {state === 'X' && <XTile></XTile>}
       {state === 'O' && <OTile></OTile>}
     </div>
-  );
-}
-
-function XTile() {
-  return (
-    <img
-      css={css`
-        width: 75%;
-      `}
-      src="/src/assets/X.svg"
-    ></img>
-  );
-}
-
-function OTile() {
-  return (
-    <img
-      css={css`
-        width: 75%;
-      `}
-      src="/src/assets/O.svg"
-    ></img>
   );
 }
