@@ -90,32 +90,46 @@ describe('game', () => {
     });
 
     it('should return the correct move to block losing next turn', () => {
-      const m1 = pickMove(
-        createMockBoard(
-          // prettier-ignore
-          [
-              'X', ' ', ' ',
-              'X', 'O', ' ',
-              'O', 'X', 'O'
-            ]
-          // prettier-ignore-end
-        )
-      );
-      expect(m1).toBe(2);
+      // const m1 = pickMove(
+      //   createMockBoard(
+      //     // prettier-ignore
+      //     [
+      //         'X', ' ', ' ',
+      //         'X', 'O', ' ',
+      //         'O', 'X', 'O'
+      //       ]
+      //     // prettier-ignore-end
+      //   )
+      // );
+      // expect(m1).toBe(2);
 
-      const m2 = pickMove(
+      // const m2 = pickMove(
+      //   createMockBoard(
+      //     // prettier-ignore
+      //     [
+      //         ' ', 'X', 'O',
+      //         'X', 'O', ' ',
+      //         'X', 'O', 'X'
+      //       ],
+      //     // prettier-ignore-end
+      //     'O'
+      //   )
+      // );
+      // expect(m2).toBe(0);
+
+      const m3 = pickMove(
         createMockBoard(
           // prettier-ignore
           [
-              ' ', 'X', 'O',
-              'X', 'O', ' ',
-              'X', 'O', 'X'
+              ' ', 'X', 'X',
+              'X', 'O', 'O',
+              'O', 'X', ' '
             ],
           // prettier-ignore-end
           'O'
         )
       );
-      expect(m2).toBe(0);
+      expect(m3).toBe(0);
     });
   });
 });

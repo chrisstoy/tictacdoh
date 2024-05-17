@@ -90,12 +90,12 @@ const randomItem = <T>(arr: T[]) =>
   arr.length > 0 ? arr[Math.floor(Math.random() * arr.length)] : undefined;
 
 const pickMoveForState =
-  (state: BoardState['victoryState']) => (children: BoardState[]) =>
-    randomItem(
-      children
-        .filter((child) => child.victoryState === state)
-        .map((child) => child.move)
-    );
+  (state: BoardState['victoryState']) => (children: BoardState[]) => {
+    const moves = children
+      .filter((child) => child.victoryState === state)
+      .map((child) => child.move);
+    return randomItem(moves);
+  };
 
 const pickWinningMove = pickMoveForState('win');
 const pickLosingMove = pickMoveForState('lose');
@@ -106,30 +106,26 @@ export function pickMove(board: BoardState): number | undefined {
   }
   const solvedBoard = solveBoard({ ...board }, board.player, board.player);
 
-  console.log(`solved board: ${JSON.stringify(solvedBoard)}`);
-
   // pick any board that is an immediate win
   const winingMove = pickWinningMove(solvedBoard.children);
-  if (winingMove) return winingMove;
+  if (winingMove !== undefined) return winingMove;
 
   // pick any move that will block a loss next turn
   const losingMove = randomItem(
     solvedBoard.children.reduce<number[]>((acc, child) => {
       const move = pickLosingMove(child.children);
-      if (move) {
+      if (move !== undefined) {
         acc.push(move);
       }
       return acc;
     }, [])
   );
 
-  if (losingMove) return losingMove;
+  if (losingMove !== undefined) return losingMove;
 
   // pick any move that could be a win on the next turn
 
   // pick a random move
-
-  // pick a random move5
   const possibleMoves = solvedBoard.children
     .filter((child) => child.victoryState === 'none')
     .map((child) => child.move);

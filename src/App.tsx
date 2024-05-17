@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { PlayGame } from './pages/PlayGame';
 import { SetupGame } from './pages/SetupGame';
 import { css } from '@emotion/react';
-import { useGameStore } from './services/gameState';
+import { useGameStore, usePreviousGameStates } from './services/gameState';
 
 type Mode = 'play' | 'new';
 
 export default function App() {
   const gameStore = useGameStore();
+  const previousGameStates = usePreviousGameStates();
 
   const [gameMode, setGameMode] = useState<Mode>('new');
   return (
@@ -23,6 +24,7 @@ export default function App() {
           onSetupGame={() => setGameMode('new')}
           onReplayGame={() => {
             gameStore.initNewGame();
+            previousGameStates.clear();
           }}
         ></PlayGame>
       )}

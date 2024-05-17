@@ -1,15 +1,13 @@
 import { css } from '@emotion/react';
-import {
-  GameState,
-  useGameStore,
-  usePreviousGameStates,
-} from '../services/gameState';
+import { useGameStore, usePreviousGameStates } from '../services/gameState';
 import { Scoreboard } from '../components/Scoreboard';
 import { GameBoard } from '../components/GameBoard';
 import { useCallback, useEffect, useState } from 'react';
 import { pickMove, pickRandomEmptyTile } from '../services/game';
 import { BoardState, PlayerId, TileState } from '../types';
 import { RewindControls } from '../components/RewindControls';
+
+const CPU_MOVE_DELAY_MS = 200;
 
 interface Props {
   onSetupGame: () => void;
@@ -26,9 +24,8 @@ const pickNextMoveOnBoardForPlayer = (board: TileState[], player: PlayerId) => {
   };
 
   let move = pickMove(boardState);
-  if (!move || move === -1) {
+  if (move === undefined || move === -1) {
     // failed to find a move.  sad.  just randomly pick a move
-    console.log(`Picking a ranom move`);
     move = pickRandomEmptyTile(board);
   }
 
@@ -76,7 +73,7 @@ export function PlayGame({
       setTimeout(() => {
         handleAIPickMove();
         setAIMoving(false);
-      }, 1000);
+      }, CPU_MOVE_DELAY_MS);
     }
   }, [gameStore, gameStore.turn, aiMoving, handleAIPickMove]);
 
@@ -129,8 +126,11 @@ export function PlayGame({
           `}
         >
           <button onClick={handleSetupGame}>New Game</button>
-          <button disabled={gameStore.isGameOver()} onClick={handleAIPickMove}>
-            Pick Move
+          <button
+            disabled={gameStore.isGameOver() || gameStore.isCPU[gameStore.turn]}
+            onClick={handleAIPickMove}
+          >
+            AI Pick Move
           </button>
           <button disabled={!gameStore.isGameOver()} onClick={handleReplayGame}>
             Replay
