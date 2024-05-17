@@ -4,6 +4,7 @@ import { XTile } from './XTile';
 import { OTile } from './OTile';
 
 interface Props {
+  index?: number;
   state: TileState;
   allowMove: boolean;
   isOnWinningLine: boolean;
@@ -19,10 +20,17 @@ const hoverCss = css`
   }
 `;
 
-export function Tile({ state, allowMove, onClick, isOnWinningLine }: Props) {
+export function Tile({
+  index,
+  state,
+  allowMove,
+  isOnWinningLine,
+  onClick,
+}: Props) {
   return (
     <div
       css={css`
+        position: relative;
         justify-content: center;
         align-items: center;
         display: flex;
@@ -33,6 +41,18 @@ export function Tile({ state, allowMove, onClick, isOnWinningLine }: Props) {
       `}
       onClick={() => onClick?.()}
     >
+      {typeof index !== 'undefined' && (
+        <div
+          css={css`
+            position: absolute;
+            top: 0.25rem;
+            left: 0.25rem;
+            color: rgba(0, 0, 0, 0.25);
+          `}
+        >
+          {index}
+        </div>
+      )}
       {state === 'X' && <XTile></XTile>}
       {state === 'O' && <OTile></OTile>}
     </div>

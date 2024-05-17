@@ -7,15 +7,19 @@ export interface GameState {
   turn: PlayerId;
   winner: Winner | undefined;
   isDraw: boolean;
+  isCPU: Record<PlayerId, boolean>;
 
-  reset(): void;
-
+  initNewGame(): void;
+  setIsCPU(player: PlayerId, isCPU: boolean): void;
   setBoardState(boardState: TileState[]): void;
   setTurn(turn: PlayerId): void;
   setWinner(winner: Winner | undefined): void;
   setIsDraw(isDraw: boolean): void;
 
   setTileState(index: number, owner: PlayerId | undefined): void;
+  isGameOver(): boolean;
+
+  setState(state: GameState): void;
 }
 
 export const useGameStore = create<GameState>()((set) => ({
@@ -23,14 +27,26 @@ export const useGameStore = create<GameState>()((set) => ({
   turn: 'X',
   winner: undefined,
   isDraw: false,
+  isCPU: {
+    X: false,
+    O: false,
+  },
 
-  reset() {
+  setState(state: GameState) {
+    set(state);
+  },
+
+  initNewGame() {
     set({
-      boardState: new Array(9).fill(undefined),
+      boardState: new Array<TileState>(9).fill(' '),
       turn: 'X',
       winner: undefined,
       isDraw: false,
     });
+  },
+
+  setIsCPU: (player: PlayerId, isCPU: boolean): void => {
+    set({ isCPU: { ...useGameStore.getState().isCPU, [player]: isCPU } });
   },
 
   setBoardState: (boardState: TileState[]) => set({ boardState }),
@@ -40,14 +56,52 @@ export const useGameStore = create<GameState>()((set) => ({
 
   setTileState(index: number, owner: PlayerId | undefined) {
     const newBoardState = [...this.boardState];
-    newBoardState[index] = owner;
+    newBoardState[index] = owner ?? ' ';
     this.setBoardState(newBoardState);
 
     const winner = determineWinner(newBoardState);
     if (winner) {
       this.setWinner(winner);
-    } else if (!newBoardState.includes(undefined)) {
+    } else if (!newBoardState.includes(' ')) {
       this.setIsDraw(true);
     }
+  },
+
+  isGameOver() {
+    return !!this.winner || this.isDraw;
+  },
+}));
+
+export interface PreviousGameStates {
+  previousStates: GameState[];
+
+  push(state: GameState): void;
+  pop(): GameState | undefined;
+  clear(): void;
+}
+
+export const usePreviousGameStates = create<PreviousGameStates>((set) => ({
+  previousStates: [],
+  push(state: GameState) {
+    set({
+      previousStates: [
+        ...usePreviousGameStates.getState().previousStates,
+        state,
+      ],
+    });
+  },
+  clear() {
+    set({ previousStates: [] });
+  },
+
+  pop() {
+    if (this.previousStates.length === 0) return undefined;
+    const lastState = this.previousStates[this.previousStates.length - 1];
+    set({
+      previousStates: usePreviousGameStates
+        .getState()
+        .previousStates.slice(0, -1),
+    });
+    return lastState;
   },
 }));

@@ -17,13 +17,13 @@ export function Scoreboard() {
     >
       <Player
         player={'X'}
-        isCPU={false}
+        isCPU={gameStore.isCPU['X']}
         playersTurn={gameStore.winner === undefined && gameStore.turn === 'X'}
       ></Player>
       <Score></Score>
       <Player
         player={'O'}
-        isCPU={true}
+        isCPU={gameStore.isCPU['O']}
         playersTurn={gameStore.winner === undefined && gameStore.turn === 'O'}
       ></Player>
     </div>

@@ -1,5 +1,5 @@
 export type PlayerId = 'X' | 'O';
-export type TileState = PlayerId | undefined;
+export type TileState = PlayerId | ' ';
 
 export interface BoardState {
   board: TileState[]; // the current state of the board

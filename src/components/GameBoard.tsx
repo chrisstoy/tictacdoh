@@ -2,19 +2,18 @@ import { css } from '@emotion/react';
 import { useGameStore } from '../services/gameState';
 import { Tile } from './Tile';
 
-export function GameBoard() {
-  const gameStore = useGameStore();
+interface Props {
+  onTileClick: (index: number) => void;
+  allowTileSelection: boolean;
+  highlightTiles?: number[];
+}
 
-  const handleTileClick = (index: number) => {
-    if (
-      gameStore.boardState[index] !== undefined ||
-      gameStore.winner !== undefined
-    ) {
-      return;
-    }
-    gameStore.setTileState(index, gameStore.turn);
-    gameStore.setTurn(gameStore.turn === 'X' ? 'O' : 'X');
-  };
+export function GameBoard({
+  allowTileSelection,
+  highlightTiles,
+  onTileClick,
+}: Props) {
+  const gameStore = useGameStore();
 
   const borderForTile = (index: number) => {
     const borderRight = `
@@ -76,11 +75,12 @@ export function GameBoard() {
           `}
         >
           <Tile
+            index={index}
             state={state}
-            allowMove={state === undefined}
-            isOnWinningLine={gameStore.winner?.line?.includes(index) ?? false}
+            allowMove={allowTileSelection && state === ' '}
+            isOnWinningLine={highlightTiles?.includes(index) ?? false}
             onClick={() => {
-              handleTileClick(index);
+              onTileClick(index);
             }}
           />
         </div>

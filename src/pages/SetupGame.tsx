@@ -1,14 +1,13 @@
 import { css } from '@emotion/react';
 import { PlayerChoice } from '../components/PlayerChoice';
-import { useState } from 'react';
+import { useGameStore } from '../services/gameState';
 
 interface Props {
   onStartGame: () => void;
 }
 
 export function SetupGame({ onStartGame }: Props) {
-  const [isCPUX, setIsCPUX] = useState(false);
-  const [isCPUO, setIsCPUO] = useState(false);
+  const gameStore = useGameStore();
 
   return (
     <div
@@ -47,16 +46,16 @@ export function SetupGame({ onStartGame }: Props) {
         >
           <PlayerChoice
             player="X"
-            isCPU={isCPUX}
+            isCPU={gameStore.isCPU['X']}
             onClick={() => {
-              setIsCPUX(!isCPUX);
+              gameStore.setIsCPU('X', !gameStore.isCPU['X']);
             }}
           ></PlayerChoice>
           <PlayerChoice
             player="O"
-            isCPU={isCPUO}
+            isCPU={gameStore.isCPU['O']}
             onClick={() => {
-              setIsCPUO(!isCPUO);
+              gameStore.setIsCPU('O', !gameStore.isCPU['O']);
             }}
           ></PlayerChoice>
         </div>

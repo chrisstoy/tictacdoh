@@ -19,7 +19,7 @@ export function determineWinner(boardState: TileState[]): Winner | undefined {
   for (let i = 0; i < lines.length; i++) {
     const [a, b, c] = lines[i];
     if (
-      boardState[a] &&
+      boardState[a] !== ' ' &&
       boardState[a] === boardState[b] &&
       boardState[a] === boardState[c]
     ) {
@@ -29,7 +29,7 @@ export function determineWinner(boardState: TileState[]): Winner | undefined {
       };
     }
   }
-  if (!boardState.includes(undefined)) {
+  if (!boardState.includes(' ')) {
     return undefined;
   }
   return undefined;
@@ -51,7 +51,7 @@ export function solveBoard(
   // create list of all possible moves
   const possibleMoves = boardState.board.reduce<BoardState[]>(
     (acc, tileState, index) => {
-      if (tileState === undefined) {
+      if (tileState === ' ') {
         const newBoardState = [...boardState.board];
         newBoardState[index] = turn;
         acc.push({
@@ -86,20 +86,62 @@ export function solveBoard(
   };
 }
 
-export function pickMove(
-  board: BoardState,
-  player: PlayerId
-): number | undefined {
-  if (board.victoryState === 'none') {
+const randomItem = <T>(arr: T[]) =>
+  arr.length > 0 ? arr[Math.floor(Math.random() * arr.length)] : undefined;
+
+const pickMoveForState =
+  (state: BoardState['victoryState']) => (children: BoardState[]) =>
+    randomItem(
+      children
+        .filter((child) => child.victoryState === state)
+        .map((child) => child.move)
+    );
+
+const pickWinningMove = pickMoveForState('win');
+const pickLosingMove = pickMoveForState('lose');
+
+export function pickMove(board: BoardState): number | undefined {
+  if (board.victoryState !== 'none') {
     return undefined;
   }
+  const solvedBoard = solveBoard({ ...board }, board.player, board.player);
 
-  const possibleMoves = board.children
+  console.log(`solved board: ${JSON.stringify(solvedBoard)}`);
+
+  // pick any board that is an immediate win
+  const winingMove = pickWinningMove(solvedBoard.children);
+  if (winingMove) return winingMove;
+
+  // pick any move that will block a loss next turn
+  const losingMove = randomItem(
+    solvedBoard.children.reduce<number[]>((acc, child) => {
+      const move = pickLosingMove(child.children);
+      if (move) {
+        acc.push(move);
+      }
+      return acc;
+    }, [])
+  );
+
+  if (losingMove) return losingMove;
+
+  // pick any move that could be a win on the next turn
+
+  // pick a random move
+
+  // pick a random move5
+  const possibleMoves = solvedBoard.children
     .filter((child) => child.victoryState === 'none')
     .map((child) => child.move);
+  return randomItem(possibleMoves) ?? undefined;
+}
 
-  if (possibleMoves.length === 0) {
-    return -1;
-  }
-  return possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
+export function pickRandomEmptyTile(boardState: TileState[]): number {
+  const emptyTiles = boardState.reduce<number[]>((acc, tileState, index) => {
+    if (tileState === ' ') {
+      acc.push(index);
+    }
+    return acc;
+  }, []);
+  return emptyTiles[Math.floor(Math.random() * emptyTiles.length)];
 }

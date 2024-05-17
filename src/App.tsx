@@ -22,7 +22,7 @@ export default function App() {
         <PlayGame
           onSetupGame={() => setGameMode('new')}
           onReplayGame={() => {
-            gameStore.reset();
+            gameStore.initNewGame();
           }}
         ></PlayGame>
       )}
