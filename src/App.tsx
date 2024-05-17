@@ -29,7 +29,13 @@ export default function App() {
         ></PlayGame>
       )}
       {gameMode === 'new' && (
-        <SetupGame onStartGame={() => setGameMode('play')}></SetupGame>
+        <SetupGame
+          onStartGame={() => {
+            gameStore.initNewGame();
+            previousGameStates.clear();
+            setGameMode('play');
+          }}
+        ></SetupGame>
       )}
     </div>
   );

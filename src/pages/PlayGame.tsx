@@ -59,11 +59,6 @@ export function PlayGame({
   }, [gameStore.boardState, gameStore.turn, makeMoveForPlayer]);
 
   useEffect(() => {
-    gameStore.initNewGame();
-    previousGameStates.clear();
-  }, []);
-
-  useEffect(() => {
     if (
       !gameStore.isGameOver() &&
       gameStore.isCPU[gameStore.turn] &&
