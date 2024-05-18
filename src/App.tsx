@@ -17,6 +17,21 @@ export default function App() {
         display: flex;
         flex: 1 1 auto;
         background-color: antiquewhite;
+
+        button {
+          padding: 0.25rem 0.5rem;
+          border-radius: 0.5rem;
+          border-color: saddlebrown;
+          background: burlywood;
+          color: white;
+          font-weight: bold;
+          font-size: large;
+
+          &:disabled {
+            color: darkgray;
+            border-color: sandybrown;
+          }
+        }
       `}
     >
       {gameMode === 'play' && (

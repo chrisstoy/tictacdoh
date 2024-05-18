@@ -21,7 +21,10 @@ export function SetupGame({ onStartGame }: Props) {
     >
       <h1
         css={css`
-          font-size: xxx-large;
+          font-size: 3.5rem;
+          text-shadow: black 3px 2px 10px;
+          color: white;
+          text-align: center;
         `}
       >
         Tic Tac DOH!
@@ -32,6 +35,7 @@ export function SetupGame({ onStartGame }: Props) {
           align-items: center;
           display: flex;
           flex-direction: column;
+          margin: 2rem 0;
         `}
       >
         <h2>Choose Players</h2>

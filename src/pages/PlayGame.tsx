@@ -83,6 +83,9 @@ export function PlayGame({
     <div
       css={css`
         flex: 1 1 auto;
+        justify-content: space-evenly;
+        display: flex;
+        flex-direction: column;
       `}
     >
       <Scoreboard></Scoreboard>
@@ -105,7 +108,7 @@ export function PlayGame({
       <div
         css={css`
           display: flex;
-          flex: 1 1 auto;
+          flex: 0 0 5rem;
           align-items: center;
           justify-content: center;
           flex-direction: column;
