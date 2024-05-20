@@ -1,7 +1,13 @@
 {
   "name": "tic-tac-doh",
+  "author": {
+    "name": "Chris Stoy",
+    "email": "me@chrisstoy.com",
+    "url": "https://github.com/chrisstoy/tictacdoh"
+  },
+  "license": "MIT",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
