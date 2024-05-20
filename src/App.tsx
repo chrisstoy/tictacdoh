@@ -17,6 +17,7 @@ export default function App() {
         display: flex;
         flex: 1 1 auto;
         background-color: antiquewhite;
+        min-height: 675px;
 
         button {
           padding: 0.25rem 0.5rem;

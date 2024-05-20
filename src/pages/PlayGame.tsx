@@ -41,6 +41,9 @@ export function PlayGame({
 
   const [aiMoving, setAIMoving] = useState(false);
 
+  const [autoReplay, setAutoReplay] = useState(false);
+  const [isDelaying, setIsDelaying] = useState(false);
+
   const makeMoveForPlayer = useCallback(
     (move: number, player: PlayerId) => {
       previousGameStates.push(gameStore);
@@ -71,6 +74,16 @@ export function PlayGame({
       }, CPU_MOVE_DELAY_MS);
     }
   }, [gameStore, gameStore.turn, aiMoving, handleAIPickMove]);
+
+  useEffect(() => {
+    if (gameStore.isGameOver() && autoReplay && !isDelaying) {
+      setIsDelaying(true);
+      setTimeout(() => {
+        setIsDelaying(false);
+        handleReplayGame();
+      }, CPU_MOVE_DELAY_MS * 2);
+    }
+  }, [autoReplay, gameStore, gameStore.turn, handleReplayGame, isDelaying]);
 
   const handleTileClick = (index: number) => {
     if (gameStore.boardState[index] !== ' ' || gameStore.winner !== undefined) {
@@ -114,7 +127,7 @@ export function PlayGame({
           flex-direction: column;
         `}
       >
-        <RewindControls></RewindControls>
+        {/* <RewindControls></RewindControls> */}
         <div
           css={css`
             display: flex;
@@ -130,10 +143,35 @@ export function PlayGame({
           >
             AI Pick Move
           </button>
-          <button disabled={!gameStore.isGameOver()} onClick={handleReplayGame}>
-            Replay
-          </button>
+          <div
+            css={css`
+              display: flex;
+              flex-direction: column;
+            `}
+          >
+            <button
+              disabled={!gameStore.isGameOver()}
+              onClick={handleReplayGame}
+            >
+              Replay
+            </button>
+            <div
+              css={css`
+                justify-content: center;
+                align-items: center;
+                display: flex;
+              `}
+            >
+              <label>Auto</label>
+              <input
+                type="checkbox"
+                checked={autoReplay}
+                onChange={() => setAutoReplay(!autoReplay)}
+              />
+            </div>
+          </div>
         </div>
+        <div></div>
       </div>
     </div>
   );

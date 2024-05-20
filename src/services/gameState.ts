@@ -8,6 +8,10 @@ export interface GameState {
   winner: Winner | undefined;
   isDraw: boolean;
   isCPU: Record<PlayerId, boolean>;
+  stats: {
+    wins: Record<PlayerId, number>;
+    totalGames: number;
+  };
 
   initNewGame(): void;
   setIsCPU(player: PlayerId, isCPU: boolean): void;
@@ -31,6 +35,13 @@ export const useGameStore = create<GameState>()((set) => ({
     X: false,
     O: false,
   },
+  stats: {
+    wins: {
+      X: 0,
+      O: 0,
+    },
+    totalGames: 0,
+  },
 
   setState(state: GameState) {
     set(state);
@@ -51,8 +62,23 @@ export const useGameStore = create<GameState>()((set) => ({
 
   setBoardState: (boardState: TileState[]) => set({ boardState }),
   setTurn: (turn: 'X' | 'O') => set({ turn }),
-  setWinner: (winner: Winner | undefined) => set({ winner }),
-  setIsDraw: (isDraw: boolean) => set({ isDraw }),
+  setWinner: (winner: Winner | undefined) => {
+    const stats: GameState['stats'] = { ...useGameStore.getState().stats };
+    stats.totalGames = stats.totalGames + 1;
+    if (winner) {
+      stats.wins[winner.player] = stats.wins[winner.player] + 1;
+    }
+    return set({
+      winner,
+      stats,
+    });
+  },
+  setIsDraw: (isDraw: boolean) => {
+    const stats: GameState['stats'] = { ...useGameStore.getState().stats };
+    stats.totalGames = stats.totalGames + 1;
+
+    return set({ isDraw, stats });
+  },
 
   setTileState(index: number, owner: PlayerId | undefined) {
     const newBoardState = [...this.boardState];

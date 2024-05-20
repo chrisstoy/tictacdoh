@@ -15,12 +15,14 @@ export function Score() {
         font-size: 2em;
       `}
     >
-      {gameStore.isDraw && <div>Draw</div>}
-      {gameStore.winner !== undefined && (
-        <div>
-          <div>{gameStore.winner.player} Wins</div>
-        </div>
-      )}
+      <div>
+        {gameStore.isDraw && <div>Draw</div>}
+        {gameStore.winner !== undefined && (
+          <div>
+            <div>{gameStore.winner.player} Wins</div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
