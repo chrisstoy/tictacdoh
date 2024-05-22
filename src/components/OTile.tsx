@@ -6,7 +6,7 @@ export function OTile() {
       css={css`
         width: 75%;
       `}
-      src="/src/assets/O.svg"
+      src="/assets/O.svg"
     ></img>
   );
 }

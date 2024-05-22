@@ -6,7 +6,7 @@ export function XTile() {
       css={css`
         width: 75%;
       `}
-      src="/src/assets/X.svg"
+      src="/assets/X.svg"
     ></img>
   );
 }
