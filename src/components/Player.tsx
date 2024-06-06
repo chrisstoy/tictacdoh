@@ -22,9 +22,9 @@ export function Player({ player, playersTurn, isCPU }: Props) {
       <div
         css={css`
           border: thin solid black;
-          padding: 0.5em;
-          margin: 0.5em;
-          border-radius: 0.5em;
+          padding: 0.5rem;
+          margin: 0.5rem;
+          border-radius: 0.5rem;
           background-color: ${playersTurn ? 'lightgreen' : 'white'};
         `}
       >{`${isCPU ? 'CPU' : 'Player'}: ${player}`}</div>

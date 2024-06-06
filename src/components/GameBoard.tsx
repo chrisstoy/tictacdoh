@@ -57,34 +57,43 @@ export function GameBoard({
   return (
     <div
       css={css`
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        grid-template-rows: repeat(3, 1fr);
-        grid: 1em;
-        width: 100%;
+        padding: 1rem;
+        margin: 1rem;
+        border: 4px solid black;
+        border-radius: 1rem;
+        display: flex;
+        flex: 1 1 auto;
       `}
     >
-      {gameStore.boardState.map((state, index) => (
-        <div
-          key={index}
-          css={css`
-            aspect-ratio: 1/1;
-            flex: 1 1 auto;
-            display: flex;
-            ${borderForTile(index)}
-          `}
-        >
-          <Tile
-            index={index}
-            state={state}
-            allowMove={allowTileSelection && state === ' '}
-            isOnWinningLine={highlightTiles?.includes(index) ?? false}
-            onClick={() => {
-              onTileClick(index);
-            }}
-          />
-        </div>
-      ))}
+      <div
+        css={css`
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          grid-template-rows: repeat(3, 1fr);
+          width: 100%;
+        `}
+      >
+        {gameStore.boardState.map((state, index) => (
+          <div
+            key={index}
+            css={css`
+              flex: 1 1 auto;
+              display: flex;
+              ${borderForTile(index)}
+            `}
+          >
+            <Tile
+              index={index}
+              state={state}
+              allowMove={allowTileSelection && state === ' '}
+              isOnWinningLine={highlightTiles?.includes(index) ?? false}
+              onClick={() => {
+                onTileClick(index);
+              }}
+            />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

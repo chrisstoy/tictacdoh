@@ -12,7 +12,7 @@ export function Score() {
         align-items: center;
         justify-content: center;
         flex-direction: column;
-        font-size: 2em;
+        font-size: 2rem;
       `}
     >
       <div>

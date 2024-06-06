@@ -21,7 +21,7 @@ export function SetupGame({ onStartGame }: Props) {
     >
       <h1
         css={css`
-          font-size: 3.5rem;
+          font-size: 14vw;
           text-shadow: black 3px 2px 10px;
           color: white;
           text-align: center;
@@ -45,7 +45,7 @@ export function SetupGame({ onStartGame }: Props) {
             display: flex;
             justify-content: space-evenly;
             font-size: x-large;
-            margin: 1em;
+            margin: 1rem;
           `}
         >
           <PlayerChoice

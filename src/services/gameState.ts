@@ -12,6 +12,7 @@ export interface GameState {
     wins: Record<PlayerId, number>;
     totalGames: number;
   };
+  autoReplay: boolean;
 
   initNewGame(): void;
   setIsCPU(player: PlayerId, isCPU: boolean): void;
@@ -22,6 +23,8 @@ export interface GameState {
 
   setTileState(index: number, owner: PlayerId | undefined): void;
   isGameOver(): boolean;
+
+  setAutoReplay(autoReplay: boolean): void;
 
   setState(state: GameState): void;
 }
@@ -42,6 +45,7 @@ export const useGameStore = create<GameState>()((set) => ({
     },
     totalGames: 0,
   },
+  autoReplay: false,
 
   setState(state: GameState) {
     set(state);
@@ -91,6 +95,10 @@ export const useGameStore = create<GameState>()((set) => ({
     } else if (!newBoardState.includes(' ')) {
       this.setIsDraw(true);
     }
+  },
+
+  setAutoReplay(autoReplay: boolean) {
+    set({ autoReplay });
   },
 
   isGameOver() {

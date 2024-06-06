@@ -14,7 +14,7 @@ export function PlayerChoice({ player, isCPU, onClick }: Props) {
       onClick={onClick}
       css={css`
         width: 20%;
-        border-radius: 1em;
+        border-radius: 1rem;
         text-align: center;
         justify-content: center;
         align-items: center;

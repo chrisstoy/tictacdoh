@@ -5,7 +5,7 @@ import { GameBoard } from '../components/GameBoard';
 import { useCallback, useEffect, useState } from 'react';
 import { pickMove, pickRandomEmptyTile } from '../services/game';
 import { BoardState, PlayerId, TileState } from '../types';
-import { RewindControls } from '../components/RewindControls';
+import { GameControls } from '../components/GameControls';
 
 const CPU_MOVE_DELAY_MS = 200;
 
@@ -41,7 +41,6 @@ export function PlayGame({
 
   const [aiMoving, setAIMoving] = useState(false);
 
-  const [autoReplay, setAutoReplay] = useState(false);
   const [isDelaying, setIsDelaying] = useState(false);
 
   const makeMoveForPlayer = useCallback(
@@ -76,14 +75,20 @@ export function PlayGame({
   }, [gameStore, gameStore.turn, aiMoving, handleAIPickMove]);
 
   useEffect(() => {
-    if (gameStore.isGameOver() && autoReplay && !isDelaying) {
+    if (gameStore.isGameOver() && gameStore.autoReplay && !isDelaying) {
       setIsDelaying(true);
       setTimeout(() => {
         setIsDelaying(false);
         handleReplayGame();
       }, CPU_MOVE_DELAY_MS * 2);
     }
-  }, [autoReplay, gameStore, gameStore.turn, handleReplayGame, isDelaying]);
+  }, [
+    gameStore,
+    gameStore.autoReplay,
+    gameStore.turn,
+    handleReplayGame,
+    isDelaying,
+  ]);
 
   const handleTileClick = (index: number) => {
     if (gameStore.boardState[index] !== ' ' || gameStore.winner !== undefined) {
@@ -96,19 +101,26 @@ export function PlayGame({
     <div
       css={css`
         flex: 1 1 auto;
-        justify-content: space-evenly;
+        justify-content: space-between;
         display: flex;
         flex-direction: column;
+        border: 2px solid red;
       `}
     >
+      <div
+        css={css`
+          flex: 2 2 auto;
+        `}
+      ></div>
       <Scoreboard></Scoreboard>
       <div
         css={css`
-          padding: 1em;
-          margin: 1em;
+          margin: 1rem;
           border: 4px solid black;
-          border-radius: 1em;
+          border-radius: 1rem;
           display: flex;
+          flex: 1 1 auto;
+          aspect-ratio: 1 / 1;
         `}
       >
         <GameBoard
@@ -117,62 +129,16 @@ export function PlayGame({
           onTileClick={handleTileClick}
         ></GameBoard>
       </div>
-
+      <GameControls
+        onSetupGame={handleSetupGame}
+        onReplayGame={handleReplayGame}
+        onAIPickMove={handleAIPickMove}
+      ></GameControls>
       <div
         css={css`
-          display: flex;
-          flex: 0 0 5rem;
-          align-items: center;
-          justify-content: center;
-          flex-direction: column;
+          flex: 2 2 auto;
         `}
-      >
-        {/* <RewindControls></RewindControls> */}
-        <div
-          css={css`
-            display: flex;
-            flex-direction: row;
-            justify-content: space-around;
-            width: 100%;
-          `}
-        >
-          <button onClick={handleSetupGame}>New Game</button>
-          <button
-            disabled={gameStore.isGameOver() || gameStore.isCPU[gameStore.turn]}
-            onClick={handleAIPickMove}
-          >
-            AI Pick Move
-          </button>
-          <div
-            css={css`
-              display: flex;
-              flex-direction: column;
-            `}
-          >
-            <button
-              disabled={!gameStore.isGameOver()}
-              onClick={handleReplayGame}
-            >
-              Replay
-            </button>
-            <div
-              css={css`
-                justify-content: center;
-                align-items: center;
-                display: flex;
-              `}
-            >
-              <label>Auto</label>
-              <input
-                type="checkbox"
-                checked={autoReplay}
-                onChange={() => setAutoReplay(!autoReplay)}
-              />
-            </div>
-          </div>
-        </div>
-        <div></div>
-      </div>
+      ></div>
     </div>
   );
 }
