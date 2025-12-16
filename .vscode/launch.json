@@ -1,0 +1,29 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Expo Web",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:8081",
+      "webRoot": "${workspaceFolder}",
+      "sourceMaps": true,
+      "sourceMapPathOverrides": {
+        "webpack://?:*/*": "${workspaceFolder}/*"
+      },
+      "preLaunchTask": "expo-web"
+    },
+    {
+      "name": "Attach to Expo Web",
+      "type": "chrome",
+      "request": "attach",
+      "port": 9222,
+      "url": "http://localhost:8081",
+      "webRoot": "${workspaceFolder}",
+      "sourceMaps": true,
+      "sourceMapPathOverrides": {
+        "webpack://?:*/*": "${workspaceFolder}/*"
+      }
+    }
+  ]
+}
