@@ -1,5 +1,5 @@
 import Animated, { FadeIn, FadeOut, FadingTransition } from 'react-native-reanimated';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { OptionsScreen } from '@/screens/options/OptionsScreen';
 import { PlayGameScreen } from '@/screens/play/PlayGameScreen';
@@ -12,7 +12,11 @@ export default function Index() {
   const gameStore = useGameStore();
   const previousGameStates = usePreviousGameStates();
 
-  const [gameMode, setGameMode] = useState<Mode>('new');
+  const [gameMode, setGameMode] = useState<Mode>('play');
+
+  useEffect(() => {
+    gameStore.initNewGame();
+  }, []);
 
   return (
     <View className="flex-1" testID="index-screen">

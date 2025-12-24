@@ -1,21 +1,57 @@
+import { useEffect, useRef } from 'react';
+import { Animated, Pressable, View } from 'react-native';
 import { TileState } from '../types';
 import { OImage } from './images/OImage';
 import { XImage } from './images/XImage';
 
 interface Props {
-  index?: number;
+  index: number;
   state: TileState;
   allowMove: boolean;
   isOnWinningLine: boolean;
   onClick?: () => void;
+  className?: string;
 }
 
-export function Tile({ index, state, allowMove, isOnWinningLine, onClick }: Props) {
+export function Tile({ index, state, allowMove, isOnWinningLine, className, onClick }: Props) {
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    if (isOnWinningLine) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, {
+            toValue: 1.1,
+            duration: 400,
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 1,
+            duration: 400,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    } else {
+      pulseAnim.setValue(1);
+    }
+  }, [isOnWinningLine, pulseAnim]);
+
   return (
-    <div onClick={() => onClick?.()}>
-      {typeof index !== 'undefined' && <div>{index}</div>}
-      {state === 'X' && <XImage></XImage>}
-      {state === 'O' && <OImage></OImage>}
-    </div>
+    <View className={`text-white flex flex-auto items-center justify-center p-[10%] ${className}`}>
+      <Pressable className="flex flex-1 w-full" onPress={() => onClick?.()}>
+        {isOnWinningLine ? (
+          <Animated.View style={{ flexBasis: '100%', transform: [{ scale: pulseAnim }] }}>
+            {state === 'X' && <XImage></XImage>}
+            {state === 'O' && <OImage></OImage>}
+          </Animated.View>
+        ) : (
+          <View className="w-full h-full items-center justify-center">
+            {state === 'X' && <XImage></XImage>}
+            {state === 'O' && <OImage></OImage>}
+          </View>
+        )}
+      </Pressable>
+    </View>
   );
 }
