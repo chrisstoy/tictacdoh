@@ -23,6 +23,7 @@ module.exports = {
         },
         outline: {
           500: '#632f16', // dark line art color
+          800: '#2b262c', // darker line art color
         },
         orange: {
           400: '#e28731', // main orange

@@ -15,11 +15,12 @@ export default function Index() {
   const [gameMode, setGameMode] = useState<Mode>('play');
 
   useEffect(() => {
-    gameStore.initNewGame();
+    gameStore.initNewRound();
   }, []);
 
   return (
     <View className="flex-1" testID="index-screen">
+      {/* <DebugGameStore></DebugGameStore> */}
       {gameMode === 'new' && (
         <View className="flex-1">
           <Animated.View
@@ -62,7 +63,7 @@ export default function Index() {
               setGameMode('new');
             }}
             onReplayGame={() => {
-              gameStore.initNewGame();
+              gameStore.initNewRound();
               previousGameStates.clear();
             }}
           ></PlayGameScreen>

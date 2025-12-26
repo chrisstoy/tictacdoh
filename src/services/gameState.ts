@@ -10,11 +10,13 @@ export interface GameState {
   isCPU: Record<PlayerId, boolean>;
   stats: {
     wins: Record<PlayerId, number>;
-    totalGames: number;
+    totalRounds: number;
   };
   autoReplay: boolean;
+  enableSound: boolean;
 
   initNewGame(): void;
+  initNewRound(): void;
   setIsCPU(player: PlayerId, isCPU: boolean): void;
   setBoardState(boardState: TileState[]): void;
   setTurn(turn: PlayerId): void;
@@ -25,6 +27,7 @@ export interface GameState {
   isGameOver(): boolean;
 
   setAutoReplay(autoReplay: boolean): void;
+  setEnableSound(enableSound: boolean): void;
 
   setState(state: GameState): void;
 }
@@ -43,15 +46,32 @@ export const useGameStore = create<GameState>()((set) => ({
       X: 0,
       O: 0,
     },
-    totalGames: 0,
+    totalRounds: 0,
   },
   autoReplay: false,
+  enableSound: true,
 
   setState(state: GameState) {
     set(state);
   },
 
   initNewGame() {
+    set({
+      boardState: new Array<TileState>(9).fill(' '),
+      turn: 'X',
+      winner: undefined,
+      isDraw: false,
+      stats: {
+        wins: {
+          X: 0,
+          O: 0,
+        },
+        totalRounds: 0,
+      },
+    });
+  },
+
+  initNewRound() {
     set({
       boardState: new Array<TileState>(9).fill(' '),
       turn: 'X',
@@ -68,7 +88,7 @@ export const useGameStore = create<GameState>()((set) => ({
   setTurn: (turn: 'X' | 'O') => set({ turn }),
   setWinner: (winner: Winner | undefined) => {
     const stats: GameState['stats'] = { ...useGameStore.getState().stats };
-    stats.totalGames = stats.totalGames + 1;
+    stats.totalRounds = stats.totalRounds + 1;
     if (winner) {
       stats.wins[winner.player] = stats.wins[winner.player] + 1;
     }
@@ -79,7 +99,7 @@ export const useGameStore = create<GameState>()((set) => ({
   },
   setIsDraw: (isDraw: boolean) => {
     const stats: GameState['stats'] = { ...useGameStore.getState().stats };
-    stats.totalGames = stats.totalGames + 1;
+    stats.totalRounds = stats.totalRounds + 1;
 
     return set({ isDraw, stats });
   },
@@ -101,6 +121,10 @@ export const useGameStore = create<GameState>()((set) => ({
     set({ autoReplay });
   },
 
+  setEnableSound(enableSound: boolean) {
+    set({ enableSound });
+  },
+
   isGameOver() {
     return !!this.winner || this.isDraw;
   },
@@ -118,10 +142,7 @@ export const usePreviousGameStates = create<PreviousGameStates>((set) => ({
   previousStates: [],
   push(state: GameState) {
     set({
-      previousStates: [
-        ...usePreviousGameStates.getState().previousStates,
-        state,
-      ],
+      previousStates: [...usePreviousGameStates.getState().previousStates, state],
     });
   },
   clear() {
@@ -132,9 +153,7 @@ export const usePreviousGameStates = create<PreviousGameStates>((set) => ({
     if (this.previousStates.length === 0) return undefined;
     const lastState = this.previousStates[this.previousStates.length - 1];
     set({
-      previousStates: usePreviousGameStates
-        .getState()
-        .previousStates.slice(0, -1),
+      previousStates: usePreviousGameStates.getState().previousStates.slice(0, -1),
     });
     return lastState;
   },

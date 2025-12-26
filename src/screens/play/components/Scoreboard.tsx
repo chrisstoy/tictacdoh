@@ -9,7 +9,9 @@ export function Scoreboard() {
   return (
     <View className="flex-1 flex justify-center">
       <View className="h-1/4 flex items-center my-4">
-        <Text className="outline text-white text-2xl">Round: {gameStore.stats.totalGames}</Text>
+        <Text className="outline text-white text-2xl">
+          Round: {gameStore.stats.totalRounds + 1}
+        </Text>
       </View>
 
       <View className="flex flex-row flex-auto">

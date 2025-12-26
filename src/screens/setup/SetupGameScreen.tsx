@@ -2,6 +2,7 @@ import { View } from 'react-native';
 import { ChoosePlayersImage } from '@/components/images/ChoosePlayersImage';
 import { TitleImage } from '@/components/images/TitleImage';
 import { useGameStore } from '@/services/gameState';
+import { OptionsButton } from './components/OptionsButton';
 import { PlayerChoice } from './components/PlayerChoice';
 import { StartGameButton } from './components/StartGameButton';
 
@@ -56,10 +57,10 @@ export function SetupGameScreen({ onStartGame, onOptions }: Props) {
       </View>
 
       <View className="flex-[0.1]">
-        {/* <OptionsButton
+        <OptionsButton
           className="flex flex-auto w-1/4 m-2 self-end"
           onClick={onOptions}
-        ></OptionsButton> */}
+        ></OptionsButton>
       </View>
     </View>
   );

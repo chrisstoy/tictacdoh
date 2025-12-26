@@ -41,7 +41,9 @@ export function Player({ player, className }: Props) {
         {player === 'O' && <OImage></OImage>}
       </View>
 
-      <Text className="outline text-white">{`Wins: ${wins}`}</Text>
+      <View className="flex-1 items-center">
+        <Text className="outline text-white">{`Wins: ${wins}`}</Text>
+      </View>
     </View>
   );
 }
