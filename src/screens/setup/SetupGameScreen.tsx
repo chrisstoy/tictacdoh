@@ -1,10 +1,12 @@
 import { View } from 'react-native';
+import { JiggleButton } from '@/components/JiggleButton';
 import { ChoosePlayersImage } from '@/components/images/ChoosePlayersImage';
+import { GearImage } from '@/components/images/GearImage';
+import { StartGameImage } from '@/components/images/StartGameImage';
 import { TitleImage } from '@/components/images/TitleImage';
 import { useGameStore } from '@/services/gameState';
-import { OptionsButton } from './components/OptionsButton';
 import { PlayerChoice } from './components/PlayerChoice';
-import { StartGameButton } from './components/StartGameButton';
+import { RoundsInMatch } from './components/RoundsInMatch';
 
 interface Props {
   onStartGame: () => void;
@@ -49,18 +51,20 @@ export function SetupGameScreen({ onStartGame, onOptions }: Props) {
         </View>
       </View>
 
-      <View className="flex-[0.2]">
-        <StartGameButton
-          className="flex flex-auto self-center w-1/2 my-2"
-          onClick={onStartGame}
-        ></StartGameButton>
+      <View className="flex-[0.05]">
+        <RoundsInMatch></RoundsInMatch>
+      </View>
+
+      <View className="flex-[0.15]">
+        <JiggleButton className="flex flex-auto self-center w-1/2 pt-4" onClick={onStartGame}>
+          <StartGameImage></StartGameImage>
+        </JiggleButton>
       </View>
 
       <View className="flex-[0.1]">
-        <OptionsButton
-          className="flex flex-auto w-1/4 m-2 self-end"
-          onClick={onOptions}
-        ></OptionsButton>
+        <JiggleButton className="flex flex-auto w-1/4 m-2 self-end" onClick={onOptions}>
+          <GearImage></GearImage>
+        </JiggleButton>
       </View>
     </View>
   );

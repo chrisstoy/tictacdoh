@@ -1,10 +1,6 @@
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSequence,
-  withTiming,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import { Pressable, PressableProps, View } from 'react-native';
+import { createJiggleAnim } from '@/animations/jiggleAnim';
 import { ComputerImage } from '../../../components/images/ComputerImage';
 import { MeatbagImage } from '../../../components/images/MeatbagImage';
 import { OImage } from '../../../components/images/OImage';
@@ -27,15 +23,7 @@ export function PlayerChoice({ player, isCPU, onClick, ...rest }: Props) {
   });
 
   const handlePress = () => {
-    // Jiggle animation: rotate left, right, left, right, back to center
-    rotation.value = withSequence(
-      withTiming(-5, { duration: 50 }),
-      withTiming(5, { duration: 50 }),
-      withTiming(-5, { duration: 50 }),
-      withTiming(5, { duration: 50 }),
-      withTiming(0, { duration: 50 })
-    );
-    onClick();
+    rotation.value = createJiggleAnim(onClick);
   };
 
   return (

@@ -12,7 +12,7 @@ export default function Index() {
   const gameStore = useGameStore();
   const previousGameStates = usePreviousGameStates();
 
-  const [gameMode, setGameMode] = useState<Mode>('play');
+  const [gameMode, setGameMode] = useState<Mode>('new');
 
   useEffect(() => {
     gameStore.initNewRound();

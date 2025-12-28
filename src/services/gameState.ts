@@ -2,6 +2,10 @@ import { create } from 'zustand';
 import { PlayerId, TileState } from '../types';
 import { Winner, determineWinner } from './game';
 
+export const INFINITE_ROUNDS = -1;
+
+export const AVAILABLE_ROUNDS_IN_MATCH = [3, 5, 7, 9, 11, 13, 15, INFINITE_ROUNDS];
+
 export interface GameState {
   boardState: TileState[];
   turn: PlayerId;
@@ -12,12 +16,14 @@ export interface GameState {
     wins: Record<PlayerId, number>;
     totalRounds: number;
   };
+  roundsInMatch: number;
   autoReplay: boolean;
   enableSound: boolean;
 
   initNewGame(): void;
   initNewRound(): void;
   setIsCPU(player: PlayerId, isCPU: boolean): void;
+
   setBoardState(boardState: TileState[]): void;
   setTurn(turn: PlayerId): void;
   setWinner(winner: Winner | undefined): void;
@@ -25,7 +31,9 @@ export interface GameState {
 
   setTileState(index: number, owner: PlayerId | undefined): void;
   isGameOver(): boolean;
+  isMatchOver(): boolean;
 
+  setRoundsInMatch(roundsInMatch: number): void;
   setAutoReplay(autoReplay: boolean): void;
   setEnableSound(enableSound: boolean): void;
 
@@ -48,6 +56,7 @@ export const useGameStore = create<GameState>()((set) => ({
     },
     totalRounds: 0,
   },
+  roundsInMatch: INFINITE_ROUNDS,
   autoReplay: false,
   enableSound: true,
 
@@ -117,6 +126,10 @@ export const useGameStore = create<GameState>()((set) => ({
     }
   },
 
+  setRoundsInMatch(roundsInMatch: number) {
+    set({ roundsInMatch });
+  },
+
   setAutoReplay(autoReplay: boolean) {
     set({ autoReplay });
   },
@@ -127,6 +140,14 @@ export const useGameStore = create<GameState>()((set) => ({
 
   isGameOver() {
     return !!this.winner || this.isDraw;
+  },
+
+  isMatchOver() {
+    return (
+      this.roundsInMatch !== INFINITE_ROUNDS &&
+      this.isGameOver() &&
+      this.stats.totalRounds === this.roundsInMatch
+    );
   },
 }));
 
