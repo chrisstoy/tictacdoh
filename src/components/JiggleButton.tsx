@@ -2,10 +2,10 @@ import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanima
 import { Pressable, View } from 'react-native';
 import { createJiggleAnim } from '@/animations/jiggleAnim';
 
-interface Props extends React.PropsWithChildren {
-  className?: string;
-  onClick: () => void;
-}
+type Props = React.PropsWithChildren &
+  React.ComponentProps<typeof View> & {
+    onClick: () => void;
+  };
 
 export function JiggleButton({ className, onClick, children, ...rest }: Props) {
   const rotation = useSharedValue(0);

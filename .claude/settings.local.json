@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Skill(commit-message)",
-      "Skill(commit-message:*)"
+      "Skill(commit-message:*)",
+      "Bash(npm test:*)",
+      "Bash(node -e:*)"
     ]
   }
 }

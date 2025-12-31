@@ -1,5 +1,10 @@
 import { Button, Text, View } from 'react-native';
-import { useGameStore } from '@/services/gameState';
+import {
+  selectAutoReplay,
+  selectEnableSound,
+  useOptionsActions,
+  useOptionsStore,
+} from '@/services/optionsState';
 import { Toggle } from './components/Toggle';
 
 interface Props {
@@ -7,7 +12,9 @@ interface Props {
 }
 
 export function OptionsScreen({ onExit }: Props) {
-  const { autoReplay, setAutoReplay, enableSound, setEnableSound } = useGameStore();
+  const { setAutoReplay, setEnableSound } = useOptionsActions();
+  const autoReplay = useOptionsStore(selectAutoReplay);
+  const enableSound = useOptionsStore(selectEnableSound);
 
   return (
     <View className="items-center flex h-full">

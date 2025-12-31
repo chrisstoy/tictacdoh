@@ -4,7 +4,7 @@ import { ChoosePlayersImage } from '@/components/images/ChoosePlayersImage';
 import { GearImage } from '@/components/images/GearImage';
 import { StartGameImage } from '@/components/images/StartGameImage';
 import { TitleImage } from '@/components/images/TitleImage';
-import { useGameStore } from '@/services/gameState';
+import { selectIsPlayerCPU, useMatchActions, useMatchStore } from '@/services/matchState';
 import { PlayerChoice } from './components/PlayerChoice';
 import { RoundsInMatch } from './components/RoundsInMatch';
 
@@ -14,7 +14,9 @@ interface Props {
 }
 
 export function SetupGameScreen({ onStartGame, onOptions }: Props) {
-  const gameStore = useGameStore();
+  const { setPlayerIsCPU, setPlayMode } = useMatchActions();
+  const isPlayerXCPU = useMatchStore(selectIsPlayerCPU('X'));
+  const isPlayerOCPU = useMatchStore(selectIsPlayerCPU('O'));
 
   return (
     <View className="h-max flex-1 flex-col">
@@ -34,17 +36,17 @@ export function SetupGameScreen({ onStartGame, onOptions }: Props) {
             <PlayerChoice
               className="w-1/3 "
               player="X"
-              isCPU={gameStore.isCPU['X']}
+              isCPU={isPlayerXCPU}
               onClick={() => {
-                gameStore.setIsCPU('X', !gameStore.isCPU['X']);
+                setPlayerIsCPU('X', !isPlayerXCPU);
               }}
             />
             <PlayerChoice
               className="w-1/3 "
               player="O"
-              isCPU={gameStore.isCPU['O']}
+              isCPU={isPlayerOCPU}
               onClick={() => {
-                gameStore.setIsCPU('O', !gameStore.isCPU['O']);
+                setPlayerIsCPU('O', !isPlayerOCPU);
               }}
             />
           </View>
@@ -56,7 +58,13 @@ export function SetupGameScreen({ onStartGame, onOptions }: Props) {
       </View>
 
       <View className="flex-[0.15]">
-        <JiggleButton className="flex flex-auto self-center w-1/2 pt-4" onClick={onStartGame}>
+        <JiggleButton
+          className="flex flex-auto self-center w-1/2 pt-4"
+          onClick={() => {
+            setPlayMode('SETUP_MATCH');
+            onStartGame();
+          }}
+        >
           <StartGameImage></StartGameImage>
         </JiggleButton>
       </View>

@@ -1,5 +1,9 @@
 export type PlayerId = 'X' | 'O';
 export type TileState = PlayerId | ' ';
+export interface Winner {
+  player: PlayerId;
+  line: number[];
+}
 
 export interface BoardState {
   board: TileState[]; // the current state of the board
@@ -9,3 +13,8 @@ export interface BoardState {
   victoryLines?: number[]; // if this board is a win, what lines did it win on
   children: BoardState[]; // all possible boards resulting from this move
 }
+
+export type RoundData = {
+  boardState: TileState[];
+  winner: Winner | undefined;
+};

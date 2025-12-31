@@ -1,27 +1,18 @@
 import Animated, { FadeIn, FadeOut, FadingTransition } from 'react-native-reanimated';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import { OptionsScreen } from '@/screens/options/OptionsScreen';
 import { PlayGameScreen } from '@/screens/play/PlayGameScreen';
 import { SetupGameScreen } from '@/screens/setup/SetupGameScreen';
-import { useGameStore, usePreviousGameStates } from '@/services/gameState';
 
-type Mode = 'play' | 'new' | 'options';
+type ActiveMode = 'PLAY' | 'NEW' | 'OPTIONS';
 
 export default function Index() {
-  const gameStore = useGameStore();
-  const previousGameStates = usePreviousGameStates();
-
-  const [gameMode, setGameMode] = useState<Mode>('new');
-
-  useEffect(() => {
-    gameStore.initNewRound();
-  }, []);
+  const [gameMode, setGameMode] = useState<ActiveMode>('NEW');
 
   return (
     <View className="flex-1" testID="index-screen">
-      {/* <DebugGameStore></DebugGameStore> */}
-      {gameMode === 'new' && (
+      {gameMode === 'NEW' && (
         <View className="flex-1">
           <Animated.View
             entering={FadeIn}
@@ -32,26 +23,24 @@ export default function Index() {
           >
             <SetupGameScreen
               onStartGame={() => {
-                gameStore.initNewGame();
-                previousGameStates.clear();
-                setGameMode('play');
+                setGameMode('PLAY');
               }}
-              onOptions={() => setGameMode('options')}
+              onOptions={() => setGameMode('OPTIONS')}
             ></SetupGameScreen>
           </Animated.View>
         </View>
       )}
-      {gameMode === 'options' && (
+      {gameMode === 'OPTIONS' && (
         <Animated.View
           entering={FadeIn}
           exiting={FadeOut}
           layout={FadingTransition.duration(100)}
           style={{ flex: 1 }}
         >
-          <OptionsScreen onExit={() => setGameMode('new')}></OptionsScreen>
+          <OptionsScreen onExit={() => setGameMode('NEW')}></OptionsScreen>
         </Animated.View>
       )}
-      {gameMode === 'play' && (
+      {gameMode === 'PLAY' && (
         <Animated.View
           entering={FadeIn}
           exiting={FadeOut}
@@ -59,12 +48,8 @@ export default function Index() {
           style={{ flex: 1 }}
         >
           <PlayGameScreen
-            onSetupGame={() => {
-              setGameMode('new');
-            }}
-            onReplayGame={() => {
-              gameStore.initNewRound();
-              previousGameStates.clear();
+            onExitGame={() => {
+              setGameMode('NEW');
             }}
           ></PlayGameScreen>
         </Animated.View>

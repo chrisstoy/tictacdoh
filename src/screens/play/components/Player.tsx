@@ -1,31 +1,25 @@
-import { useMemo } from 'react';
 import { Text, View } from 'react-native';
 import { ComputerImage } from '@/components/images/ComputerImage';
 import { MeatbagImage } from '@/components/images/MeatbagImage';
 import { OImage } from '@/components/images/OImage';
 import { XImage } from '@/components/images/XImage';
-import { useGameStore } from '@/services/gameState';
+import { selectIsPlayerCPU, selectRoundsWonByPlayer, useMatchStore } from '@/services/matchState';
+import { selectIsPlayerTurn, useRoundStore } from '@/services/roundState';
 import { PlayerId } from '@/types';
 
-interface Props {
+interface Props extends React.ComponentProps<typeof View> {
   player: PlayerId;
-  className?: string;
 }
 
-export function Player({ player, className }: Props) {
-  const { isCPU, winner, turn, stats } = useGameStore();
-
-  const isPlayersTurn = useMemo(
-    () => winner === undefined && turn === player,
-    [winner, turn, player]
-  );
-
-  const isClanker = useMemo(() => isCPU[player], [isCPU, player]);
-  const wins = useMemo(() => stats.wins[player], [stats, player]);
+export function Player({ player, className, ...rest }: Props) {
+  const isClanker = useMatchStore(selectIsPlayerCPU(player));
+  const wins = useMatchStore(selectRoundsWonByPlayer(player));
+  const isPlayersTurn = useRoundStore(selectIsPlayerTurn(player));
 
   return (
     <View
       className={`${className} p-2 ${isPlayersTurn ? 'bg-orange-500 border-outline-500 border-solid border-2 rounded-xl' : ''}`}
+      {...rest}
     >
       {isClanker ? (
         <View className="flex-1">

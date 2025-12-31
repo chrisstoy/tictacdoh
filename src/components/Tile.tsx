@@ -4,16 +4,24 @@ import { TileState } from '../types';
 import { OImage } from './images/OImage';
 import { XImage } from './images/XImage';
 
-interface Props {
+interface Props extends React.ComponentProps<typeof View> {
   index: number;
   state: TileState;
   allowMove: boolean;
   isOnWinningLine: boolean;
+
   onClick?: () => void;
-  className?: string;
 }
 
-export function Tile({ index, state, allowMove, isOnWinningLine, className, onClick }: Props) {
+export function Tile({
+  index,
+  state,
+  allowMove,
+  isOnWinningLine,
+  className,
+  onClick,
+  ...rest
+}: Props) {
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -38,7 +46,10 @@ export function Tile({ index, state, allowMove, isOnWinningLine, className, onCl
   }, [isOnWinningLine, pulseAnim]);
 
   return (
-    <View className={`text-white flex flex-auto items-center justify-center p-[10%] ${className}`}>
+    <View
+      className={`${className} text-white flex flex-auto items-center justify-center p-[10%]`}
+      {...rest}
+    >
       <Pressable className="flex flex-1 w-full" onPress={() => onClick?.()}>
         {isOnWinningLine ? (
           <Animated.View style={{ flexBasis: '100%', transform: [{ scale: pulseAnim }] }}>
