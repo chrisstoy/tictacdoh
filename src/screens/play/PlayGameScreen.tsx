@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Button, View } from 'react-native';
+import { View } from 'react-native';
+import { PushButton } from '@/components/PushButton';
+import { NewMatchImage } from '@/components/images/NewMatchImage';
+import { NextRoundImage } from '@/components/images/NextRoundImage';
+import { QuitGameImage } from '@/components/images/QuitGameImage';
 import { GameBoard } from '@/screens/play/components/GameBoard';
 import { pickNextMoveOnBoardForPlayer } from '@/services/game';
 import {
@@ -178,23 +182,33 @@ export function PlayGameScreen({ onExitGame }: Props) {
 
       <View className="flex-auto"></View>
 
-      <View className="debug-green flex-none m-2">
+      <View className="flex-none m-2">
         <View className="flex flex-row justify-center gap-16">
           {playMode === 'ROUND_OVER' && (
             <>
-              <Button title="Next Round" onPress={() => setPlayMode('SETUP_ROUND')} />
-              <Button title="Quit Game" onPress={onExitGame} />
+              <PushButton className="h-16 w-1/3" onPress={() => setPlayMode('SETUP_ROUND')}>
+                <NextRoundImage></NextRoundImage>
+              </PushButton>
+              <PushButton className="h-16 w-1/3" onPress={onExitGame}>
+                <QuitGameImage></QuitGameImage>
+              </PushButton>
             </>
           )}
           {playMode === 'MATCH_OVER' && (
             <>
-              <Button title="New Match" onPress={() => setPlayMode('SETUP_MATCH')} />
-              <Button title="Quit Game" onPress={onExitGame} />
+              <PushButton className="h-16 w-1/3" onPress={() => setPlayMode('SETUP_MATCH')}>
+                <NewMatchImage></NewMatchImage>
+              </PushButton>
+              <PushButton className="h-16 w-1/3" onPress={onExitGame}>
+                <QuitGameImage></QuitGameImage>
+              </PushButton>
             </>
           )}
           {playMode === 'PLAYING' && (
             <>
-              <Button title="Quit Game" onPress={onExitGame} />
+              <PushButton className="h-16 w-1/3" onPress={onExitGame}>
+                <QuitGameImage></QuitGameImage>
+              </PushButton>
             </>
           )}
         </View>

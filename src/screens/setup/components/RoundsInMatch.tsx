@@ -38,7 +38,7 @@ export function RoundsInMatch() {
   return (
     <View className="flex flex-row items-center justify-center ">
       <View className="flex flex-row flex-1 max-w-96">
-        <JiggleButton className="flex flex-auto" onClick={handleDecrease}>
+        <JiggleButton className="flex flex-auto" onPress={handleDecrease}>
           <MinusImage></MinusImage>
         </JiggleButton>
         <Text className="text-white outline text-2xl">Rounds in Match: </Text>
@@ -47,7 +47,7 @@ export function RoundsInMatch() {
         ) : (
           <Text className="text-white outline text-2xl">{roundsInMatch}</Text>
         )}
-        <JiggleButton className="flex flex-auto" onClick={handleIncrease}>
+        <JiggleButton className="flex flex-auto" onPress={handleIncrease}>
           <PlusImage></PlusImage>
         </JiggleButton>
       </View>

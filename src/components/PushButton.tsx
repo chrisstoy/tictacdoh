@@ -1,24 +1,24 @@
 import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import { Pressable, View } from 'react-native';
-import { createJiggleAnim } from '@/animations/jiggleAnim';
+import { createPushAnim } from '@/animations/pushAnim';
 
 type Props = React.PropsWithChildren &
   React.ComponentProps<typeof View> & {
     onPress: () => void;
   };
 
-export function JiggleButton({ className, onPress, children, ...rest }: Props) {
-  const rotation = useSharedValue(0);
+export function PushButton({ className, onPress, children, ...rest }: Props) {
+  const scale = useSharedValue(1);
 
   const animatedStyle = useAnimatedStyle(() => {
     return {
-      transform: [{ rotate: `${rotation.value}deg` }],
+      transform: [{ scale: scale.value }],
       flex: 1,
     };
   });
 
   const handlePress = () => {
-    rotation.value = createJiggleAnim(onPress);
+    scale.value = createPushAnim(onPress);
   };
 
   return (
