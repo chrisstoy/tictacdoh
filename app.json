@@ -1,6 +1,7 @@
 {
   "expo": {
     "scheme": "acme",
+    "jsEngine": "hermes",
     "plugins": [
       "expo-router",
       [

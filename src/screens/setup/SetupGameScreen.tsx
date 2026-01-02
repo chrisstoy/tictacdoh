@@ -34,7 +34,7 @@ export function SetupGameScreen({ onStartGame, onOptions }: Props) {
         <View className="flex flex-row flex-auto">
           <View className="h-full flex-1 flex-row justify-evenly">
             <PlayerChoice
-              className="w-1/3 "
+              className="w-1/3"
               player="X"
               isCPU={isPlayerXCPU}
               onClick={() => {
