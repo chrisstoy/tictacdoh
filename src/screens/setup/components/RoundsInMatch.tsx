@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 import { JiggleButton } from '@/components/JiggleButton';
+import { OutlineText } from '@/components/OutlineText';
 import { MinusImage } from '@/components/images/MinusImage';
 import { PlusImage } from '@/components/images/PlusImage';
 import {
@@ -41,11 +42,11 @@ export function RoundsInMatch() {
         <JiggleButton className="flex flex-auto" onPress={handleDecrease}>
           <MinusImage></MinusImage>
         </JiggleButton>
-        <Text className="text-white outline text-2xl">Rounds in Match: </Text>
+        <OutlineText className="text-white outline text-2xl">Rounds in Match: </OutlineText>
         {roundsInMatch === INFINITE_ROUNDS ? (
-          <Text className="text-white outline text-2xl">∞</Text>
+          <OutlineText className="text-white outline text-2xl">∞</OutlineText>
         ) : (
-          <Text className="text-white outline text-2xl">{roundsInMatch}</Text>
+          <OutlineText className="text-white outline text-2xl">{roundsInMatch}</OutlineText>
         )}
         <JiggleButton className="flex flex-auto" onPress={handleIncrease}>
           <PlusImage></PlusImage>

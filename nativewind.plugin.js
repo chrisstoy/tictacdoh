@@ -2,8 +2,8 @@
 module.exports = function ({ addUtilities }) {
   addUtilities({
     '.outline': {
-      textShadow: '#2b262c 1px 1px 3px',
-      // textShadow: '#632f16 1px 1px 3px',
+      textShadow:
+        '-1px -1px 0 #2b262c, 1px -1px 0 #2b262c, -1px 1px 0 #2b262c, 1px 1px 0 #2b262c, -1px 0 0 #2b262c, 1px 0 0 #2b262c, 0 -1px 0 #2b262c, 0 1px 0 #2b262c',
       outlineStyle: 'none',
     },
 

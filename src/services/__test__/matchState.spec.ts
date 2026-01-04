@@ -3,11 +3,11 @@ import {
   INFINITE_ROUNDS,
   selectIsMatchOver,
   selectIsPlayerCPU,
+  selectMatchWinner,
   selectNumberOfRoundsPlayed,
   selectRounds,
   selectRoundsInMatch,
   selectRoundsWonByPlayer,
-  selectWinner,
   useMatchStore,
 } from '../matchState';
 
@@ -62,21 +62,21 @@ describe('matchState', () => {
       });
     });
 
-    describe('selectWinner', () => {
+    describe('selectMatchWinner', () => {
       it('should return the match winner', () => {
         const state = useMatchStore.getState();
-        expect(selectWinner(state)).toBeUndefined();
+        expect(selectMatchWinner(state)).toBeUndefined();
 
         useMatchStore.setState({ winner: 'X' });
         const newState = useMatchStore.getState();
-        expect(selectWinner(newState)).toBe('X');
+        expect(selectMatchWinner(newState)).toBe('X');
       });
     });
 
     describe('selectCurrentRound', () => {
       it('should return 1 when no rounds have been played', () => {
         const state = useMatchStore.getState();
-        expect(selectNumberOfRoundsPlayed(state)).toBe(1);
+        expect(selectNumberOfRoundsPlayed(state)).toBe(0);
       });
 
       it('should return the correct round number based on completed rounds', () => {
@@ -84,13 +84,13 @@ describe('matchState', () => {
           boardState: ['X', 'X', 'X', ' ', 'O', ' ', 'O', ' ', 'O'],
           winner: { player: 'X', line: [0, 1, 2] },
         });
-        expect(selectNumberOfRoundsPlayed(useMatchStore.getState())).toBe(2);
+        expect(selectNumberOfRoundsPlayed(useMatchStore.getState())).toBe(1);
 
         useMatchStore.getState().recordRound({
           boardState: ['O', 'O', 'O', ' ', 'X', ' ', 'X', ' ', 'X'],
           winner: { player: 'O', line: [0, 1, 2] },
         });
-        expect(selectNumberOfRoundsPlayed(useMatchStore.getState())).toBe(3);
+        expect(selectNumberOfRoundsPlayed(useMatchStore.getState())).toBe(2);
       });
     });
 

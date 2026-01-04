@@ -1,6 +1,21 @@
 import { BoardState, PlayerId, TileState, Winner } from '../types';
 
 export function determineWinner(boardState: TileState[]): Winner | undefined {
+  const { X, O } = boardState.reduce(
+    (acc, tileState) => {
+      if (tileState === 'X') {
+        acc.X += 1;
+      } else if (tileState === 'O') {
+        acc.O += 1;
+      }
+      return acc;
+    },
+    { X: 0, O: 0 }
+  );
+  if (X < 3 && O < 3) {
+    return undefined;
+  }
+
   const lines = [
     [0, 1, 2],
     [3, 4, 5],
@@ -87,6 +102,13 @@ export function pickMove(board: BoardState): number | undefined {
   if (board.victoryState !== 'none') {
     return undefined;
   }
+
+  // if no moves yet, just pick a random tile
+  const exisingMove = board.board.find((tile) => tile !== ' ');
+  if (!exisingMove) {
+    return pickRandomEmptyTile(board.board);
+  }
+
   const solvedBoard = solveBoard({ ...board }, board.player, board.player);
 
   // pick any board that is an immediate win

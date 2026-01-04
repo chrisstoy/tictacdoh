@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
+import { DebugViewData } from '@/components/DebugViewData';
 import { PushButton } from '@/components/PushButton';
 import { NewMatchImage } from '@/components/images/NewMatchImage';
 import { NextRoundImage } from '@/components/images/NextRoundImage';
@@ -59,6 +60,7 @@ export function PlayGameScreen({ onExitGame }: Props) {
 
   const [aiMoving, setAIMoving] = useState(false);
   const [isDelaying, setIsDelaying] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const isPlayerCPU = useCallback(
     (player: PlayerId) => (player === 'X' ? isPlayerXCPU : isPlayerOCPU),
@@ -77,82 +79,87 @@ export function PlayGameScreen({ onExitGame }: Props) {
   );
 
   useEffect(() => {
-    switch (playMode) {
-      case 'SETUP_MATCH':
-        initNewMatch();
-        setPlayMode('SETUP_ROUND');
-        break;
+    if (playMode === 'SETUP_MATCH') {
+      initNewMatch();
+      initNewRound();
+      setPlayMode('PLAYING');
+      return;
+    }
 
-      case 'SETUP_ROUND':
-        if (isMatchOver) {
-          setPlayMode('MATCH_OVER');
-          return;
-        }
+    if (playMode === 'SETUP_ROUND') {
+      if (isMatchOver) {
+        setPlayMode('MATCH_OVER');
+        return;
+      }
 
-        initNewRound();
-        setPlayMode('PLAYING');
-        break;
+      initNewRound();
+      setPlayMode('PLAYING');
+      return;
+    }
 
-      case 'PLAYING':
-        if (isGameOver) {
-          recordRound({
-            boardState,
-            winner: roundWinner,
-          });
-          setPlayMode('ROUND_OVER');
-          return;
-        }
+    if (playMode === 'PLAYING') {
+      if (isGameOver) {
+        recordRound({
+          boardState,
+          winner: roundWinner,
+        });
+        setPlayMode('ROUND_OVER');
+        return;
+      }
 
-        if (isPlayerCPU(currentTurn) && !aiMoving) {
-          setAIMoving(true);
-          setTimeout(() => {
+      if (isPlayerCPU(currentTurn) && !aiMoving) {
+        setAIMoving(true);
+        // Use requestAnimationFrame for better reliability on iOS
+        requestAnimationFrame(() => {
+          timeoutRef.current = setTimeout(() => {
             const pickedTile = pickNextMoveOnBoardForPlayer(boardState, currentTurn);
             applyMove(pickedTile, currentTurn);
             setAIMoving(false);
           }, CPU_MOVE_DELAY_MS);
-        }
-        break;
+        });
+      }
+      return;
+    }
 
-      case 'ROUND_OVER':
-        if (autoReplay && !isDelaying) {
-          setIsDelaying(true);
-          setTimeout(() => {
+    if (playMode === 'ROUND_OVER') {
+      if (autoReplay && !isDelaying) {
+        setIsDelaying(true);
+        requestAnimationFrame(() => {
+          timeoutRef.current = setTimeout(() => {
             setIsDelaying(false);
             setPlayMode('SETUP_ROUND');
           }, AUTOPLAY_ROUND_DELAY_MS);
-        }
-        break;
+        });
+      }
+      return;
+    }
 
-      case 'MATCH_OVER':
-        if (autoReplay && !isDelaying) {
-          setIsDelaying(true);
-          setTimeout(() => {
+    if (playMode === 'MATCH_OVER') {
+      if (autoReplay && !isDelaying) {
+        setIsDelaying(true);
+        requestAnimationFrame(() => {
+          timeoutRef.current = setTimeout(() => {
             setIsDelaying(false);
             setPlayMode('SETUP_MATCH');
           }, AUTOPLAY_MATCH_DELAY_MS);
-        }
-        break;
+        });
+      }
     }
-  }, [
-    aiMoving,
-    autoReplay,
-    currentTurn,
-    initNewMatch,
-    initNewRound,
-    isDelaying,
-    isMatchOver,
-    isPlayerCPU,
-    playMode,
-    isGameOver,
-    setPlayMode,
-    boardState,
-    applyMove,
-    recordRound,
-    roundWinner,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playMode, isGameOver, isMatchOver, currentTurn, aiMoving, autoReplay, isDelaying]);
+
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <View className="h-max flex-1 flex-col">
+      <DebugViewData data={{ playMode, isDelaying, isGameOver, isMatchOver }}></DebugViewData>
       <View className="h-1/5 flex-none m-2">
         <View className="h-full">
           <Scoreboard currentRound={roundsPlayed + 1} roundsInMatch={roundsInMatch}></Scoreboard>

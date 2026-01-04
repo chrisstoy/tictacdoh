@@ -1,8 +1,9 @@
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 import { ComputerImage } from '@/components/images/ComputerImage';
 import { MeatbagImage } from '@/components/images/MeatbagImage';
 import { OImage } from '@/components/images/OImage';
 import { XImage } from '@/components/images/XImage';
+import { OutlineText } from '@/components/OutlineText';
 import { selectIsPlayerCPU, selectRoundsWonByPlayer, useMatchStore } from '@/services/matchState';
 import { selectIsPlayerTurn, useRoundStore } from '@/services/roundState';
 import { PlayerId } from '@/types';
@@ -36,7 +37,9 @@ export function Player({ player, className, ...rest }: Props) {
       </View>
 
       <View className="flex-[1] items-center justify-center">
-        <Text className="outline text-white">{`Wins: ${wins}`}</Text>
+        <OutlineText className="text-white" outlineColor="#2b262c" outlineWidth={1}>
+          {`Wins: ${wins}`}
+        </OutlineText>
       </View>
     </View>
   );
