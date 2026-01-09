@@ -1,10 +1,12 @@
 // nativewind.plugin.js
 module.exports = function ({ addUtilities }) {
   addUtilities({
-    '.outline': {
-      textShadow:
-        '-1px -1px 0 #2b262c, 1px -1px 0 #2b262c, -1px 1px 0 #2b262c, 1px 1px 0 #2b262c, -1px 0 0 #2b262c, 1px 0 0 #2b262c, 0 -1px 0 #2b262c, 0 1px 0 #2b262c',
-      outlineStyle: 'none',
+    '.text-background': {
+      backgroundColor: '#e28731',
+      borderColor: '#632f16',
+      borderStyle: 'solid',
+      borderWidth: 2,
+      borderRadius: '.75rem',
     },
 
     '.debug-red': {

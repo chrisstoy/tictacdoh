@@ -1,4 +1,5 @@
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { TextWithBackground } from '@/components/TextWithBackground';
 import { Player } from './Player';
 
 interface Props {
@@ -10,9 +11,9 @@ export function Scoreboard({ currentRound, roundsInMatch }: Props) {
   return (
     <View className="flex-1 flex justify-center">
       <View className="h-1/4 flex items-center my-4">
-        <Text className="outline text-white text-2xl">
+        <TextWithBackground className="text-white text-2xl px-4">
           Round: {currentRound} / {roundsInMatch === -1 ? '∞' : roundsInMatch}
-        </Text>
+        </TextWithBackground>
       </View>
 
       <View className="flex flex-row flex-auto">

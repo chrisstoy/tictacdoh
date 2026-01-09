@@ -54,7 +54,7 @@ export function SetupGameScreen({ onStartGame, onOptions }: Props) {
       </View>
 
       <View className="flex-[0.05]">
-        <RoundsInMatch></RoundsInMatch>
+        <RoundsInMatch className="flex flex-1 items-center"></RoundsInMatch>
       </View>
 
       <View className="flex-[0.15]">

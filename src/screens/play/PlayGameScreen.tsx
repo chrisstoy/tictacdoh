@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
-import { DebugViewData } from '@/components/DebugViewData';
 import { PushButton } from '@/components/PushButton';
 import { NewMatchImage } from '@/components/images/NewMatchImage';
 import { NextRoundImage } from '@/components/images/NextRoundImage';
@@ -159,7 +158,6 @@ export function PlayGameScreen({ onExitGame }: Props) {
 
   return (
     <View className="h-max flex-1 flex-col">
-      <DebugViewData data={{ playMode, isDelaying, isGameOver, isMatchOver }}></DebugViewData>
       <View className="h-1/5 flex-none m-2">
         <View className="h-full">
           <Scoreboard currentRound={roundsPlayed + 1} roundsInMatch={roundsInMatch}></Scoreboard>

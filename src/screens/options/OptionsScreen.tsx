@@ -8,7 +8,7 @@ import {
   useOptionsActions,
   useOptionsStore,
 } from '@/services/optionsState';
-import { Toggle } from './components/Toggle';
+import { Toggle } from '../../components/Toggle';
 
 interface Props {
   onExit: () => void;

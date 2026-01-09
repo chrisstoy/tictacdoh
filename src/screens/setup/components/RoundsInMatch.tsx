@@ -1,7 +1,7 @@
-import { useCallback, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { View } from 'react-native';
 import { JiggleButton } from '@/components/JiggleButton';
-import { OutlineText } from '@/components/OutlineText';
+import { TextWithBackground } from '@/components/TextWithBackground';
 import { MinusImage } from '@/components/images/MinusImage';
 import { PlusImage } from '@/components/images/PlusImage';
 import {
@@ -12,7 +12,9 @@ import {
   useMatchStore,
 } from '@/services/matchState';
 
-export function RoundsInMatch() {
+type Props = React.ComponentProps<typeof View>;
+
+export function RoundsInMatch({ ...rest }: Props) {
   const { setRoundsInMatch } = useMatchActions();
   const roundsInMatch = useMatchStore(selectRoundsInMatch);
 
@@ -37,18 +39,13 @@ export function RoundsInMatch() {
   }, [selectedIndex, setRoundsInMatch]);
 
   return (
-    <View className="flex flex-row items-center justify-center ">
-      <View className="flex flex-row flex-1 max-w-96">
-        <JiggleButton className="flex flex-auto" onPress={handleDecrease}>
+    <View {...rest}>
+      <View className="flex flex-row w-full h-full max-w-96">
+        <JiggleButton className="flex flex-none w-16" onPress={handleDecrease}>
           <MinusImage></MinusImage>
         </JiggleButton>
-        <OutlineText className="text-white outline text-2xl">Rounds in Match: </OutlineText>
-        {roundsInMatch === INFINITE_ROUNDS ? (
-          <OutlineText className="text-white outline text-2xl">∞</OutlineText>
-        ) : (
-          <OutlineText className="text-white outline text-2xl">{roundsInMatch}</OutlineText>
-        )}
-        <JiggleButton className="flex flex-auto" onPress={handleIncrease}>
+        <TextWithBackground className="text-white text-2xl">{`Rounds in Match: ${roundsInMatch === INFINITE_ROUNDS ? '∞' : roundsInMatch}`}</TextWithBackground>
+        <JiggleButton className="flex flex-none w-16" onPress={handleIncrease}>
           <PlusImage></PlusImage>
         </JiggleButton>
       </View>

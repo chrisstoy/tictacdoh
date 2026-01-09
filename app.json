@@ -3,16 +3,17 @@
     "scheme": "acme",
     "jsEngine": "hermes",
     "plugins": [
-      "expo-router",
       [
         "expo-splash-screen",
         {
           "image": "./assets/splash-screen.png",
           "imageWidth": 200,
+          "duration": 1000,
+          "fade": true,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff",
+          "backgroundColor": "#fdde97",
           "dark": {
-            "backgroundColor": "#000000"
+            "backgroundColor": "#fdde97"
           }
         }
       ]
