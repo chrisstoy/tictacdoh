@@ -80,15 +80,24 @@ export const useMatchStore = create<MatchState & MatchActions>()(
           const newRounds = [...state.rounds, round];
           const roundsNeededToWin = Math.ceil(state.roundsInMatch / 2);
 
+          if (state.roundsInMatch === INFINITE_ROUNDS) {
+            return {
+              rounds: newRounds,
+              winner: undefined,
+            };
+          }
+
+          const xWins = countRoundsWonBy(newRounds, 'X');
+          const oWins = countRoundsWonBy(newRounds, 'O');
+
           // Calculate if match is over and who won
-          const matchWinner: PlayerId | undefined =
-            state.roundsInMatch === INFINITE_ROUNDS
-              ? undefined
-              : countRoundsWonBy(newRounds, 'X') >= roundsNeededToWin
-                ? 'X'
-                : countRoundsWonBy(newRounds, 'O') >= roundsNeededToWin
-                  ? 'O'
-                  : undefined;
+          let matchWinner: PlayerId | undefined =
+            xWins >= roundsNeededToWin ? 'X' : oWins >= roundsNeededToWin ? 'O' : undefined;
+
+          if (matchWinner === undefined && newRounds.length >= state.roundsInMatch) {
+            // no outright winner, so winner is whoever has more round wins
+            matchWinner = xWins > oWins ? 'X' : oWins > xWins ? 'O' : undefined;
+          }
 
           return {
             rounds: newRounds,

@@ -425,6 +425,44 @@ describe('matchState', () => {
 
         expect(useMatchStore.getState().winner).toBe('O');
       });
+
+      it('should declare player with most wins as winner when all rounds are played without reaching majority', () => {
+        useMatchStore.getState().setRoundsInMatch(5);
+
+        // X wins 2 rounds
+        useMatchStore.getState().recordRound({
+          boardState: ['X', 'X', 'X', ' ', 'O', ' ', 'O', ' ', 'O'],
+          winner: { player: 'X', line: [0, 1, 2] },
+        });
+        useMatchStore.getState().recordRound({
+          boardState: ['X', 'X', 'X', 'O', 'O', ' ', ' ', ' ', ' '],
+          winner: { player: 'X', line: [0, 1, 2] },
+        });
+
+        // O wins 1 round
+        useMatchStore.getState().recordRound({
+          boardState: ['O', 'O', 'O', ' ', 'X', ' ', 'X', ' ', 'X'],
+          winner: { player: 'O', line: [0, 1, 2] },
+        });
+
+        // Two draws
+        useMatchStore.getState().recordRound({
+          boardState: ['X', 'O', 'X', 'O', 'X', 'O', 'O', 'X', 'X'],
+          winner: undefined, // draw
+        });
+        expect(useMatchStore.getState().winner).toBeUndefined();
+
+        useMatchStore.getState().recordRound({
+          boardState: ['X', 'O', 'X', 'O', 'X', 'O', 'O', 'X', 'X'],
+          winner: undefined, // draw
+        });
+
+        // After all 5 rounds, X has 2 wins, O has 1 win, 2 draws
+        // X should be declared the winner
+        const state = useMatchStore.getState();
+        expect(state.rounds.length).toBe(5);
+        expect(state.winner).toBe('X');
+      });
     });
 
     describe('setPlayerIsCPU', () => {
