@@ -24,7 +24,7 @@ export function JiggleButton({ className, onPress, children, ...rest }: Props) {
   return (
     <Pressable className={className} onPress={handlePress} {...rest}>
       <Animated.View style={animatedStyle}>
-        <View className="flex-auto">{children}</View>
+        <View className="flex-1">{children}</View>
       </Animated.View>
     </Pressable>
   );

@@ -8,7 +8,7 @@ import './globals.css';
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const [loaded, error] = useFonts({
     // TODO - add fonts here
-    // Oravetica: require('@/assets/fonts/Oravetica Font/OraveticaNormal-ap5g.ttf'),
+    Komigo: require('@/assets/fonts/komigo-font/Komigo3DRegular-rg1lK.ttf'),
   });
 
   useEffect(() => {

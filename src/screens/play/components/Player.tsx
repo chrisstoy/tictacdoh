@@ -37,7 +37,7 @@ export function Player({ player, className, ...rest }: Props) {
 
       <View className="flex-[1] items-center justify-center">
         {/* <TextWithBackground className="text-white text-xs px-">{`Wins: ${wins}`}</TextWithBackground> */}
-        <Text className="text-white text-xs text-background px-2">{`Wins: ${wins}`}</Text>
+        <Text className="text-xs color-white text-background px-2">{`Wins: ${wins}`}</Text>
       </View>
     </View>
   );

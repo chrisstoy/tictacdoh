@@ -15,7 +15,7 @@ export function Toggle({ label, value, className, onToggle, ...rest }: Props) {
       className={`${className} flex flex-row justify-between items-center p-2 text-background`}
       {...rest}
     >
-      <Text className="flex-1 text-white text-2xl">{label}</Text>
+      <Text className="flex-1 ui-text text-2xl">{label}</Text>
       <PushButton className="flex-none h-8 w-8" onPress={() => onToggle(!value)}>
         {value ? <CheckedCheckboxImage></CheckedCheckboxImage> : <CheckboxImage></CheckboxImage>}
       </PushButton>

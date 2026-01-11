@@ -15,19 +15,19 @@ export function EndOfMatch({ winner }: Props) {
     <View
       className="
     bg-orange-500 border-outline-500 border-solid border-2 rounded-xl
-      flex-auto flox-col flex items-center w-full h-full "
+      flex-1 flox-col flex items-center w-full h-full "
     >
-      <View className="h-full w-full flex-auto flex flex-row">
+      <View className="h-full w-full flex-1 flex flex-row">
         <MatchOverImage></MatchOverImage>
       </View>
 
       {winner === undefined ? (
-        <View className="h-full w-full flex-auto flex flex-row">
+        <View className="h-full w-full flex-1 flex flex-row">
           <DrawImage></DrawImage>
         </View>
       ) : (
-        <View className="h-full flex-auto flex flex-row">
-          <View className="flex-auto"></View>
+        <View className="h-full flex-1 flex flex-row">
+          <View className="flex-1"></View>
           <View className="flex-none w-12 m-4">
             {winner === 'X' && <XImage></XImage>}
             {winner === 'O' && <OImage></OImage>}
@@ -35,7 +35,7 @@ export function EndOfMatch({ winner }: Props) {
           <View className="flex-none w-44">
             <WinsImage></WinsImage>
           </View>
-          <View className="flex-auto"></View>
+          <View className="flex-1"></View>
         </View>
       )}
     </View>

@@ -44,7 +44,7 @@ export function RoundsInMatch({ ...rest }: Props) {
         <JiggleButton className="flex flex-none w-16" onPress={handleDecrease}>
           <MinusImage></MinusImage>
         </JiggleButton>
-        <TextWithBackground className="text-white text-2xl">{`Rounds in Match: ${roundsInMatch === INFINITE_ROUNDS ? '∞' : roundsInMatch}`}</TextWithBackground>
+        <TextWithBackground className="text-outline-800 text-2xl">{`Rounds in Match: ${roundsInMatch === INFINITE_ROUNDS ? '∞' : roundsInMatch}`}</TextWithBackground>
         <JiggleButton className="flex flex-none w-16" onPress={handleIncrease}>
           <PlusImage></PlusImage>
         </JiggleButton>

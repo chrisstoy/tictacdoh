@@ -185,7 +185,7 @@ export function PlayGameScreen({ onExitGame }: Props) {
         ></GameBoard>
       </View>
 
-      <View className="flex-auto"></View>
+      <View className="flex-1"></View>
 
       <View className="flex-none m-2">
         <View className="flex flex-row justify-center gap-16">

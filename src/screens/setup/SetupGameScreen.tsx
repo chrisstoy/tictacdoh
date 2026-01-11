@@ -31,7 +31,7 @@ export function SetupGameScreen({ onStartGame, onOptions }: Props) {
           <ChoosePlayersImage></ChoosePlayersImage>
         </View>
 
-        <View className="flex flex-row flex-auto">
+        <View className="flex flex-row flex-1">
           <View className="h-full flex-1 flex-row justify-evenly">
             <PlayerChoice
               className="w-1/3"
@@ -59,7 +59,7 @@ export function SetupGameScreen({ onStartGame, onOptions }: Props) {
 
       <View className="flex-[0.15]">
         <JiggleButton
-          className="flex flex-auto self-center w-1/2 pt-4"
+          className="flex flex-1 self-center w-1/2 pt-4"
           onPress={() => {
             setPlayMode('SETUP_MATCH');
             onStartGame();
@@ -70,7 +70,7 @@ export function SetupGameScreen({ onStartGame, onOptions }: Props) {
       </View>
 
       <View className="flex-[0.1]">
-        <JiggleButton className="flex flex-auto w-1/4 m-2 self-end" onPress={onOptions}>
+        <JiggleButton className="flex flex-1 w-1/4 m-2 self-end" onPress={onOptions}>
           <GearImage></GearImage>
         </JiggleButton>
       </View>

@@ -42,7 +42,7 @@ export function OptionsScreen({ onExit }: Props) {
           }}
         />
 
-        <View className="flex-auto"></View>
+        <View className="flex-1"></View>
         <View className="flex-none mb-4">
           <PushButton className="self-center w-1/2 h-16" onPress={onExit}>
             <ReturnImage></ReturnImage>

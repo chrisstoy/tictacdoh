@@ -46,13 +46,15 @@ export function Tile({
   }, [isOnWinningLine, pulseAnim]);
 
   return (
-    <View
-      className={`${className} text-white flex flex-auto items-center justify-center p-[5%]`}
-      {...rest}
-    >
-      <Pressable className="flex flex-1 w-full items-center justify-center" onPress={() => onClick?.()}>
+    <View className={`${className} text-white flex items-center justify-center p-[5%]`} {...rest}>
+      <Pressable
+        className="flex flex-1 w-full items-center justify-center"
+        onPress={() => onClick?.()}
+      >
         {isOnWinningLine && (
-          <Animated.View style={{ width: '100%', height: '100%', transform: [{ scale: pulseAnim }] }}>
+          <Animated.View
+            style={{ width: '100%', height: '100%', transform: [{ scale: pulseAnim }] }}
+          >
             {state === 'X' && <XImage></XImage>}
             {state === 'O' && <OImage></OImage>}
           </Animated.View>

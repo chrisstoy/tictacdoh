@@ -9,6 +9,11 @@ module.exports = function ({ addUtilities }) {
       borderRadius: '.75rem',
     },
 
+    '.ui-text': {
+      fontFamily: 'Komigo',
+      color: '#2b262c',
+    },
+
     '.debug-red': {
       borderWidth: 1,
       borderStyle: 'solid',
