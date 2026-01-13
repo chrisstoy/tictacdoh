@@ -1,14 +1,28 @@
 import Animated, { FadeIn, FadeOut, FadingTransition } from 'react-native-reanimated';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { OptionsScreen } from '@/screens/options/OptionsScreen';
 import { PlayGameScreen } from '@/screens/play/PlayGameScreen';
 import { SetupGameScreen } from '@/screens/setup/SetupGameScreen';
+import { useAudioService } from '@/services/audioService';
 
 type ActiveMode = 'PLAY' | 'NEW' | 'OPTIONS';
 
 export default function Index() {
+  const { playMusic, stopMusic } = useAudioService();
   const [gameMode, setGameMode] = useState<ActiveMode>('NEW');
+
+  useEffect(() => {
+    if (gameMode === 'NEW' || gameMode === 'OPTIONS') {
+      playMusic('setup');
+    } else {
+      stopMusic();
+    }
+
+    return () => {
+      stopMusic();
+    };
+  }, [gameMode, playMusic, stopMusic]);
 
   return (
     <View className="flex-1" testID="index-screen">

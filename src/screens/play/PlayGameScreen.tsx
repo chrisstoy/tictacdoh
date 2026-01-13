@@ -5,6 +5,7 @@ import { NewMatchImage } from '@/components/images/NewMatchImage';
 import { NextRoundImage } from '@/components/images/NextRoundImage';
 import { QuitGameImage } from '@/components/images/QuitGameImage';
 import { GameBoard } from '@/screens/play/components/GameBoard';
+import { useAudioService } from '@/services/audioService';
 import { pickNextMoveOnBoardForPlayer } from '@/services/game';
 import {
   selectIsMatchOver,
@@ -30,7 +31,7 @@ import { EndOfGame } from './components/EndOfGame';
 import { EndOfMatch } from './components/EndOfMatch';
 import { Scoreboard } from './components/Scoreboard';
 
-const CPU_MOVE_DELAY_MS = 200; // how long to delay CPU moves
+const CPU_MOVE_DELAY_MS = 500; // how long to delay CPU moves
 const AUTOPLAY_ROUND_DELAY_MS = 1000; // how long to delay between rounds
 const AUTOPLAY_MATCH_DELAY_MS = 2000; // how long to delay between matches
 
@@ -39,6 +40,8 @@ interface Props {
 }
 
 export function PlayGameScreen({ onExitGame }: Props) {
+  const { playSound } = useAudioService();
+
   const { initNewRound, applyMove } = useRoundActions();
   const boardState = useRoundStore(selectBoardState);
   const currentTurn = useRoundStore(selectTurn);
@@ -71,10 +74,10 @@ export function PlayGameScreen({ onExitGame }: Props) {
       if (playMode !== 'PLAYING' || isPlayerCPU(currentTurn) || boardState[pickedTile] !== ' ') {
         return;
       }
-
+      playSound('thump', 0.118);
       applyMove(pickedTile, currentTurn);
     },
-    [playMode, isPlayerCPU, currentTurn, boardState, applyMove]
+    [playMode, isPlayerCPU, currentTurn, boardState, playSound, applyMove]
   );
 
   useEffect(() => {
@@ -87,6 +90,7 @@ export function PlayGameScreen({ onExitGame }: Props) {
 
     if (playMode === 'SETUP_ROUND') {
       if (isMatchOver) {
+        playSound(matchWinner ? 'matchOver' : 'matchOverDraw');
         setPlayMode('MATCH_OVER');
         return;
       }
@@ -98,6 +102,7 @@ export function PlayGameScreen({ onExitGame }: Props) {
 
     if (playMode === 'PLAYING') {
       if (isGameOver) {
+        playSound(roundWinner ? 'roundOver' : 'roundOverDraw');
         recordRound({
           boardState,
           winner: roundWinner,
@@ -112,6 +117,7 @@ export function PlayGameScreen({ onExitGame }: Props) {
         requestAnimationFrame(() => {
           timeoutRef.current = setTimeout(() => {
             const pickedTile = pickNextMoveOnBoardForPlayer(boardState, currentTurn);
+            playSound('thump', 0.118);
             applyMove(pickedTile, currentTurn);
             setAIMoving(false);
           }, CPU_MOVE_DELAY_MS);

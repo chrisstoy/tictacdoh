@@ -1,6 +1,7 @@
 import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import { Pressable, View } from 'react-native';
 import { createJiggleAnim } from '@/animations/jiggleAnim';
+import { useAudioService } from '@/services/audioService';
 
 type Props = React.PropsWithChildren &
   React.ComponentProps<typeof View> & {
@@ -8,6 +9,7 @@ type Props = React.PropsWithChildren &
   };
 
 export function JiggleButton({ className, onPress, children, ...rest }: Props) {
+  const { playSound } = useAudioService();
   const rotation = useSharedValue(0);
 
   const animatedStyle = useAnimatedStyle(() => {
@@ -18,6 +20,7 @@ export function JiggleButton({ className, onPress, children, ...rest }: Props) {
   });
 
   const handlePress = () => {
+    playSound('jiggle');
     rotation.value = createJiggleAnim(onPress);
   };
 

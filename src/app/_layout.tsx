@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { useFonts } from 'expo-font';
 import { Slot } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import { AudioServiceProvider } from '@/services/audioService';
 import './globals.css';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -23,9 +24,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <SafeAreaProvider>
-      <SafeAreaView className="flex-1 bg-dough-200">
-        <Slot />
-      </SafeAreaView>
+      <AudioServiceProvider>
+        <SafeAreaView className="flex-1 bg-dough-200">
+          <Slot />
+        </SafeAreaView>
+      </AudioServiceProvider>
     </SafeAreaProvider>
   );
 }

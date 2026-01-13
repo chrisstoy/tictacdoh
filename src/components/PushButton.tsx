@@ -1,6 +1,7 @@
 import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import { Pressable, View } from 'react-native';
 import { createPushAnim } from '@/animations/pushAnim';
+import { useAudioService } from '@/services/audioService';
 
 type Props = React.PropsWithChildren &
   React.ComponentProps<typeof View> & {
@@ -8,6 +9,8 @@ type Props = React.PropsWithChildren &
   };
 
 export function PushButton({ className, onPress, children, ...rest }: Props) {
+  const { playSound } = useAudioService();
+
   const scale = useSharedValue(1);
 
   const animatedStyle = useAnimatedStyle(() => {
@@ -18,6 +21,7 @@ export function PushButton({ className, onPress, children, ...rest }: Props) {
   });
 
   const handlePress = () => {
+    playSound('push');
     scale.value = createPushAnim(onPress);
   };
 

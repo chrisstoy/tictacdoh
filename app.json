@@ -16,6 +16,10 @@
             "backgroundColor": "#fdde97"
           }
         }
+      ],
+      [
+        "expo-audio",
+        {}
       ]
     ],
     "name": "tic-tac-doh",

@@ -5,11 +5,13 @@ import { withZustandDevtools } from './zustandDevtools';
 type OptionsActions = {
   setAutoReplay(autoReplay: boolean): void;
   setEnableSound(enableSound: boolean): void;
+  setEnableMusic(enableMusic: boolean): void;
 };
 
 type OptionsState = {
   autoReplay: boolean;
   enableSound: boolean;
+  enableMusic: boolean;
 };
 
 export const useOptionsStore = create<OptionsState & OptionsActions>()(
@@ -17,6 +19,7 @@ export const useOptionsStore = create<OptionsState & OptionsActions>()(
     (set) => ({
       autoReplay: false,
       enableSound: true,
+      enableMusic: true,
 
       setAutoReplay(autoReplay: boolean) {
         set({ autoReplay });
@@ -24,6 +27,9 @@ export const useOptionsStore = create<OptionsState & OptionsActions>()(
 
       setEnableSound(enableSound: boolean) {
         set({ enableSound });
+      },
+      setEnableMusic(enableMusic: boolean) {
+        set({ enableMusic });
       },
     }),
     {
@@ -35,6 +41,7 @@ export const useOptionsStore = create<OptionsState & OptionsActions>()(
 /** State Selectors */
 export const selectAutoReplay = (state: OptionsState) => state.autoReplay;
 export const selectEnableSound = (state: OptionsState) => state.enableSound;
+export const selectEnableMusic = (state: OptionsState) => state.enableMusic;
 
 /** Complex Selectors */
 
@@ -44,5 +51,6 @@ export const useOptionsActions = () =>
     useShallow((s) => ({
       setAutoReplay: s.setAutoReplay,
       setEnableSound: s.setEnableSound,
+      setEnableMusic: s.setEnableMusic,
     }))
   );

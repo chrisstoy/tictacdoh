@@ -10,6 +10,7 @@ import { ComputerImage } from '@/components/images/ComputerImage';
 import { MeatbagImage } from '@/components/images/MeatbagImage';
 import { OImage } from '@/components/images/OImage';
 import { XImage } from '@/components/images/XImage';
+import { useAudioService } from '@/services/audioService';
 import { PlayerId } from '@/types';
 
 interface Props extends Omit<PressableProps, 'onPress'> {
@@ -18,6 +19,7 @@ interface Props extends Omit<PressableProps, 'onPress'> {
   onClick: () => void;
 }
 export function PlayerChoice({ player, isCPU, onClick, className, ...rest }: Props) {
+  const { playSound } = useAudioService();
   const rotation = useSharedValue(0);
 
   const animatedStyle = useAnimatedStyle(() => {
@@ -28,6 +30,8 @@ export function PlayerChoice({ player, isCPU, onClick, className, ...rest }: Pro
   });
 
   const handlePress = () => {
+    // playSound('squish');
+    playSound('thump', 0.116);
     rotation.value = createJiggleAnim(onClick);
   };
 

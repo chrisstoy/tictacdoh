@@ -4,6 +4,7 @@ import { OptionsImage } from '@/components/images/OptionsImage';
 import { ReturnImage } from '@/components/images/ReturnImage';
 import {
   selectAutoReplay,
+  selectEnableMusic,
   selectEnableSound,
   useOptionsActions,
   useOptionsStore,
@@ -15,9 +16,10 @@ interface Props {
 }
 
 export function OptionsScreen({ onExit }: Props) {
-  const { setAutoReplay, setEnableSound } = useOptionsActions();
+  const { setAutoReplay, setEnableSound, setEnableMusic } = useOptionsActions();
   const autoReplay = useOptionsStore(selectAutoReplay);
   const enableSound = useOptionsStore(selectEnableSound);
+  const enableMusic = useOptionsStore(selectEnableMusic);
 
   return (
     <View className="items-center flex h-full">
@@ -39,6 +41,14 @@ export function OptionsScreen({ onExit }: Props) {
           value={enableSound}
           onToggle={(value) => {
             setEnableSound(value);
+          }}
+        />
+        <Toggle
+          className="w-full flex-none"
+          label="Music"
+          value={enableMusic}
+          onToggle={(value) => {
+            setEnableMusic(value);
           }}
         />
 
