@@ -25,14 +25,13 @@ export default function Index() {
   }, [gameMode, playMusic, stopMusic]);
 
   return (
-    <View className="flex-1" testID="index-screen">
+    <View className="flex-1 max-w-[30em] max-h-[60em] self-center w-full">
       {gameMode === 'NEW' && (
         <View className="flex-1">
           <Animated.View
             entering={FadeIn}
             exiting={FadeOut}
             layout={FadingTransition.duration(100)}
-            testID="anim-setup-game-screen"
             style={{ flex: 1 }}
           >
             <SetupGameScreen
