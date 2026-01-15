@@ -48,11 +48,14 @@ const defaultOptions: OptionsState = {
 
 // Initialize store with persisted values
 let initialOptions = defaultOptions;
-loadPersistedOptions().then((persisted) => {
-  const merged = { ...defaultOptions, ...persisted };
-  // Update the store after it's created
-  useOptionsStore.setState(merged);
-});
+// Only load persisted options in browser environment (not during SSR)
+if (typeof window !== 'undefined') {
+  loadPersistedOptions().then((persisted) => {
+    const merged = { ...defaultOptions, ...persisted };
+    // Update the store after it's created
+    useOptionsStore.setState(merged);
+  });
+}
 
 export const useOptionsStore = create<OptionsState & OptionsActions>()(
   withZustandDevtools(

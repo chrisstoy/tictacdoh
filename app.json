@@ -48,7 +48,8 @@
       "package": "com.stoyco.tictacdoh"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "output": "static"
     }
   }
 }
