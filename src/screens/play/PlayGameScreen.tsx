@@ -32,8 +32,8 @@ import { EndOfMatch } from './components/EndOfMatch';
 import { Scoreboard } from './components/Scoreboard';
 
 const CPU_MOVE_DELAY_MS = 500; // how long to delay CPU moves
-const AUTOPLAY_ROUND_DELAY_MS = 1000; // how long to delay between rounds
-const AUTOPLAY_MATCH_DELAY_MS = 2000; // how long to delay between matches
+const AUTOPLAY_ROUND_DELAY_MS = 1500; // how long to delay between rounds
+const AUTOPLAY_MATCH_DELAY_MS = 2700; // how long to delay between matches
 
 interface Props {
   onExitGame: () => void;

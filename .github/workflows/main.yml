@@ -25,6 +25,8 @@ jobs:
   # Build the application
   build:
     runs-on: ubuntu-latest
+    env:
+      GITHUB_PAGES: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4

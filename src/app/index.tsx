@@ -14,7 +14,7 @@ export default function Index() {
 
   useEffect(() => {
     if (gameMode === 'NEW' || gameMode === 'OPTIONS') {
-      playMusic('setup');
+      playMusic('setup', { loop: true });
     } else {
       stopMusic();
     }

@@ -51,19 +51,22 @@ export function AudioServiceProvider({ children }: AudioServiceProviderProps) {
   const [loopMusic, setLoopMusic] = useState<boolean>(false);
 
   useEffect(() => {
-    setSoundPlayer(createAudioPlayer());
-    setMusicPlayer(createAudioPlayer());
+    const _soundPlayer = createAudioPlayer();
+    setSoundPlayer(_soundPlayer);
 
-    musicPlayer?.addListener('playbackStatusUpdate', (status) => {
+    const _musicPlayer = createAudioPlayer();
+    setMusicPlayer(_musicPlayer);
+
+    _musicPlayer?.addListener('playbackStatusUpdate', (status) => {
       if (status.isLoaded && status.didJustFinish && loopMusic) {
-        musicPlayer?.seekTo(0);
-        musicPlayer.play();
+        _musicPlayer?.seekTo(0);
+        _musicPlayer.play();
       }
     });
 
     return () => {
       soundPlayer?.release();
-      musicPlayer?.release();
+      _musicPlayer?.release();
       setSoundPlayer(null);
       setMusicPlayer(null);
     };
@@ -72,9 +75,9 @@ export function AudioServiceProvider({ children }: AudioServiceProviderProps) {
   useEffect(() => {
     if (musicPlayer) {
       if (musicEnabled) {
-        musicPlayer.play();
+        musicPlayer?.play();
       } else {
-        musicPlayer.pause();
+        musicPlayer?.pause();
       }
     }
   }, [musicEnabled, musicPlayer]);
@@ -92,7 +95,7 @@ export function AudioServiceProvider({ children }: AudioServiceProviderProps) {
   const playMusic = (musicKey: MusicKey, _options?: { offset?: number; loop?: boolean }) => {
     if (!musicPlayer) return;
 
-    musicPlayer.pause();
+    musicPlayer?.pause();
 
     const offset = _options?.offset ?? 0;
     const loop = _options?.loop ?? true;
@@ -100,11 +103,11 @@ export function AudioServiceProvider({ children }: AudioServiceProviderProps) {
     setLoopMusic(loop);
 
     const source = musicSources[musicKey];
-    musicPlayer.replace(source);
-    musicPlayer.seekTo(offset);
+    musicPlayer?.replace(source);
+    musicPlayer?.seekTo(offset);
 
     if (musicEnabled) {
-      musicPlayer.play();
+      musicPlayer?.play();
     }
   };
 
