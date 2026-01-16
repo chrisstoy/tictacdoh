@@ -18,7 +18,7 @@ export function Player({ player, className, ...rest }: Props) {
 
   return (
     <View
-      className={`${className} p-2 flex-1 ${isPlayersTurn ? 'bg-orange-500 border-outline-500 border-solid border-2 rounded-xl' : ''}`}
+      className={`${className} p-2 flex-1 ${isPlayersTurn ? 'bg-highlight border-border border-solid border-2 rounded-xl' : ''}`}
       {...rest}
     >
       {isClanker ? (
