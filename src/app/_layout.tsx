@@ -25,7 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <SafeAreaProvider>
       <AudioServiceProvider>
-        <SafeAreaView className="flex-1 bg-dough-200">
+        <SafeAreaView className="flex-1 bg-background">
           <Slot />
         </SafeAreaView>
       </AudioServiceProvider>

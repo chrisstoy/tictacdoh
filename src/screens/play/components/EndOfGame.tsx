@@ -13,7 +13,7 @@ export function EndOfGame({ winner }: Props) {
   return (
     <View
       className="
-    bg-orange-500 border-outline-500 border-solid border-2 rounded-xl
+    bg-highlight border-border border-solid border-2 rounded-xl
       flex-1 flex-row items-center w-full h-full
       "
     >
