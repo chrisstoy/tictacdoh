@@ -47,8 +47,10 @@ module.exports = {
     web: {
       favicon: './assets/favicon.png',
       output: 'static',
-      basePath: process.env.GITHUB_PAGES ? '/tictacdoh' : '',
       publicPath: process.env.GITHUB_PAGES ? '/tictacdoh/' : '/',
+    },
+    experiments: {
+      baseUrl: process.env.GITHUB_PAGES ? '/tictacdoh/' : '/',
     },
   },
 };
