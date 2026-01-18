@@ -1,0 +1,525 @@
+{
+  "project": "Tic-Tac-Doh PWA Implementation",
+  "version": "1.0.0",
+  "description": "Transform the web build into an installable Progressive Web App with offline support and custom install prompts",
+  "requirements": [
+    {
+      "category": "infrastructure",
+      "description": "Build pipeline generates PWA icons from source asset",
+      "steps": [
+        "Run 'npm run generate:icons' command",
+        "Verify 'public/icons/' directory is created",
+        "Check that 9 PNG files are generated: icon-72.png, icon-96.png, icon-128.png, icon-144.png, icon-152.png, icon-192.png, icon-384.png, icon-512.png, icon-512-maskable.png",
+        "Verify maskable icon has proper safe zone padding (40%)",
+        "Confirm all icons have #fdde97 background color"
+      ],
+      "passes": false
+    },
+    {
+      "category": "infrastructure",
+      "description": "Build pipeline generates web app manifest with correct paths",
+      "steps": [
+        "Set GITHUB_PAGES=true environment variable",
+        "Run 'npm run generate:manifest' command",
+        "Verify 'dist/manifest.json' file is created",
+        "Check that start_url is '/tictacdoh/' when GITHUB_PAGES=true",
+        "Check that start_url is '/' when GITHUB_PAGES is not set",
+        "Verify scope matches start_url",
+        "Confirm all 9 icon paths are correctly formatted with base path"
+      ],
+      "passes": false
+    },
+    {
+      "category": "infrastructure",
+      "description": "Build pipeline generates service worker with Workbox",
+      "steps": [
+        "Run 'npm run generate:sw' command after expo export",
+        "Verify 'dist/sw.js' file is created",
+        "Check that service worker includes precache manifest",
+        "Verify large audio files are excluded from precache (setup-music.mp3, game-setup-music.mp3)",
+        "Confirm runtime caching rules are defined for images, audio, and fonts"
+      ],
+      "passes": false
+    },
+    {
+      "category": "infrastructure",
+      "description": "Complete build pipeline executes all steps in correct order",
+      "steps": [
+        "Run 'npm run build' command",
+        "Verify icons are generated first",
+        "Confirm expo export completes successfully",
+        "Check that manifest.json is generated after export",
+        "Verify service worker is generated last",
+        "Ensure no build errors occur",
+        "Confirm dist/ directory contains all required files: index.html, manifest.json, sw.js, icons/"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "Web app manifest loads correctly with all required fields",
+      "steps": [
+        "Build and serve the app locally with 'npx http-server dist -p 8080'",
+        "Open browser DevTools → Application → Manifest",
+        "Verify manifest loads without errors",
+        "Check name: 'Tic-Tac-Doh - A Doughy Tic-Tac-Toe Game'",
+        "Check short_name: 'Tic-Tac-Doh'",
+        "Check display: 'standalone'",
+        "Check theme_color: '#fdde97'",
+        "Check background_color: '#fdde97'",
+        "Verify all 9 icons are listed and accessible (no 404s)"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "Service worker registers successfully on app load",
+      "steps": [
+        "Serve the app locally",
+        "Open browser DevTools → Application → Service Workers",
+        "Load the app in browser",
+        "Verify service worker registers (shows as 'activated and running')",
+        "Check console for 'Service Worker registered' message",
+        "Verify service worker scope matches base path",
+        "Confirm no registration errors in console"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "Service worker precaches critical app shell resources",
+      "steps": [
+        "Register service worker and wait for installation",
+        "Open DevTools → Application → Cache Storage",
+        "Verify precache exists (workbox-precache-v2-... cache)",
+        "Check that HTML files are cached (index.html)",
+        "Check that CSS bundle is cached",
+        "Check that JS bundle is cached (~1.8MB)",
+        "Verify small assets are precached"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "Service worker caches audio files with runtime caching",
+      "steps": [
+        "Load the app and navigate through game",
+        "Play audio (background music and sound effects)",
+        "Open DevTools → Application → Cache Storage",
+        "Verify 'audio-cache' exists",
+        "Check that MP3 files are cached after playback",
+        "Confirm large music files (setup-music.mp3, game-setup-music.mp3) are in audio cache"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "App works completely offline after initial load",
+      "steps": [
+        "Load the app online and wait for service worker activation",
+        "Navigate through all screens (setup, play, options)",
+        "Play at least one game to trigger audio loading",
+        "Open DevTools → Network → Enable 'Offline' mode",
+        "Reload the page",
+        "Verify app loads from cache without errors",
+        "Navigate through all screens offline",
+        "Play a complete game offline",
+        "Verify audio plays offline",
+        "Check that no network errors appear in console"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "PWA meta tags are present in HTML head",
+      "steps": [
+        "View page source of dist/index.html",
+        "Verify <link rel='manifest'> tag exists with correct path",
+        "Check <meta name='theme-color'> is set to '#fdde97'",
+        "Verify <meta name='apple-mobile-web-app-capable'> is 'yes'",
+        "Check <meta name='apple-mobile-web-app-status-bar-style'> exists",
+        "Verify <link rel='apple-touch-icon'> tags exist for 152px and 192px",
+        "Confirm <meta name='mobile-web-app-capable'> is 'yes'"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "Install prompt appears after 30 seconds of engagement",
+      "steps": [
+        "Clear browser cache and localStorage",
+        "Load the app in Chrome browser (desktop or Android)",
+        "Wait for beforeinstallprompt event to be captured",
+        "Wait 30 seconds without interaction",
+        "Verify custom install prompt appears at bottom of screen",
+        "Check prompt shows 'Install Tic-Tac-Doh' message",
+        "Verify 'Install' and 'Not Now' buttons are visible",
+        "Confirm prompt styling matches game theme (dough background, outline border)"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "Install prompt triggers native installation flow",
+      "steps": [
+        "Wait for custom install prompt to appear",
+        "Click 'Install' button",
+        "Verify native browser install dialog appears",
+        "Confirm installation",
+        "Check that app installs to system (appears in app drawer/start menu)",
+        "Verify custom prompt disappears after installation"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "Install prompt dismissal persists across sessions",
+      "steps": [
+        "Wait for custom install prompt to appear",
+        "Click 'Not Now' button",
+        "Verify prompt disappears",
+        "Check that '@tic-tac-doh/install-prompt-dismissed' is set to 'true' in AsyncStorage",
+        "Reload the page",
+        "Wait 30+ seconds",
+        "Verify install prompt does NOT reappear",
+        "Clear AsyncStorage/localStorage and reload",
+        "Confirm prompt reappears after 30 seconds"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "Installed PWA launches in standalone mode",
+      "steps": [
+        "Install the PWA using install prompt or browser menu",
+        "Launch the installed app from home screen/start menu",
+        "Verify app opens without browser chrome (no address bar, no tabs)",
+        "Check that app displays in full-screen standalone mode",
+        "Verify theme color (#fdde97) applies to status bar/title bar",
+        "Confirm app name 'Tic-Tac-Doh' appears in title bar"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "App is installable on Chrome Desktop",
+      "steps": [
+        "Open app in Chrome browser on Windows/Mac/Linux",
+        "Check that install icon appears in address bar (omnibox)",
+        "Click install icon or use menu → Install Tic-Tac-Doh",
+        "Verify installation completes successfully",
+        "Launch installed app",
+        "Confirm app works in standalone mode"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "App is installable on Android Chrome",
+      "steps": [
+        "Open app in Chrome browser on Android device",
+        "Check that install banner appears or menu shows 'Install app'",
+        "Tap install option",
+        "Verify app installs to home screen",
+        "Launch app from home screen",
+        "Confirm app opens in standalone mode",
+        "Verify splash screen shows correct icon and colors"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "App can be added to iOS Home Screen",
+      "steps": [
+        "Open app in Safari on iOS device",
+        "Tap Share button → 'Add to Home Screen'",
+        "Verify icon preview shows correctly",
+        "Confirm app name 'Tic-Tac-Doh' is displayed",
+        "Tap 'Add' to install",
+        "Launch app from home screen",
+        "Verify app opens in standalone mode (no Safari UI)",
+        "Check that status bar style is correct"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "Base path handling works for local development",
+      "steps": [
+        "Build app without GITHUB_PAGES environment variable",
+        "Verify manifest.json start_url is '/'",
+        "Serve locally with 'npx http-server dist -p 8080'",
+        "Load app at http://localhost:8080",
+        "Verify manifest loads from http://localhost:8080/manifest.json",
+        "Check that all icons load correctly",
+        "Confirm service worker registers with scope '/'",
+        "Test installation works locally"
+      ],
+      "passes": false
+    },
+    {
+      "category": "functional",
+      "description": "Base path handling works for GitHub Pages deployment",
+      "steps": [
+        "Build app with GITHUB_PAGES=true environment variable",
+        "Verify manifest.json start_url is '/tictacdoh/'",
+        "Deploy to GitHub Pages",
+        "Load app at https://chrisstoy.github.io/tictacdoh/",
+        "Verify manifest loads from https://chrisstoy.github.io/tictacdoh/manifest.json",
+        "Check that all icon URLs include /tictacdoh/ base path",
+        "Confirm service worker registers with scope '/tictacdoh/'",
+        "Test installation works on deployed site"
+      ],
+      "passes": false
+    },
+    {
+      "category": "performance",
+      "description": "Lighthouse PWA audit score is 90 or higher",
+      "steps": [
+        "Serve the app (locally or deployed)",
+        "Open Chrome DevTools → Lighthouse",
+        "Select 'Progressive Web App' category",
+        "Run audit",
+        "Verify overall PWA score is ≥ 90",
+        "Check 'Installable' section passes all checks",
+        "Verify 'PWA Optimized' section passes",
+        "Confirm 'Fast and reliable' checks pass"
+      ],
+      "passes": false
+    },
+    {
+      "category": "performance",
+      "description": "Precache size is optimized (under 5MB)",
+      "steps": [
+        "Build the app and generate service worker",
+        "Open DevTools → Application → Cache Storage after SW installation",
+        "Check precache storage size",
+        "Verify total precache is approximately 2.3MB",
+        "Confirm large audio files are NOT in precache",
+        "Check that only essential app shell is precached"
+      ],
+      "passes": false
+    },
+    {
+      "category": "performance",
+      "description": "Repeat visits load instantly from cache",
+      "steps": [
+        "Load app and wait for service worker activation",
+        "Open DevTools → Network tab",
+        "Enable 'Disable cache' option temporarily, then disable it",
+        "Reload the page",
+        "Verify most resources show '(from ServiceWorker)' or '(from disk cache)'",
+        "Check that page load time is under 1 second",
+        "Confirm no network requests for cached resources"
+      ],
+      "passes": false
+    },
+    {
+      "category": "integration",
+      "description": "Service worker registration integrates with app lifecycle",
+      "steps": [
+        "Check that registerServiceWorker is imported in src/app/_layout.tsx",
+        "Verify registration happens in useEffect hook",
+        "Load the app and check console for registration message",
+        "Confirm registration only occurs on web platform (not iOS/Android native)",
+        "Verify SSR safety checks prevent server-side execution",
+        "Check that app functions normally before SW activation"
+      ],
+      "passes": false
+    },
+    {
+      "category": "integration",
+      "description": "Install prompt component integrates with app UI",
+      "steps": [
+        "Check that PWAInstallPrompt is imported in src/app/index.tsx",
+        "Verify component is rendered at bottom of main View",
+        "Load the app and wait for prompt to appear",
+        "Navigate between screens (setup, play, options)",
+        "Verify prompt stays visible across screen transitions",
+        "Confirm prompt appears above all other UI elements",
+        "Check that prompt doesn't interfere with game interactions"
+      ],
+      "passes": false
+    },
+    {
+      "category": "integration",
+      "description": "GitHub Actions workflow builds and deploys PWA",
+      "steps": [
+        "Push changes to main branch",
+        "Wait for GitHub Actions workflow to run",
+        "Verify build step completes without errors",
+        "Check that all 4 build steps execute (icons, export, manifest, SW)",
+        "Confirm dist/ artifact is uploaded",
+        "Verify deployment to GitHub Pages succeeds",
+        "Load deployed site and confirm PWA functionality works"
+      ],
+      "passes": false
+    },
+    {
+      "category": "regression",
+      "description": "Existing game functionality remains intact",
+      "steps": [
+        "Load the app (with PWA features)",
+        "Test player selection (human vs human, human vs CPU, CPU vs CPU)",
+        "Play a complete match with multiple rounds",
+        "Verify score tracking works correctly",
+        "Test all sound effects and background music",
+        "Navigate to options and toggle settings",
+        "Verify auto-replay functionality works",
+        "Confirm all existing features work as before"
+      ],
+      "passes": false
+    },
+    {
+      "category": "regression",
+      "description": "iOS and Android native builds are unaffected",
+      "steps": [
+        "Run 'npm run ios' to start iOS simulator",
+        "Verify iOS app builds and runs without errors",
+        "Run 'npm run android' to start Android emulator",
+        "Verify Android app builds and runs without errors",
+        "Check that PWA-specific code doesn't execute on native platforms",
+        "Confirm native app functionality is unchanged"
+      ],
+      "passes": false
+    },
+    {
+      "category": "error-handling",
+      "description": "Service worker registration handles unsupported browsers gracefully",
+      "steps": [
+        "Mock a browser without service worker support",
+        "Load the app",
+        "Verify console shows 'Service workers are not supported' message",
+        "Confirm app still functions normally without PWA features",
+        "Check that no errors are thrown"
+      ],
+      "passes": false
+    },
+    {
+      "category": "error-handling",
+      "description": "Install prompt handles browsers without beforeinstallprompt",
+      "steps": [
+        "Open app in Safari (which doesn't support beforeinstallprompt)",
+        "Wait 30+ seconds",
+        "Verify custom install prompt does NOT appear",
+        "Confirm no console errors related to install prompt",
+        "Check that app functions normally"
+      ],
+      "passes": false
+    },
+    {
+      "category": "error-handling",
+      "description": "Service worker updates are detected and handled",
+      "steps": [
+        "Load app with service worker v1",
+        "Make a code change and rebuild",
+        "Deploy updated version",
+        "Reload the page with old SW active",
+        "Verify 'updatefound' event is triggered",
+        "Check console for 'New content available' message",
+        "Hard reload to activate new service worker",
+        "Confirm updated content is served"
+      ],
+      "passes": false
+    },
+    {
+      "category": "validation",
+      "description": "All icon sizes are valid and properly formatted",
+      "steps": [
+        "Inspect public/icons/ directory after generation",
+        "Verify each icon file is valid PNG format",
+        "Check dimensions: 72x72, 96x96, 128x128, 144x144, 152x152, 192x192, 384x384, 512x512",
+        "Verify maskable icon has 512x512 dimensions",
+        "Open each icon in image viewer to confirm content is visible",
+        "Check that icon content is properly centered"
+      ],
+      "passes": false
+    },
+    {
+      "category": "validation",
+      "description": "Manifest JSON is valid and well-formed",
+      "steps": [
+        "Open dist/manifest.json in text editor",
+        "Validate JSON syntax (no parsing errors)",
+        "Verify all required fields are present",
+        "Check that icon paths are properly formatted",
+        "Confirm start_url and scope are valid URIs",
+        "Verify display, orientation, and colors are valid values",
+        "Run manifest through online PWA manifest validator"
+      ],
+      "passes": false
+    },
+    {
+      "category": "validation",
+      "description": "Service worker is valid JavaScript",
+      "steps": [
+        "Open dist/sw.js in text editor",
+        "Verify file contains valid JavaScript code",
+        "Check that Workbox runtime is included",
+        "Confirm precache manifest is populated with hashed assets",
+        "Verify runtime caching routes are defined",
+        "Check that no syntax errors exist"
+      ],
+      "passes": false
+    },
+    {
+      "category": "security",
+      "description": "Service worker only serves cached content from same origin",
+      "steps": [
+        "Inspect service worker fetch event handlers",
+        "Verify service worker only caches same-origin requests",
+        "Check that CORS is properly handled for cross-origin assets",
+        "Confirm no sensitive data is cached",
+        "Verify cache keys include version information"
+      ],
+      "passes": false
+    },
+    {
+      "category": "accessibility",
+      "description": "Install prompt is accessible via keyboard navigation",
+      "steps": [
+        "Wait for install prompt to appear",
+        "Use Tab key to navigate to install prompt",
+        "Verify both 'Install' and 'Not Now' buttons can be focused",
+        "Press Enter on each button to confirm they activate",
+        "Check that focus indicators are visible",
+        "Verify screen reader announces prompt content"
+      ],
+      "passes": false
+    },
+    {
+      "category": "documentation",
+      "description": "Build scripts are documented and executable",
+      "steps": [
+        "Run 'npm run generate:icons' independently",
+        "Run 'npm run generate:manifest' independently",
+        "Run 'npm run generate:sw' independently",
+        "Run complete 'npm run build' pipeline",
+        "Verify each script has clear console output",
+        "Check that error messages are helpful if scripts fail"
+      ],
+      "passes": false
+    }
+  ],
+  "metadata": {
+    "totalRequirements": 38,
+    "categories": {
+      "infrastructure": 4,
+      "functional": 15,
+      "performance": 3,
+      "integration": 3,
+      "regression": 2,
+      "error-handling": 3,
+      "validation": 3,
+      "security": 1,
+      "accessibility": 1,
+      "documentation": 1
+    },
+    "estimatedImplementationTime": "8-12 hours",
+    "platforms": ["Web (Chrome/Edge Desktop)", "Android (Chrome)", "iOS (Safari)"],
+    "dependencies": ["sharp@^0.33.2", "workbox-cli@^7.0.0"],
+    "relatedDocuments": [
+      "/Users/cstoy/.claude/plans/proud-rolling-frost.md"
+    ]
+  }
+}
