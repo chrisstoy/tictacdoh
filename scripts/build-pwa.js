@@ -17,6 +17,11 @@ const ROOT_DIR = path.join(__dirname, '..');
 const PUBLIC_ICONS_DIR = path.join(ROOT_DIR, 'public', 'icons');
 const DIST_DIR = path.join(ROOT_DIR, 'dist');
 const DIST_ICONS_DIR = path.join(DIST_DIR, 'icons');
+const INDEX_HTML = path.join(DIST_DIR, 'index.html');
+
+// Determine base path from environment
+const isGitHubPages = process.env.GITHUB_PAGES === 'true';
+const BASE_PATH = isGitHubPages ? '/tictacdoh/' : '/';
 
 function runCommand(command, description) {
   console.log(`\n${'='.repeat(60)}`);
@@ -34,6 +39,34 @@ function runCommand(command, description) {
     console.error(`\n✗ ${description} failed`);
     process.exit(1);
   }
+}
+
+function injectManifestLink() {
+  console.log(`\n${'='.repeat(60)}`);
+  console.log('Step: Inject manifest link into index.html');
+  console.log(`${'='.repeat(60)}\n`);
+
+  if (!fs.existsSync(INDEX_HTML)) {
+    console.error('Error: index.html not found in dist/');
+    process.exit(1);
+  }
+
+  let html = fs.readFileSync(INDEX_HTML, 'utf-8');
+
+  // Check if manifest link already exists
+  if (html.includes('rel="manifest"') || html.includes("rel='manifest'")) {
+    console.log('Manifest link already exists in index.html');
+    return;
+  }
+
+  // Inject manifest link before </head>
+  const manifestLink = `<link rel="manifest" href="${BASE_PATH}manifest.json"/>`;
+  html = html.replace('</head>', `${manifestLink}</head>`);
+
+  fs.writeFileSync(INDEX_HTML, html, 'utf-8');
+
+  console.log(`Injected: ${manifestLink}`);
+  console.log('\n✓ Manifest link injected into index.html');
 }
 
 function copyIcons() {
@@ -79,10 +112,13 @@ function main() {
   // Step 3: Copy icons to dist
   copyIcons();
 
-  // Step 4: Generate manifest
+  // Step 4: Inject manifest link into HTML
+  injectManifestLink();
+
+  // Step 5: Generate manifest
   runCommand('npm run generate:manifest', 'Generate web app manifest');
 
-  // Step 5: Generate service worker
+  // Step 6: Generate service worker
   runCommand('npm run generate:sw', 'Generate service worker');
 
   // Summary
