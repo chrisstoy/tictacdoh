@@ -4,7 +4,7 @@
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
-    "build": "expo export --platform web",
+    "build": "node scripts/build-pwa.js",
     "generate:icons": "node scripts/generate-icons.js",
     "generate:manifest": "node scripts/generate-manifest.js",
     "generate:sw": "node scripts/generate-sw.js",
