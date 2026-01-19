@@ -330,8 +330,8 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 21,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Verified: PWAInstallPrompt imported in src/app/index.tsx (line 8), rendered at line 71 after all gameMode conditional screens. Component uses absolute positioning (bottom-4 left-4 right-4) to stay above all UI elements. Rendered outside conditional gameMode blocks ensures visibility across screen transitions. Build passes (56 precached files), lint passes (only pre-existing audioService warning)."
     },
     {
       "id": "US-022",

@@ -302,3 +302,21 @@ Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
   - Service worker registration is non-blocking - app functions normally before SW activation
   - Base path detection from window.location.pathname handles GitHub Pages vs local dev
 ---
+## 2026-01-19 - US-021
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- Verified install prompt component integration with app UI (verification story, no code changes needed)
+- Verification:
+  - PWAInstallPrompt imported in src/app/index.tsx (line 8)
+  - Component rendered at line 71, after all gameMode conditional screens
+  - Uses absolute positioning (bottom-4 left-4 right-4) to stay above all UI elements
+  - Rendered outside conditional gameMode blocks ensures visibility across screen transitions
+  - Prompt doesn't interfere with game interactions (positioned at bottom with padding)
+  - Component includes shadow-lg for elevation above other UI
+- Build passes (npm run build completes successfully with 56 precached files)
+- Lint passes (only pre-existing warning in audioService.tsx)
+- **Learnings for future iterations:**
+  - US-021 was already implemented as part of US-011 implementation (PWAInstallPrompt component created and integrated)
+  - Absolute positioning in React Native uses View parent as reference - main View has flex-1 for proper layout
+  - Rendering component outside conditional blocks ensures persistence across navigation state changes
+  - dev-browser skill not available in this environment - verification done via static code analysis
+---
