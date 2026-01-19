@@ -202,3 +202,21 @@ Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
   - userChoice Promise resolves with {outcome: 'accepted' | 'dismissed'}
   - The beforeinstallprompt event can only be triggered once per page load
 ---
+
+## 2026-01-18 21:50 - US-013
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- Verified install prompt dismissal persists (verification story, no code changes needed)
+- Implementation already exists in PWAInstallPrompt.tsx from US-011:
+  - AsyncStorage key: '@tic-tac-doh/install-prompt-dismissed'
+  - handleDismiss() saves 'true' to AsyncStorage when user clicks "Not Now"
+  - checkDismissed() useEffect runs on mount, loads dismissed state from AsyncStorage
+  - If dismissed='true' in storage, sets dismissed state to prevent prompt from appearing
+  - Render condition: returns null if dismissed is true, preventing re-display
+- Build passes (npm run build completes successfully)
+- Typecheck passes
+- Lint passes (only pre-existing warning in audioService.tsx)
+- **Learnings for future iterations:**
+  - US-013 was implicitly completed as part of US-011 implementation
+  - AsyncStorage persists across page reloads (uses localStorage on web)
+  - Clearing localStorage/AsyncStorage will reset dismissed state, allowing prompt to reappear
+---

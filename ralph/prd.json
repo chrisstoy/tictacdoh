@@ -242,8 +242,8 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 13,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Already implemented in US-011. PWAInstallPrompt.tsx uses AsyncStorage with key '@tic-tac-doh/install-prompt-dismissed'. handleDismiss() saves 'true' on Not Now click. checkDismissed() useEffect loads state on mount and sets dismissed=true to prevent re-display. Typecheck passes."
     },
     {
       "id": "US-014",
