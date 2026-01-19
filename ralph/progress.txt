@@ -261,3 +261,25 @@ Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
   - Workbox `registerRoute` with CacheFirst strategy handles runtime caching for images, audio, fonts
   - Chrome shows install icon in omnibox when all criteria are met
 ---
+
+## 2026-01-18 - US-016
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- Verified app installable on Android Chrome (verification story, no code changes needed)
+- Android Chrome PWA installability requirements verified:
+  - Manifest has `name` ("Tic-Tac-Doh - A Doughy Tic-Tac-Toe Game") and `short_name` ("Tic-Tac-Doh")
+  - Manifest has `start_url` ("/") and `scope` ("/")
+  - Manifest has `display: 'standalone'` for standalone mode
+  - Manifest has 192x192 and 512x512 PNG icons
+  - Manifest has maskable icon (icon-512-maskable.png) for Android adaptive icons
+  - theme_color and background_color #fdde97 for splash screen styling
+  - Service worker with Workbox `precacheAndRoute` provides fetch handler
+  - `<meta name="mobile-web-app-capable" content="yes"/>` in HTML head
+  - PWAInstallPrompt component captures beforeinstallprompt event for install banner
+- Typecheck passes
+- Lint passes (only pre-existing warning in audioService.tsx)
+- **Learnings for future iterations:**
+  - Android Chrome uses the same beforeinstallprompt API as Desktop Chrome
+  - Maskable icons are important for Android adaptive icon support (icon appears correctly on all launchers)
+  - Splash screen on Android uses theme_color and background_color from manifest
+  - Android Chrome shows "Add to Home screen" option in browser menu when criteria are met
+---
