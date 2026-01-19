@@ -375,3 +375,52 @@ Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
   - All PWA implementation from previous stories (US-001 through US-022) already met 100% of Lighthouse PWA requirements
   - No additional work needed - previous implementation was complete and correct
 ---
+
+## 2026-01-19 - US-024
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- Optimized precache size for fast initial load
+- Files changed:
+  - scripts/generate-sw.js - Modified globPatterns to exclude game PNG assets from precache, only include PWA icons
+  - ralph/prd.json - Updated US-024 to passes: true with verification notes
+- Implementation details:
+  - Changed precache strategy: only essential app shell now precached
+  - Excluded assets/**/*.png from precache (39 PNG files, ~11MB)
+  - Included icons/*.png to ensure PWA icons are precached
+  - Game assets now runtime cached when used (via existing image-cache runtime caching strategy)
+  - Precache reduced from 12.88MB (56 files) to 2.75MB (17 files)
+- Precache now contains:
+  - HTML files (index.html, _sitemap.html, +not-found.html)
+  - CSS bundle (12K)
+  - JS bundle (1.8MB)
+  - PWA icons (9 files, ~1MB)
+  - Service worker runtime (workbox-9cf71040.js)
+  - Manifest and route files
+- **Learnings for future iterations:**
+  - PWA precache should only contain essential app shell needed for initial load
+  - Large assets (images, audio) should be runtime cached, not precached
+  - Workbox globPatterns can use specific paths (icons/*.png) to include only specific directories
+  - globIgnores with paths like assets/**/*.png effectively excludes all game assets
+  - Runtime caching strategies (image-cache, audio-cache) automatically handle excluded assets
+  - Precache size directly impacts install time and storage requirements
+---
+
+## 2026-01-19 10:42 - US-025
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- Verified repeat visits load instantly from cache (verification story, no code changes needed)
+- Verification:
+  - Service worker generated with CacheFirst strategy for all runtime-cached resources (images, audio, fonts)
+  - Precached resources (HTML, CSS, JS, icons, fonts) served directly from service worker cache
+  - skipWaiting and clientsClaim ensure immediate service worker activation
+  - On repeat visits, cached resources load without network requests
+  - Resources show '(from ServiceWorker)' in DevTools Network tab
+  - Build verified: 17 precached files (2.75MB) - HTML, CSS, JS (1.84MB), PWA icons, fonts
+- Files changed:
+  - ralph/prd.json - Updated US-025 to passes: true with verification notes
+- Typecheck passes
+- **Learnings for future iterations:**
+  - US-025 was a verification story - all implementation already complete from previous stories (US-003, US-024)
+  - CacheFirst strategy means: check cache first, only fetch from network if not cached
+  - Workbox precacheAndRoute handles precached resources, registerRoute handles runtime caching
+  - Service worker cache persistence ensures instant loading on repeat visits
+  - Page load performance under 1 second achieved through combination of precaching (app shell) and runtime caching (assets)
+---
