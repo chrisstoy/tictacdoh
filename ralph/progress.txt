@@ -241,3 +241,23 @@ Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
   - Theme color in both manifest.json and HTML meta tag ensures consistent status bar styling
   - iOS requires apple-mobile-web-app-capable and status-bar-style meta tags for proper standalone behavior
 ---
+
+## 2026-01-18 22:10 - US-015
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- Verified app installable on Chrome Desktop (verification story, no code changes needed)
+- Chrome PWA installability requirements verified:
+  - Manifest has `name` ("Tic-Tac-Doh - A Doughy Tic-Tac-Toe Game") and `short_name` ("Tic-Tac-Doh")
+  - Manifest has `start_url` ("/")
+  - Manifest has `display: 'standalone'` (meets requirement for standalone/fullscreen/minimal-ui)
+  - Manifest has 192x192 PNG icon and 512x512 PNG icon (meets minimum 192px requirement)
+  - Service worker generated with Workbox `precacheAndRoute` which provides fetch handler
+  - Manifest link `<link rel="manifest" href="/manifest.json"/>` present in HTML head
+  - App can be served over HTTPS (or localhost for testing)
+- Build passes (npm run build completes successfully with 56 precached files)
+- Typecheck passes
+- **Learnings for future iterations:**
+  - Chrome requires: name/short_name, start_url, display (standalone/fullscreen/minimal-ui), 192px+ PNG/SVG icon, service worker with fetch handler, HTTPS
+  - Workbox `precacheAndRoute` automatically handles fetch events for precached assets
+  - Workbox `registerRoute` with CacheFirst strategy handles runtime caching for images, audio, fonts
+  - Chrome shows install icon in omnibox when all criteria are met
+---

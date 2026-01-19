@@ -276,8 +276,8 @@
         "Typecheck passes"
       ],
       "priority": 15,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Verified: PWA meets all Chrome installability requirements - manifest has name, short_name, start_url, display:standalone, 192px and 512px PNG icons. Service worker with Workbox precacheAndRoute provides fetch handler. Manifest link in HTML head. All requirements for Chrome omnibox install icon are met."
     },
     {
       "id": "US-016",
