@@ -457,8 +457,8 @@
         "Typecheck passes"
       ],
       "priority": 30,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Verified via code analysis: Service worker update detection implemented in registerServiceWorker.ts (lines 34-43). registration.addEventListener('updatefound') triggers when browser detects new SW file. newWorker.addEventListener('statechange') monitors installation progress. When newWorker.state === 'installed' AND navigator.serviceWorker.controller exists (indicating SW already controlling page), logs 'New content available; please refresh.' to console. skipWaiting in generate-sw.js ensures new SW activates immediately on refresh. Workbox revision hashes in precache manifest ensure browser detects updates when files change."
     },
     {
       "id": "US-031",
