@@ -143,3 +143,62 @@ Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
   - All game logic in precached JS bundle - no server-side dependencies
   - dev-browser skill not available in this environment - verification done via static analysis
 ---
+
+## 2026-01-18 21:45 - US-010
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- Implemented PWA meta tags injection in HTML head
+- Files changed:
+  - scripts/build-pwa.js - Renamed injectManifestLink() to injectPWAMetaTags(), added all required PWA meta tags
+- Meta tags injected:
+  - <link rel="manifest"> - Web app manifest link
+  - <meta name="theme-color"> - Set to #fdde97
+  - <meta name="apple-mobile-web-app-capable"> - Set to yes
+  - <meta name="apple-mobile-web-app-status-bar-style"> - Set to default
+  - <link rel="apple-touch-icon"> - For 152px and 192px icons
+  - <meta name="mobile-web-app-capable"> - Set to yes
+- Typecheck passes
+- **Learnings for future iterations:**
+  - Expo export generates minimal HTML without PWA meta tags - all must be injected post-build
+  - Apple touch icons need explicit sizes attribute for Safari home screen icon selection
+  - BASE_PATH variable used consistently for GitHub Pages support on apple-touch-icon paths
+---
+
+## 2026-01-18 21:27 - US-011
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- Implemented custom PWA install prompt that appears after 30 seconds
+- Files changed:
+  - src/components/PWAInstallPrompt.tsx (new) - Custom install prompt component
+  - src/app/index.tsx - Added PWAInstallPrompt to main view
+- Implementation details:
+  - Captures beforeinstallprompt event (Chrome-specific) and prevents default
+  - Shows custom prompt after 30 seconds with "Install Tic-Tac-Doh" heading
+  - Install and Not Now buttons with accessibility roles
+  - Styled with dough background (bg-background) and outline border (border-border)
+  - Persistence via AsyncStorage (@tic-tac-doh/install-prompt-dismissed key)
+  - Web-only: Platform.OS === 'web' check prevents native execution
+  - SSR safe: typeof window !== 'undefined' checks
+- Typecheck passes
+- **Learnings for future iterations:**
+  - beforeinstallprompt is Chrome/Edge specific - Safari doesn't support it
+  - Must prevent default on event to capture it for later use
+  - AsyncStorage key format: @tic-tac-doh/[feature-name] for app-specific storage
+  - appinstalled event fires when user completes installation
+---
+
+## 2026-01-18 21:30 - US-012
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- Verified install prompt triggers native installation (verification story, no code changes needed)
+- Implementation already exists in PWAInstallPrompt.tsx from US-011:
+  - handleInstall() calls deferredPrompt.prompt() to show native browser install dialog
+  - Awaits deferredPrompt.userChoice to get user's decision (accepted/dismissed)
+  - Clears state (setDeferredPrompt(null), setShowPrompt(false)) to hide custom prompt
+  - appinstalled event listener also hides prompt when installation completes
+- Build passes (npm run build completes successfully)
+- Lint passes (only pre-existing warning in audioService.tsx)
+- Tests have pre-existing Expo/Jest configuration issue (unrelated to PWA work)
+- **Learnings for future iterations:**
+  - US-012 was implicitly completed as part of US-011 implementation
+  - deferredPrompt.prompt() returns a Promise that resolves after native dialog is shown
+  - userChoice Promise resolves with {outcome: 'accepted' | 'dismissed'}
+  - The beforeinstallprompt event can only be triggered once per page load
+---

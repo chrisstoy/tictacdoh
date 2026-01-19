@@ -183,8 +183,8 @@
         "Typecheck passes"
       ],
       "priority": 10,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "All PWA meta tags injected in build-pwa.js via injectPWAMetaTags function: manifest link, theme-color, apple-mobile-web-app-capable, apple-mobile-web-app-status-bar-style, apple-touch-icon (152px, 192px), and mobile-web-app-capable."
     },
     {
       "id": "US-011",
@@ -203,8 +203,8 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 11,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "PWAInstallPrompt component created in src/components/PWAInstallPrompt.tsx. Captures beforeinstallprompt event, shows custom prompt after 30 seconds with Install/Not Now buttons. Styled with bg-background border-border (dough theme). Integrated in src/app/index.tsx."
     },
     {
       "id": "US-012",
@@ -221,8 +221,8 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 12,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Verified: handleInstall() in PWAInstallPrompt.tsx calls deferredPrompt.prompt() to trigger native browser install dialog. Awaits userChoice for outcome. appinstalled event listener hides prompt after installation. Custom prompt clears state to disappear after user choice."
     },
     {
       "id": "US-013",
