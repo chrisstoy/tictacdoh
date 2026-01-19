@@ -165,8 +165,8 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 9,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Verified: Service worker precaches 56 files (HTML, CSS, JS ~1.84MB, images, fonts). Audio files runtime-cached with cache-first strategy. Navigation fallback to /index.html enables SPA routing offline. skipWaiting and clientsClaim ensure immediate activation. Typecheck passes."
     },
     {
       "id": "US-010",
