@@ -5,6 +5,7 @@ import { OptionsScreen } from '@/screens/options/OptionsScreen';
 import { PlayGameScreen } from '@/screens/play/PlayGameScreen';
 import { SetupGameScreen } from '@/screens/setup/SetupGameScreen';
 import { useAudioService } from '@/services/audioService';
+import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
 
 type ActiveMode = 'PLAY' | 'NEW' | 'OPTIONS';
 
@@ -67,6 +68,7 @@ export default function Index() {
           ></PlayGameScreen>
         </Animated.View>
       )}
+      <PWAInstallPrompt />
     </View>
   );
 }
