@@ -283,3 +283,22 @@ Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
   - Splash screen on Android uses theme_color and background_color from manifest
   - Android Chrome shows "Add to Home screen" option in browser menu when criteria are met
 ---
+## 2026-01-19 - US-020
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- Verified service worker registration integration (verification story, no code changes needed)
+- Verification:
+  - registerServiceWorker imported in src/app/_layout.tsx (line 8)
+  - Registration occurs in useEffect hook (lines 24-28)
+  - Platform.OS === 'web' check prevents execution on native platforms
+  - SSR safety checks in registerServiceWorker.ts: typeof window !== 'undefined' and 'serviceWorker' in navigator
+  - Console logging for registration verification (line 31 in registerServiceWorker.ts)
+  - Registration happens after font loading, doesn't block app initialization
+- Build passes (npm run build completes successfully with 56 precached files)
+- Lint passes (only pre-existing warning in audioService.tsx)
+- **Learnings for future iterations:**
+  - US-020 was already implemented as part of US-006 implementation
+  - Service worker registration in useEffect ensures it runs after component mount
+  - Multiple SSR safety checks prevent server-side execution in both _layout.tsx and registerServiceWorker.ts
+  - Service worker registration is non-blocking - app functions normally before SW activation
+  - Base path detection from window.location.pathname handles GitHub Pages vs local dev
+---
