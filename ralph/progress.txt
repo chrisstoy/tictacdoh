@@ -320,3 +320,58 @@ Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
   - Rendering component outside conditional blocks ensures persistence across navigation state changes
   - dev-browser skill not available in this environment - verification done via static code analysis
 ---
+## 2026-01-19 - US-022
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- Verified GitHub Actions workflow already configured for PWA deployment (verification story, no code changes needed)
+- Verification:
+  - Workflow at .github/workflows/main.yml runs on pushes to main branch
+  - Sets up Node.js 20 with npm caching
+  - Installs dependencies with npm ci
+  - Executes npm run build with GITHUB_PAGES=true environment variable
+  - Uploads dist/ artifact to GitHub Pages
+  - Deploys artifact to GitHub Pages environment
+- Build pipeline (scripts/build-pwa.js) orchestrates all 6 PWA steps in correct order:
+  1. Generate icons (scripts/generate-icons.js)
+  2. Expo export for web platform
+  3. Copy icons from public/icons to dist/icons
+  4. Inject PWA meta tags into index.html (manifest link, theme-color, apple-mobile-web-app-capable, mobile-web-app-capable)
+  5. Generate manifest.json (scripts/generate-manifest.js)
+  6. Generate service worker with Workbox (scripts/generate-sw.js)
+- Local build verification passed:
+  - All 6 build steps completed successfully
+  - 56 files precached (12.88MB total size)
+  - All required files present: index.html, manifest.json, sw.js, icons/ (9 files)
+  - Base path correctly set to /tictacdoh/ for GitHub Pages
+  - PWA meta tags injected correctly
+- Typecheck passes
+- **Learnings for future iterations:**
+  - US-022 was a verification story - workflow already configured from initial project setup
+  - GITHUB_PAGES=true env var triggers /tictacdoh/ base path throughout all build scripts
+  - GitHub Actions workflow uses actions/configure-pages@v5, actions/upload-pages-artifact@v3, and actions/deploy-pages@v4
+  - Build artifacts are uploaded to GitHub Pages environment and deployed automatically
+  - No code changes needed - just verification that existing workflow includes all PWA steps
+---
+## 2026-01-19 - US-023
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- Verified Lighthouse PWA audit passes with 100/100 score (verification story, no code changes needed)
+- Implementation verification:
+  - Used Lighthouse v11.7.1 (v13 removed PWA category)
+  - Built app locally with `npm run build`
+  - Served with npx serve on port 8080
+  - Ran Lighthouse PWA audit: score 100/100
+- All PWA audits passing:
+  - installable-manifest: Web app manifest and service worker meet installability requirements
+  - splash-screen: Configured for custom splash screen
+  - themed-omnibox: Theme color for address bar
+  - content-width: Sized correctly for viewport
+  - viewport: Has meta viewport tag
+  - maskable-icon: Manifest has maskable icon
+- Files changed:
+  - ralph/prd.json - Updated US-023 to passes: true with verification notes
+- Build passes (56 precached files, 12.88MB)
+- **Learnings for future iterations:**
+  - Lighthouse v13+ removed the PWA category - use v11 for PWA audits (npx lighthouse@11)
+  - PWA installability is validated by: manifest with required fields, service worker with fetch handler, icons (192px+ and maskable), viewport meta tag, themed omnibox
+  - All PWA implementation from previous stories (US-001 through US-022) already met 100% of Lighthouse PWA requirements
+  - No additional work needed - previous implementation was complete and correct
+---

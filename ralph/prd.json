@@ -348,8 +348,8 @@
         "Typecheck passes"
       ],
       "priority": 22,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Verified: GitHub Actions workflow at .github/workflows/main.yml already configured correctly. Runs on pushes to main, sets up Node.js 20, runs npm ci, executes npm run build with GITHUB_PAGES=true env var. Build script (build-pwa.js) executes all 6 PWA steps: generate icons, expo export, copy icons, inject PWA meta tags, generate manifest, generate service worker. Uploads dist/ artifact and deploys to GitHub Pages. Local build verified: 56 files precached (12.88MB), all required files present (index.html, manifest.json, sw.js, icons/). Typecheck passes."
     },
     {
       "id": "US-023",
@@ -367,8 +367,8 @@
         "Typecheck passes"
       ],
       "priority": 23,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Verified: Lighthouse v11.7.1 PWA audit score 100/100. All checks passing: installable-manifest (web app manifest and service worker meet installability requirements), splash-screen (configured for custom splash screen), themed-omnibox (theme color for address bar), content-width (sized correctly for viewport), viewport (has meta viewport tag), maskable-icon (manifest has maskable icon). Typecheck passes."
     },
     {
       "id": "US-024",
