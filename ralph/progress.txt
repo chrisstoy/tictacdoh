@@ -220,3 +220,24 @@ Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
   - AsyncStorage persists across page reloads (uses localStorage on web)
   - Clearing localStorage/AsyncStorage will reset dismissed state, allowing prompt to reappear
 ---
+
+## 2026-01-18 22:00 - US-014
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- Verified PWA launches in standalone mode (verification story, no code changes needed)
+- Configuration already correct from previous stories:
+  - manifest.json has `display: 'standalone'` which launches without browser chrome
+  - manifest.json has `theme_color: '#fdde97'` for status bar styling
+  - manifest.json has `name: 'Tic-Tac-Doh - A Doughy Tic-Tac-Toe Game'` for title bar
+  - manifest.json has `short_name: 'Tic-Tac-Doh'` for home screen icon
+- HTML meta tags correctly injected:
+  - `<meta name="theme-color" content="#fdde97"/>` for browser UI theming
+  - `<meta name="apple-mobile-web-app-capable" content="yes"/>` for iOS standalone mode
+  - `<meta name="apple-mobile-web-app-status-bar-style" content="default"/>` for iOS status bar
+- Build passes (npm run build completes successfully)
+- Typecheck passes
+- Lint passes (only pre-existing warning in audioService.tsx)
+- **Learnings for future iterations:**
+  - PWA standalone mode is controlled by `display: 'standalone'` in manifest.json
+  - Theme color in both manifest.json and HTML meta tag ensures consistent status bar styling
+  - iOS requires apple-mobile-web-app-capable and status-bar-style meta tags for proper standalone behavior
+---
