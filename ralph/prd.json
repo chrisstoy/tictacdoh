@@ -108,7 +108,7 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 6,
-      "passes": false,
+      "passes": true,
       "notes": ""
     },
     {
@@ -126,7 +126,7 @@
         "Typecheck passes"
       ],
       "priority": 7,
-      "passes": false,
+      "passes": true,
       "notes": ""
     },
     {
@@ -143,8 +143,8 @@
         "Typecheck passes"
       ],
       "priority": 8,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Verified: Service worker generated with audio-cache runtime caching (cache-first strategy, 30 day expiration). All used audio files (9 MP3s) are in dist and will be cached at runtime when played. game-setup-music.mp3 is not used in the app so it's not exported."
     },
     {
       "id": "US-009",

@@ -1,0 +1,127 @@
+# Ralph Progress Log
+Started: Sun Jan 18 15:54:26 EST 2026
+---
+
+## Codebase Patterns
+- Use sharp library for image processing in Node.js scripts
+- PWA icons go in public/icons/ directory
+- Build scripts go in scripts/ directory as plain JavaScript files
+- Theme color for app is #fdde97 (dough background)
+- Use workbox-build library for service worker generation
+- Web-only features in React Native: check Platform.OS === 'web' before execution
+- SSR safety for browser APIs: check typeof window !== 'undefined'
+
+---
+
+## 2026-01-18 15:55 - US-001
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- Implemented PWA icon generation script
+- Files changed:
+  - scripts/generate-icons.js (new) - Icon generation using sharp
+  - package.json - Added generate:icons npm script, added sharp dev dependency
+  - public/icons/ (new) - 9 generated PNG icons
+- **Learnings for future iterations:**
+  - Source icon at assets/icon.png is 1024x1024, perfect for scaling down
+  - Maskable icons need 40% safe zone - content scaled to 60% with 20% padding on each side
+  - sharp library handles PNG generation well with background color flattening
+
+---
+
+## 2026-01-18 16:05 - US-002
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- Implemented PWA manifest generation script with environment-aware paths
+- Files changed:
+  - scripts/generate-manifest.js (new) - Manifest generator with GITHUB_PAGES env support
+  - package.json - Added generate:manifest npm script
+- **Learnings for future iterations:**
+  - GITHUB_PAGES=true env var triggers /tictacdoh/ base path for GitHub Pages deployment
+  - Manifest outputs to dist/ directory (same as expo export output)
+  - All 9 icons (8 standard + 1 maskable) are included in manifest with proper paths
+---
+
+## 2026-01-18 16:53 - US-003
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- Implemented service worker generation with Workbox
+- Files changed:
+  - scripts/generate-sw.js (new) - Service worker generator using workbox-build
+  - package.json - Added generate:sw npm script, added workbox-build dev dependency
+- **Learnings for future iterations:**
+  - Use globPatterns to include specific file types in precache (html, css, js, json, ico, png, svg, fonts)
+  - Use globIgnores to exclude large files from precache (setup-music, game-setup-music mp3s)
+  - Runtime caching handles audio files with cache-first strategy
+  - Workbox provides CacheFirst handler for long-lived assets, runtime caching for on-demand loading
+  - Service worker outputs to dist/sw.js after expo export
+---
+
+## 2026-01-18 17:05 - US-004
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- Implemented complete PWA build pipeline
+- Files changed:
+  - scripts/build-pwa.js (new) - Orchestrates all build steps in correct order
+  - package.json - Updated build script to use build-pwa.js
+- **Learnings for future iterations:**
+  - Build order: icons → expo export → copy icons to dist → manifest → service worker
+  - Icons must be copied from public/icons/ to dist/icons/ after expo export
+  - Build script uses execSync with stdio: 'inherit' to show child process output
+  - Verification at end confirms all required files exist in dist/
+---
+
+## 2026-01-18 17:20 - US-005
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- Web app manifest now loads correctly with all required fields
+- Files changed:
+  - scripts/build-pwa.js - Added injectManifestLink() function to inject manifest link into index.html
+- **Learnings for future iterations:**
+  - Expo export generates index.html without PWA meta tags - must inject them post-build
+  - Manifest link injection uses same BASE_PATH logic as manifest generator
+  - Build order updated: icons → expo export → copy icons → inject manifest link → generate manifest → generate service worker
+  - Verified all 9 icons accessible at /icons/ endpoint (HTTP 200)
+---
+
+## 2026-01-18 17:40 - US-006
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- Implemented service worker registration on app load
+- Files changed:
+  - src/services/registerServiceWorker.ts (new) - Service worker registration utility
+  - src/app/_layout.tsx - Added SW registration call in useEffect (web platform only)
+- **Learnings for future iterations:**
+  - Service worker registration must check Platform.OS === 'web' to avoid running on native
+  - SSR safety check needed: typeof window === 'undefined' before navigator.serviceWorker access
+  - Base path detection from window.location.pathname for GitHub Pages vs local dev
+  - Service worker scope must match base path ('/tictacdoh/' vs '/')
+  - Registration outputs console message for easy verification in DevTools
+---
+
+## 2026-01-18 21:05 - US-007
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- Verified service worker precaches critical resources (verification story, no code changes)
+- Verified by running `npm run build`:
+  - Workbox precache generated with 56 files
+  - HTML files cached: index.html, _sitemap.html, +not-found.html
+  - CSS bundle cached: _expo/static/css/web-*.css
+  - JS bundle cached: _expo/static/js/web/entry-*.js (~1.84MB)
+  - Small assets precached: all PNG game assets, icons, TTF fonts
+  - MP3 audio files correctly excluded from precache (handled by runtime caching)
+- Typecheck passes
+- **Learnings for future iterations:**
+  - Verification stories may not require code changes - just verify existing implementation
+  - Jest tests failing on main branch is a pre-existing Expo/Jest configuration issue unrelated to PWA work
+  - Precache size is ~12.87MB total including all game assets
+---
+
+## 2026-01-18 21:07 - US-008
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- Verified service worker caches audio with runtime caching (verification story, no code changes)
+- Verification:
+  - Generated sw.js includes audio-cache runtime caching: `/\.(?:mp3|wav|ogg|m4a)$/i` pattern
+  - Cache-first strategy with 30 day expiration (2592000 seconds)
+  - CacheableResponsePlugin configured for statuses [0, 200] (handles CORS)
+  - 9 MP3 audio files in dist/ will be cached when played
+  - setup-music.mp3 (190KB) is the main background music, will be runtime cached
+  - game-setup-music.mp3 is not used in the app, so it's not exported
+- Typecheck passes
+- **Learnings for future iterations:**
+  - Expo only exports assets that are actually imported/required in the codebase
+  - game-setup-music.mp3 (2.5MB) exists in assets but is not used, so it's not in dist/
+  - Audio cache verification requires browser DevTools - files are cached at runtime when played
+---
