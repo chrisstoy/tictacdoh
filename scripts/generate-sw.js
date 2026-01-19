@@ -32,14 +32,18 @@ async function buildServiceWorker() {
       swDest: path.join(DIST_DIR, 'sw.js'),
       globDirectory: DIST_DIR,
 
-      // Precache all static assets except large audio files
-      globPatterns: ['**/*.{html,css,js,json,ico,png,svg,woff,woff2,ttf}'],
+      // Precache only essential app shell (HTML, CSS, JS, icons in /icons/, fonts)
+      // Exclude PNG images from precache - they'll be runtime cached when used
+      globPatterns: [
+        '**/*.{html,css,js,json,ico,svg,woff,woff2,ttf}',
+        'icons/*.png', // Only precache PWA icons
+      ],
 
-      // Exclude large music files from precache (they'll be cached at runtime)
+      // Exclude large assets from precache (they'll be cached at runtime)
       globIgnores: [
         '**/setup-music*.mp3',
         '**/game-setup-music*.mp3',
-        // Also ignore any very large files
+        'assets/**/*.png', // Game assets cached at runtime
         '**/*.map',
       ],
 
