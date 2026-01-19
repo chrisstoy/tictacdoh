@@ -41,9 +41,9 @@ function runCommand(command, description) {
   }
 }
 
-function injectManifestLink() {
+function injectPWAMetaTags() {
   console.log(`\n${'='.repeat(60)}`);
-  console.log('Step: Inject manifest link into index.html');
+  console.log('Step: Inject PWA meta tags into index.html');
   console.log(`${'='.repeat(60)}\n`);
 
   if (!fs.existsSync(INDEX_HTML)) {
@@ -53,20 +53,36 @@ function injectManifestLink() {
 
   let html = fs.readFileSync(INDEX_HTML, 'utf-8');
 
-  // Check if manifest link already exists
+  // Check if PWA meta tags already exist
   if (html.includes('rel="manifest"') || html.includes("rel='manifest'")) {
-    console.log('Manifest link already exists in index.html');
+    console.log('PWA meta tags already exist in index.html');
     return;
   }
 
-  // Inject manifest link before </head>
-  const manifestLink = `<link rel="manifest" href="${BASE_PATH}manifest.json"/>`;
-  html = html.replace('</head>', `${manifestLink}</head>`);
+  // Build PWA meta tags
+  const pwaMetaTags = [
+    // Web app manifest
+    `<link rel="manifest" href="${BASE_PATH}manifest.json"/>`,
+    // Theme color
+    `<meta name="theme-color" content="#fdde97"/>`,
+    // Apple iOS support
+    `<meta name="apple-mobile-web-app-capable" content="yes"/>`,
+    `<meta name="apple-mobile-web-app-status-bar-style" content="default"/>`,
+    `<link rel="apple-touch-icon" sizes="152x152" href="${BASE_PATH}icons/icon-152.png"/>`,
+    `<link rel="apple-touch-icon" sizes="192x192" href="${BASE_PATH}icons/icon-192.png"/>`,
+    // Chrome Android support
+    `<meta name="mobile-web-app-capable" content="yes"/>`,
+  ];
+
+  // Inject all PWA meta tags before </head>
+  const metaTagsString = pwaMetaTags.join('\n    ');
+  html = html.replace('</head>', `    ${metaTagsString}\n  </head>`);
 
   fs.writeFileSync(INDEX_HTML, html, 'utf-8');
 
-  console.log(`Injected: ${manifestLink}`);
-  console.log('\n✓ Manifest link injected into index.html');
+  console.log('Injected PWA meta tags:');
+  pwaMetaTags.forEach((tag) => console.log(`  ${tag}`));
+  console.log('\n✓ PWA meta tags injected into index.html');
 }
 
 function copyIcons() {
@@ -112,8 +128,8 @@ function main() {
   // Step 3: Copy icons to dist
   copyIcons();
 
-  // Step 4: Inject manifest link into HTML
-  injectManifestLink();
+  // Step 4: Inject PWA meta tags into HTML
+  injectPWAMetaTags();
 
   // Step 5: Generate manifest
   runCommand('npm run generate:manifest', 'Generate web app manifest');
