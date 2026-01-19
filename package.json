@@ -4,7 +4,10 @@
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
-    "build": "expo export --platform web",
+    "build": "node scripts/build-pwa.js",
+    "generate:icons": "node scripts/generate-icons.js",
+    "generate:manifest": "node scripts/generate-manifest.js",
+    "generate:sw": "node scripts/generate-sw.js",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
@@ -51,7 +54,9 @@
     "jest": "^30.2.0",
     "jest-expo": "~54.0.16",
     "prettier": "^3.7.4",
+    "sharp": "^0.34.5",
     "ts-jest": "^29.4.6",
-    "typescript": "~5.9.3"
+    "typescript": "~5.9.3",
+    "workbox-build": "^7.4.0"
   }
 }

@@ -70,6 +70,7 @@ export function AudioServiceProvider({ children }: AudioServiceProviderProps) {
       setSoundPlayer(null);
       setMusicPlayer(null);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
