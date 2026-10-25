@@ -9,4 +9,4 @@ looks relevant to what you are about to decide.
 
 | # | Decision | Status |
 |---|---|---|
-| — | _No decisions recorded yet._ | — |
+| 0001 | [Ship native apps by wrapping the web build in Capacitor](0001-ship-native-apps-by-wrapping-the-web-build-in-capacitor.md) | Accepted |
