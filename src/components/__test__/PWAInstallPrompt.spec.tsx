@@ -3,9 +3,13 @@ import { Platform } from 'react-native';
 import { isNativeShell } from '@/services/nativeShell';
 import { PWAInstallPrompt } from '../PWAInstallPrompt';
 
-jest.mock('@react-native-async-storage/async-storage', () =>
-  require('@react-native-async-storage/async-storage/jest/async-storage-mock')
-);
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  __esModule: true,
+  default: {
+    getItem: jest.fn(() => Promise.resolve(null)),
+    setItem: jest.fn(() => Promise.resolve()),
+  },
+}));
 
 jest.mock('@/services/nativeShell', () => ({
   isNativeShell: jest.fn(),
