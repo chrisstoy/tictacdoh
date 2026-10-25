@@ -20,6 +20,9 @@
     "test:coverage": "jest --coverage"
   },
   "dependencies": {
+    "@capacitor/android": "8.5.3",
+    "@capacitor/core": "8.5.3",
+    "@capacitor/ios": "8.5.3",
     "@react-native-async-storage/async-storage": "2.2.0",
     "expo": "~54.0.31",
     "expo-audio": "~1.1.1",
@@ -43,6 +46,7 @@
   },
   "private": true,
   "devDependencies": {
+    "@capacitor/cli": "8.5.3",
     "@testing-library/jest-native": "^5.4.3",
     "@testing-library/react-native": "^13.3.3",
     "@trivago/prettier-plugin-sort-imports": "^6.0.2",
