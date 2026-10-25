@@ -48,9 +48,9 @@ The plugin cannot play the web bundle's `http://localhost` or `capacitor://` URL
 `npm run generate:native-assets` (`scripts/generate-native-assets.js`) stages the existing artwork and runs `@capacitor/assets` for iOS and Android only. It does not regenerate PWA icons.
 
 - `assets/icon.png` → home-screen icons (`icon-only`)
-- `assets/adaptive-icon.png` → Android adaptive foreground. The generator insets it 16.7%, which is the adaptive-icon safe zone, so round and squircle masks do not clip the mark. The adaptive background is a solid `#fdde97`.
-- `assets/splash-screen.png` (1024×1536, below the documented 2732×2732 square) → launch splash. It is contained, not cropped, on a `#fdde97` 2732 canvas before generation so the square iOS splash keeps the title and character.
-- `assets/splash-icon.png` → Android 12 splash icon at `android/app/src/main/res/drawable-nodpi/splash_icon.png`. Android 12 shows a masked icon; the full-bleed splash is the portrait `splash-screen` artwork.
+- `assets/adaptive-icon.png` → Android adaptive foreground. The art is first fit to the square inscribed in a circle, then `@capacitor/assets` insets it 16.7%. The adaptive background inset is `0%` so the mask shows `#fdde97` instead of black corners. Round and squircle masks keep the whole mark.
+- `assets/splash-screen.png` (1024×1536, below the documented 2732×2732 square) → launch splash. It is contained, not cropped, on a `#fdde97` 2732 canvas before generation. `LaunchScreen.storyboard` uses `scaleAspectFit`, so an iPhone shows that whole square instead of aspect-filling the sides off.
+- `assets/splash-icon.png` → Android 12 splash icon at `android/app/src/main/res/drawable-nodpi/splash_icon.png`, fit inside the circular mask on `#fdde97`. The portrait `splash-screen` artwork is the full-bleed launch drawable.
 
 Portrait is locked to `UIInterfaceOrientationPortrait` for both iPhone and iPad in `Info.plist`, and `android:screenOrientation="portrait"` on the Android activity. iPad stays supported (`TARGETED_DEVICE_FAMILY` 1,2). The 30em centered column is unchanged.
 

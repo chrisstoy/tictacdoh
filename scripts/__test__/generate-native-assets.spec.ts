@@ -1,7 +1,10 @@
 import {
   APP_BACKGROUND,
+  LAUNCH_IMAGE_CONTENT_MODE,
   SPLASH_CANVAS_SIZE,
+  adaptiveBackgroundInset,
   androidSplashIconRelativePath,
+  circleSafeScale,
   nativeAssetSources,
   splashNeedsDocumentedSquare,
 } from '../generate-native-assets';
@@ -17,6 +20,12 @@ describe('generate-native-assets', () => {
     expect(androidSplashIconRelativePath).toBe(
       'android/app/src/main/res/drawable-nodpi/splash_icon.png'
     );
+  });
+
+  it('fits the iOS launch image and keeps adaptive artwork inside a circular mask', () => {
+    expect(LAUNCH_IMAGE_CONTENT_MODE).toBe('scaleAspectFit');
+    expect(circleSafeScale()).toBeCloseTo(1 / Math.sqrt(2), 5);
+    expect(adaptiveBackgroundInset()).toBe('0%');
   });
 
   it('flags a splash source below the documented 2732 square', () => {

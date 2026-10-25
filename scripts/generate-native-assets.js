@@ -11,6 +11,17 @@ const sharp = require('sharp');
 
 const APP_BACKGROUND = '#fdde97';
 const SPLASH_CANVAS_SIZE = 2732;
+const LAUNCH_IMAGE_CONTENT_MODE = 'scaleAspectFit';
+
+/** Square that fits inside a circular launcher or Android 12 splash mask. */
+function circleSafeScale() {
+  return 1 / Math.sqrt(2);
+}
+
+/** Yellow should fill the mask. A non-zero background inset leaves black corners. */
+function adaptiveBackgroundInset() {
+  return '0%';
+}
 
 const nativeAssetSources = {
   'icon-only.png': 'assets/icon.png',
@@ -25,6 +36,26 @@ function splashNeedsDocumentedSquare(width, height) {
   return width < SPLASH_CANVAS_SIZE || height < SPLASH_CANVAS_SIZE;
 }
 
+async function containArtwork(source, dest, canvas, scale) {
+  const inner = Math.max(1, Math.round(canvas * scale));
+  const artwork = await sharp(source)
+    .resize(inner, inner, { fit: 'contain', background: APP_BACKGROUND })
+    .png()
+    .toBuffer();
+
+  await sharp({
+    create: {
+      width: canvas,
+      height: canvas,
+      channels: 4,
+      background: APP_BACKGROUND,
+    },
+  })
+    .composite([{ input: artwork, gravity: 'centre' }])
+    .png()
+    .toFile(dest);
+}
+
 async function stageSources(root, stagingDir) {
   await fs.promises.mkdir(stagingDir, { recursive: true });
 
@@ -32,9 +63,13 @@ async function stageSources(root, stagingDir) {
     path.join(root, nativeAssetSources['icon-only.png']),
     path.join(stagingDir, 'icon-only.png')
   );
-  await fs.promises.copyFile(
+  // @capacitor/assets then insets the foreground another 16.7%. Pre-fitting
+  // the art to the inscribed square keeps a circular mask from clipping it.
+  await containArtwork(
     path.join(root, nativeAssetSources['icon-foreground.png']),
-    path.join(stagingDir, 'icon-foreground.png')
+    path.join(stagingDir, 'icon-foreground.png'),
+    1024,
+    circleSafeScale()
   );
 
   await sharp({
@@ -105,6 +140,38 @@ async function generateNativeAssets() {
       ],
       { cwd: root, stdio: 'inherit' }
     );
+
+    const storyboardPath = path.join(root, 'ios/App/App/Base.lproj/LaunchScreen.storyboard');
+    const storyboard = await fs.promises.readFile(storyboardPath, 'utf8');
+    await fs.promises.writeFile(
+      storyboardPath,
+      storyboard.replace(
+        /contentMode="scaleAspectFill"/g,
+        `contentMode="${LAUNCH_IMAGE_CONTENT_MODE}"`
+      )
+    );
+
+    await containArtwork(
+      path.join(root, nativeAssetSources.splashIcon),
+      path.join(root, androidSplashIconRelativePath),
+      1024,
+      circleSafeScale()
+    );
+
+    for (const relativePath of [
+      'android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml',
+      'android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml',
+    ]) {
+      const xmlPath = path.join(root, relativePath);
+      const xml = await fs.promises.readFile(xmlPath, 'utf8');
+      await fs.promises.writeFile(
+        xmlPath,
+        xml.replace(
+          /(<background>\s*<inset android:drawable="@mipmap\/ic_launcher_background" android:inset=")[^"]*(")/,
+          `$1${adaptiveBackgroundInset()}$2`
+        )
+      );
+    }
   } finally {
     await fs.promises.rm(stagingDir, { recursive: true, force: true });
   }
@@ -112,8 +179,11 @@ async function generateNativeAssets() {
 
 module.exports = {
   APP_BACKGROUND,
+  LAUNCH_IMAGE_CONTENT_MODE,
   SPLASH_CANVAS_SIZE,
+  adaptiveBackgroundInset,
   androidSplashIconRelativePath,
+  circleSafeScale,
   nativeAssetSources,
   splashNeedsDocumentedSquare,
   stageSources,
