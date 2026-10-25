@@ -29,6 +29,22 @@ export function nextMusicTransport(input: MusicTransportInput): MusicTransport {
   return 'noop';
 }
 
+/**
+ * Android `@capacitor-community/native-audio` adds an asset to an activity
+ * resume list from both `pause()` and `resume()`. The next foreground then
+ * starts that asset even after music was turned off. `stop()` and `play()` do
+ * not join the list. iOS pause/resume does not have the list.
+ */
+export function nativeMusicControl(platform: string): {
+  silence: 'stop' | 'pause';
+  resume: 'play' | 'resume';
+} {
+  if (platform === 'android') {
+    return { silence: 'stop', resume: 'play' };
+  }
+  return { silence: 'pause', resume: 'resume' };
+}
+
 /** Single preloaded music asset. Lifecycle never allocates another. */
 export const NATIVE_MUSIC_ASSET_ID = 'music';
 

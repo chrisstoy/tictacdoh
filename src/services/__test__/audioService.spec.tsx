@@ -38,6 +38,7 @@ jest.mock('@capacitor-community/native-audio', () => ({
     resume: jest.fn(() => Promise.resolve()),
     loop: jest.fn(() => Promise.resolve()),
     stop: jest.fn(() => Promise.resolve()),
+    isPlaying: jest.fn(() => Promise.resolve({ isPlaying: false })),
     unload: jest.fn(() => Promise.resolve()),
   },
 }));
@@ -66,6 +67,8 @@ const mockedPlay = NativeAudio.play as jest.Mock;
 const mockedPause = NativeAudio.pause as jest.Mock;
 const mockedResume = NativeAudio.resume as jest.Mock;
 const mockedLoop = NativeAudio.loop as jest.Mock;
+const mockedStop = NativeAudio.stop as jest.Mock;
+const mockedIsPlaying = NativeAudio.isPlaying as jest.Mock;
 
 let onAppState: (state: { isActive: boolean }) => void = () => {};
 const removeListener = jest.fn(() => Promise.resolve());
@@ -110,6 +113,9 @@ describe('AudioServiceProvider', () => {
     mockedPause.mockClear();
     mockedResume.mockClear();
     mockedLoop.mockClear();
+    mockedStop.mockClear();
+    mockedIsPlaying.mockReset();
+    mockedIsPlaying.mockImplementation(() => Promise.resolve({ isPlaying: false }));
     (createAudioPlayer as jest.Mock).mockClear();
     removeListener.mockClear();
     mockedAddListener.mockReset();
@@ -302,6 +308,72 @@ describe('AudioServiceProvider', () => {
 
     expect(mockedResume).not.toHaveBeenCalled();
     expect(mockedPause).toHaveBeenCalledWith({ assetId: 'music' });
+  });
+
+  it('on Android stops music instead of pausing, and does not call resume after stop', async () => {
+    mockedIsNativeShell.mockReturnValue(true);
+    mockedGetPlatform.mockReturnValue('android');
+
+    renderAudio();
+    await flush();
+
+    await act(async () => {
+      apiRef.current?.playMusic('setup', { loop: true });
+    });
+    await flush();
+    mockedPlay.mockClear();
+    mockedStop.mockClear();
+    mockedPause.mockClear();
+    mockedResume.mockClear();
+
+    await act(async () => {
+      apiRef.current?.stopMusic();
+    });
+    await flush();
+
+    expect(mockedStop).toHaveBeenCalledWith({ assetId: 'music' });
+    expect(mockedPause).not.toHaveBeenCalled();
+
+    await act(async () => {
+      onAppState({ isActive: false });
+      onAppState({ isActive: true });
+    });
+    await flush();
+
+    expect(mockedResume).not.toHaveBeenCalled();
+    expect(mockedPlay).not.toHaveBeenCalled();
+  });
+
+  it('on Android does not resume music on foreground when music is disabled', async () => {
+    mockedIsNativeShell.mockReturnValue(true);
+    mockedGetPlatform.mockReturnValue('android');
+
+    renderAudio();
+    await flush();
+
+    await act(async () => {
+      apiRef.current?.playMusic('setup', { loop: true });
+    });
+    await flush();
+
+    await act(async () => {
+      useOptionsStore.getState().setEnableMusic(false);
+    });
+    await flush();
+    mockedPlay.mockClear();
+    mockedResume.mockClear();
+    mockedPause.mockClear();
+
+    await act(async () => {
+      onAppState({ isActive: false });
+      onAppState({ isActive: true });
+    });
+    await flush();
+
+    expect(mockedStop).toHaveBeenCalledWith({ assetId: 'music' });
+    expect(mockedPause).not.toHaveBeenCalled();
+    expect(mockedResume).not.toHaveBeenCalled();
+    expect(mockedPlay).not.toHaveBeenCalled();
   });
 
   it('does not start music until native preload finishes', async () => {

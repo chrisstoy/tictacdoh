@@ -1,6 +1,7 @@
 import {
   NATIVE_MUSIC_ASSET_ID,
   musicAssetIdForTransport,
+  nativeMusicControl,
   nextMusicTransport,
   selectAudioBackend,
 } from '../audioBackend';
@@ -12,6 +13,16 @@ describe('selectAudioBackend', () => {
 
   it('selects expo-audio on the web', () => {
     expect(selectAudioBackend(false)).toBe('web');
+  });
+});
+
+describe('nativeMusicControl', () => {
+  it('uses stop and play on Android so pause/resume cannot arm the plugin resume list', () => {
+    expect(nativeMusicControl('android')).toEqual({ silence: 'stop', resume: 'play' });
+  });
+
+  it('uses pause and resume on iOS', () => {
+    expect(nativeMusicControl('ios')).toEqual({ silence: 'pause', resume: 'resume' });
   });
 });
 

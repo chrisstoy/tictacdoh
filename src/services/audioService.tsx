@@ -3,7 +3,12 @@ import { App } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 import { ReactNode, createContext, useContext, useEffect, useRef, useState } from 'react';
 import { AudioPlayer, AudioSource, createAudioPlayer } from 'expo-audio';
-import { NATIVE_MUSIC_ASSET_ID, nextMusicTransport, selectAudioBackend } from './audioBackend';
+import {
+  NATIVE_MUSIC_ASSET_ID,
+  nativeMusicControl,
+  nextMusicTransport,
+  selectAudioBackend,
+} from './audioBackend';
 import { isNativeShell } from './nativeShell';
 import { selectEnableMusic, selectEnableSound, useOptionsStore } from './optionsState';
 
@@ -104,8 +109,28 @@ async function startNativeMusic(loop: boolean, offset: number): Promise<void> {
 
   await NativeAudio.play({ assetId: NATIVE_MUSIC_ASSET_ID, time: offset });
   if (loop) {
-    await NativeAudio.loop({ assetId: NATIVE_MUSIC_ASSET_ID });
+    // Android's loop() only flips MediaPlayer.setLooping and never resolves.
+    void NativeAudio.loop({ assetId: NATIVE_MUSIC_ASSET_ID });
   }
+}
+
+async function silenceNativeMusic(): Promise<void> {
+  const assetId = NATIVE_MUSIC_ASSET_ID;
+  if (nativeMusicControl(Capacitor.getPlatform()).silence === 'stop') {
+    await NativeAudio.stop({ assetId });
+    return;
+  }
+  await NativeAudio.pause({ assetId });
+}
+
+async function continueNativeMusic(loop: boolean, offset: number): Promise<void> {
+  if (nativeMusicControl(Capacitor.getPlatform()).resume === 'play') {
+    const status = await NativeAudio.isPlaying({ assetId: NATIVE_MUSIC_ASSET_ID });
+    if (status.isPlaying) return;
+    await startNativeMusic(loop, offset);
+    return;
+  }
+  await NativeAudio.resume({ assetId: NATIVE_MUSIC_ASSET_ID });
 }
 
 function createReadyGate(): { promise: Promise<void>; resolve: () => void } {
@@ -159,10 +184,10 @@ function NativeAudioServiceProvider({ children }: AudioServiceProviderProps) {
       });
       console.info(`Native music transport ${transport} active=${isActive}`);
       if (transport === 'resume') {
-        void NativeAudio.resume({ assetId: NATIVE_MUSIC_ASSET_ID });
+        void continueNativeMusic(loopMusic.current, musicOffset.current);
         return;
       }
-      void NativeAudio.pause({ assetId: NATIVE_MUSIC_ASSET_ID });
+      void silenceNativeMusic();
     }).then((handle) => {
       if (cancelled) {
         void handle.remove();
@@ -189,7 +214,7 @@ function NativeAudioServiceProvider({ children }: AudioServiceProviderProps) {
 
     if (!musicEnabled) {
       desiredPlaying.current = false;
-      void ready.then(() => NativeAudio.pause({ assetId: NATIVE_MUSIC_ASSET_ID }));
+      void ready.then(() => silenceNativeMusic());
       return;
     }
 
@@ -201,7 +226,7 @@ function NativeAudioServiceProvider({ children }: AudioServiceProviderProps) {
     void ready.then(async () => {
       if (!desiredPlaying.current || !appIsActive.current) return;
       if (musicStarted.current) {
-        await NativeAudio.resume({ assetId: NATIVE_MUSIC_ASSET_ID });
+        await continueNativeMusic(loopMusic.current, musicOffset.current);
         return;
       }
       musicStarted.current = true;
@@ -236,7 +261,7 @@ function NativeAudioServiceProvider({ children }: AudioServiceProviderProps) {
   const stopMusic = () => {
     desiredPlaying.current = false;
     loopMusic.current = false;
-    void NativeAudio.pause({ assetId: NATIVE_MUSIC_ASSET_ID });
+    void silenceNativeMusic();
   };
 
   const value: AudioServiceContextValue = {
