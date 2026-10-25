@@ -46,6 +46,7 @@ describe('store release', () => {
     expect(options).toContain('<key>manageAppVersionAndBuildNumber</key>');
     expect(options).toContain('<false/>');
     expect(options).not.toContain('provisioningProfiles');
+    expect(read('ios/App/App/Info.plist')).toContain('<key>UIRequiresFullScreen</key>');
     expect(read('scripts/release-preflight.sh')).toContain("require('$root/package.json').version");
   });
 

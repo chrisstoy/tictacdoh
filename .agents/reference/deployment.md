@@ -57,3 +57,4 @@ Build job: checkout → configure-pages → Node 20 + npm cache → `npm ci` →
 ## Gotchas
 - Base path is hard-coded in several places (`/tictacdoh/`); renaming the repo/Pages path means updating all of them plus `registerServiceWorker.ts`.
 - Web builds must be SSR-safe (see `conventions.md`).
+- The iOS app is portrait-only and supports iPad (`TARGETED_DEVICE_FAMILY` 1,2). `Info.plist` sets `UIRequiresFullScreen` so App Store Connect accepts that. Without it, upload fails with error 90474 (iPad multitasking requires every orientation).
