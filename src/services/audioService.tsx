@@ -207,7 +207,7 @@ function NativeAudioServiceProvider({ children }: AudioServiceProviderProps) {
       musicStarted.current = true;
       await startNativeMusic(loopMusic.current, musicOffset.current);
     });
-  }, [musicEnabled]);
+  }, [musicEnabled, ready]);
 
   const playSound = (soundKey: SoundKey, offset = 0) => {
     if (!soundEnabled) return;
