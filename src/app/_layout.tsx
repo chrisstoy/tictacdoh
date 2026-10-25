@@ -5,6 +5,7 @@ import { useFonts } from 'expo-font';
 import { Slot } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { AudioServiceProvider } from '@/services/audioService';
+import { applyNativeStatusBar } from '@/services/nativeStatusBar';
 import { registerServiceWorker } from '@/services/registerServiceWorker';
 import './globals.css';
 
@@ -25,6 +26,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     if (Platform.OS === 'web') {
       registerServiceWorker();
     }
+  }, []);
+
+  useEffect(() => {
+    void applyNativeStatusBar();
   }, []);
 
   if (!loaded && !error) {

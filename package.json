@@ -10,6 +10,7 @@
     "cap:ios": "cap open ios",
     "cap:android": "cap open android",
     "generate:icons": "node scripts/generate-icons.js",
+    "generate:native-assets": "node scripts/generate-native-assets.js",
     "generate:manifest": "node scripts/generate-manifest.js",
     "generate:sw": "node scripts/generate-sw.js",
     "android": "expo start --android",
@@ -29,6 +30,7 @@
     "@capacitor/app": "8.1.2",
     "@capacitor/core": "8.5.3",
     "@capacitor/ios": "8.5.3",
+    "@capacitor/status-bar": "8.0.4",
     "@react-native-async-storage/async-storage": "2.2.0",
     "expo": "~54.0.31",
     "expo-audio": "~1.1.1",
@@ -52,6 +54,7 @@
   },
   "private": true,
   "devDependencies": {
+    "@capacitor/assets": "3.0.5",
     "@capacitor/cli": "8.5.3",
     "@testing-library/jest-native": "^5.4.3",
     "@testing-library/react-native": "^13.3.3",
