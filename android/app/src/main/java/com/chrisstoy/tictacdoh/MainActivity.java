@@ -1,4 +1,4 @@
-package com.stoyco.tictacdoh;
+package com.chrisstoy.tictacdoh;
 
 import com.getcapacitor.BridgeActivity;
 

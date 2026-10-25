@@ -1,6 +1,6 @@
 {
   "name": "tic-tac-doh",
-  "version": "1.0.0",
+  "version": "1.0",
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
@@ -9,6 +9,8 @@
     "cap:sync": "cap sync",
     "cap:ios": "cap open ios",
     "cap:android": "cap open android",
+    "release:ios": "bash scripts/release-ios.sh",
+    "release:android": "bash scripts/release-android.sh",
     "generate:icons": "node scripts/generate-icons.js",
     "generate:native-assets": "node scripts/generate-native-assets.js",
     "generate:manifest": "node scripts/generate-manifest.js",

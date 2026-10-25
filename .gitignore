@@ -12,6 +12,10 @@ expo-env.d.ts
 # Native
 # Capacitor ios/ and android/ projects are committed. Ignore signing
 # material and local machine files only.
+# Release archives and copied .aab files (scripts/release-*.sh).
+/build/
+# Upload-key passwords and the Play service-account path. Never commit.
+credentials.json
 *.orig.*
 *.jks
 *.keystore
@@ -37,5 +41,9 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+# Python (scripts/upload-android.py)
+__pycache__/
+*.pyc
 
 .agents/.dark-factory/

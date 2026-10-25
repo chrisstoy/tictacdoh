@@ -12,7 +12,7 @@ Tic-Tac-Doh: React Native tic-tac-toe on Expo SDK 54 (expo-router 6, React 19, R
 - `src/screens/{setup,play,options}/` — one screen each, with `components/`
 - `src/components/` — shared UI; `components/images/` wraps each PNG in `assets/`
 - `src/services/` — stores, game logic, audio, service-worker registration, `nativeShell.ts` (`isNativeShell()`)
-- `capacitor.config.ts` — `appId` `com.stoyco.tictacdoh`, `appName` `Tic-Tac-Doh`, `webDir` `dist`
+- `capacitor.config.ts` — `appId` `com.chrisstoy.tictacdoh` (the App Store Connect app, not `com.stoyco.tictacdoh`), `appName` `Tic-Tac-Doh`, `webDir` `dist`
 - `ios/`, `android/` — Capacitor native projects (generated web assets, Pods, and `local.properties` stay gitignored)
 - `src/animations/` — reanimated helpers (jiggle, push)
 - `scripts/` — PWA build pipeline; `public/icons/` generated icons

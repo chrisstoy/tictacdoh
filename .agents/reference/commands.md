@@ -47,3 +47,13 @@ npm run cap:android    # cap open android (Android Studio)
 npx cap run ios        # simulator, after build:native and cap:sync
 npx cap run android    # emulator, after build:native and cap:sync
 ```
+
+## Store release
+See `deployment.md`. These refuse a dirty tree and upload (iOS) or build (Android) from `main`.
+```bash
+npm run release:ios                         # archive + App Store Connect upload
+bash scripts/setup-android-signing.sh       # once
+npm run release:android                     # signed .aab in build/release/
+python3 scripts/upload-android.py           # dry run
+python3 scripts/upload-android.py --apply   # Play internal track
+```

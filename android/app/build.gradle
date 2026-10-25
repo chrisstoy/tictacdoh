@@ -1,5 +1,20 @@
 apply plugin: 'com.android.application'
 
+def storeVersion = new groovy.json.JsonSlurper().parse(rootProject.file("../package.json")).version
+def versionCodeOverride = project.findProperty("TICTACDOH_VERSION_CODE")
+def storeVersionCode
+if (versionCodeOverride != null) {
+    storeVersionCode = versionCodeOverride.toInteger()
+} else {
+    def stdout = new ByteArrayOutputStream()
+    def result = exec {
+        commandLine "git", "-C", rootProject.projectDir.parentFile.absolutePath, "rev-list", "--count", "HEAD"
+        standardOutput = stdout
+        ignoreExitValue true
+    }
+    storeVersionCode = result.exitValue == 0 ? stdout.toString().trim().toInteger() : 1
+}
+
 def keystorePropertiesFile = rootProject.file("keystore.properties")
 def keystoreProperties = new Properties()
 if (keystorePropertiesFile.exists()) {
@@ -7,14 +22,17 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "com.stoyco.tictacdoh"
+    namespace = "com.chrisstoy.tictacdoh"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.stoyco.tictacdoh"
+        applicationId "com.chrisstoy.tictacdoh"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        // Play rejects a reused versionCode. Default is the commit count, same as the iOS
+        // build number. release-android.sh passes -PTICTACDOH_VERSION_CODE. Fallback 1 is
+        // only for a checkout where git cannot run; do not upload that bundle.
+        versionCode storeVersionCode
+        versionName storeVersion
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
