@@ -40,6 +40,48 @@ const nativeAssetSources = {
 
 const androidSplashIconRelativePath = 'android/app/src/main/res/drawable-nodpi/splash_icon.png';
 
+function launchStoryboardXml() {
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17132" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="01J-lp-oVM">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17105"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <scene sceneID="EHf-IW-A2E">
+            <objects>
+                <viewController id="01J-lp-oVM" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="root-view">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <imageView userInteractionEnabled="NO" contentMode="${LAUNCH_IMAGE_CONTENT_MODE}" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="Splash" translatesAutoresizingMaskIntoConstraints="NO" id="splash-image">
+                                <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                            </imageView>
+                        </subviews>
+                        <color key="backgroundColor" red="0.992156862745098" green="0.8705882352941177" blue="0.592156862745098" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstItem="splash-image" firstAttribute="top" secondItem="root-view" secondAttribute="top" id="splash-top"/>
+                            <constraint firstItem="splash-image" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="splash-leading"/>
+                            <constraint firstAttribute="trailing" secondItem="splash-image" secondAttribute="trailing" id="splash-trailing"/>
+                            <constraint firstAttribute="bottom" secondItem="splash-image" secondAttribute="bottom" id="splash-bottom"/>
+                        </constraints>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="iYj-Kq-Ea1" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="53" y="375"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="Splash" width="1366" height="1366"/>
+    </resources>
+</document>
+`;
+}
+
 function splashNeedsDocumentedSquare(width, height) {
   return width < SPLASH_CANVAS_SIZE || height < SPLASH_CANVAS_SIZE;
 }
@@ -169,16 +211,7 @@ async function generateNativeAssets() {
     }
 
     const storyboardPath = path.join(root, 'ios/App/App/Base.lproj/LaunchScreen.storyboard');
-    let storyboard = await fs.promises.readFile(storyboardPath, 'utf8');
-    storyboard = storyboard.replace(
-      /contentMode="scaleAspectFill"/g,
-      `contentMode="${LAUNCH_IMAGE_CONTENT_MODE}"`
-    );
-    storyboard = storyboard.replace(
-      /<autoresizingMask key="autoresizingMask"\/>/,
-      '<autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>'
-    );
-    await fs.promises.writeFile(storyboardPath, storyboard);
+    await fs.promises.writeFile(storyboardPath, launchStoryboardXml());
 
     const stylesPath = path.join(root, 'android/app/src/main/res/values/styles.xml');
     let styles = await fs.promises.readFile(stylesPath, 'utf8');
@@ -220,6 +253,7 @@ module.exports = {
   nativeAssetSources,
   splashNeedsDocumentedSquare,
   stageSources,
+  launchStoryboardXml,
   generateNativeAssets,
 };
 

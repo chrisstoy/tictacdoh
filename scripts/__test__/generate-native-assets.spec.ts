@@ -6,6 +6,7 @@ import {
   android12SplashScale,
   androidSplashIconRelativePath,
   circleSafeScale,
+  launchStoryboardXml,
   nativeAssetSources,
   splashNeedsDocumentedSquare,
 } from '../generate-native-assets';
@@ -28,6 +29,14 @@ describe('generate-native-assets', () => {
     expect(circleSafeScale()).toBeCloseTo(1 / Math.sqrt(2), 5);
     expect(android12SplashScale()).toBeCloseTo((2 / 3) / Math.sqrt(2), 5);
     expect(adaptiveBackgroundInset()).toBe('0%');
+  });
+
+  it('puts the splash image inside a yellow root view so iOS draws it', () => {
+    const xml = launchStoryboardXml();
+    expect(xml).toContain(`contentMode="${LAUNCH_IMAGE_CONTENT_MODE}"`);
+    expect(xml).toContain('image="Splash"');
+    expect(xml).toContain('<view key="view"');
+    expect(xml).not.toContain('<imageView key="view"');
   });
 
   it('flags a splash source below the documented 2732 square', () => {
