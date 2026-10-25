@@ -1,10 +1,17 @@
+import { isNativeShell } from './nativeShell';
+
 /**
  * Registers the service worker for PWA functionality.
  * Only runs on web platform with service worker support.
+ * The Capacitor shell bundles the assets itself, so it must not register.
  */
 export async function registerServiceWorker(): Promise<void> {
   // SSR safety check - only run in browser environment
   if (typeof window === 'undefined') {
+    return;
+  }
+
+  if (isNativeShell()) {
     return;
   }
 
@@ -18,9 +25,7 @@ export async function registerServiceWorker(): Promise<void> {
     // Determine base path from current location
     // On GitHub Pages, the app runs at /tictacdoh/
     // Locally, it runs at /
-    const basePath = window.location.pathname.startsWith('/tictacdoh')
-      ? '/tictacdoh/'
-      : '/';
+    const basePath = window.location.pathname.startsWith('/tictacdoh') ? '/tictacdoh/' : '/';
 
     const swUrl = `${basePath}sw.js`;
 
