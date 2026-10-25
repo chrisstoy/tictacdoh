@@ -31,19 +31,6 @@ module.exports = {
       resizeMode: 'contain',
       backgroundColor: '#ffffff',
     },
-    ios: {
-      supportsTablet: true,
-      bundleIdentifier: 'com.stoyco.tictacdoh',
-    },
-    android: {
-      adaptiveIcon: {
-        foregroundImage: './assets/adaptive-icon.png',
-        backgroundColor: '#ffffff',
-      },
-      edgeToEdgeEnabled: true,
-      predictiveBackGestureEnabled: false,
-      package: 'com.stoyco.tictacdoh',
-    },
     web: {
       favicon: './assets/favicon.png',
       output: 'static',

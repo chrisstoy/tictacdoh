@@ -5,7 +5,7 @@ description: Stack, directory layout, Zustand stores and PlayMode state machine,
 
 # Architecture
 
-Tic-Tac-Doh: React Native tic-tac-toe on Expo SDK 54 (expo-router 6, React 19, RN 0.81, new arch enabled). The shipping web artifact is a static export and an installable PWA. iOS and Android apps are a Capacitor 8 shell (`capacitor.config.ts`, committed `ios/` and `android/`) that loads that same bundle from `webDir: dist` — not a remote URL. Expo's `ios` / `android` dev-client scripts are still in `package.json` until #9 removes them. Modes: human vs human, human vs CPU, CPU vs CPU, with configurable match length (3/5/7/9/infinite rounds).
+Tic-Tac-Doh: React Native tic-tac-toe on Expo SDK 54 (expo-router 6, React 19, RN 0.81, new arch enabled). The shipping web artifact is a static export and an installable PWA. iOS and Android apps are a Capacitor 8 shell (`capacitor.config.ts`, committed `ios/` and `android/`) that loads that same bundle from `webDir: dist` — not a remote URL. Expo stays the web toolchain (`expo start --web`, `scripts/build-pwa.js`, expo-router). Native apps are the Capacitor shell only: `app.config.js` has no `ios` or `android` block, and `package.json` has no native Expo run or deploy script. Modes: human vs human, human vs CPU, CPU vs CPU, with configurable match length (3/5/7/9/infinite rounds).
 
 ## Layout
 - `src/app/` — expo-router entry (`_layout.tsx`, `index.tsx`, `globals.css`)

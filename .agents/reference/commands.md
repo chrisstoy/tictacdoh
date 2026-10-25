@@ -10,8 +10,6 @@ All via npm (`package-lock.json`). No monorepo tooling.
 ## Development
 ```bash
 npm start              # Expo dev server (platform menu)
-npm run ios            # Expo dev client, iOS simulator (not the Capacitor shell)
-npm run android        # Expo dev client, Android emulator (not the Capacitor shell)
 npm run web            # Browser
 ```
 
@@ -35,16 +33,17 @@ npx tsc --noEmit       # type-check (no script defined; TypeScript ~5.9)
 ```bash
 npm run build          # PWA pipeline: scripts/build-pwa.js -> dist/
 npm run build:native   # same pipeline with GITHUB_PAGES forced unset (base path /)
-npm run deploy         # expo export -p web + eas-cli deploy (EAS Hosting)
 npm run generate:icons | generate:manifest | generate:sw   # individual PWA steps
 npm run generate:native-assets   # iOS/Android icons and splashes via @capacitor/assets
 ```
 See `deployment.md` for targets and env vars.
 
 ## Capacitor shell
-`build:native` then `cap:sync` copies `dist/` into the native projects. `npm run generate:native-assets` regenerates committed iOS and Android icons and splashes from `assets/icon.png`, `adaptive-icon.png`, `splash-icon.png`, and `splash-screen.png`. `npm run ios` / `npm run android` are still the Expo dev client (#9).
+`build:native` then `cap:sync` copies `dist/` into the native projects. `npm run generate:native-assets` regenerates committed iOS and Android icons and splashes from `assets/icon.png`, `adaptive-icon.png`, `splash-icon.png`, and `splash-screen.png`. There is no Expo `ios` or `android` script. Open the native IDEs with `cap:ios` / `cap:android`. After sync, `npx cap run ios` and `npx cap run android` launch a simulator or emulator.
 ```bash
 npm run cap:sync       # cap sync
 npm run cap:ios        # cap open ios (Xcode)
 npm run cap:android    # cap open android (Android Studio)
+npx cap run ios        # simulator, after build:native and cap:sync
+npx cap run android    # emulator, after build:native and cap:sync
 ```

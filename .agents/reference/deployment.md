@@ -1,6 +1,6 @@
 ---
 name: deployment
-description: Web/PWA build pipeline, GitHub Pages CI deploy, EAS hosting script, and native build identifiers.
+description: Web/PWA build pipeline, GitHub Pages CI deploy, and the Capacitor release path.
 ---
 
 # Deployment
@@ -11,8 +11,7 @@ description: Web/PWA build pipeline, GitHub Pages CI deploy, EAS hosting script,
 | Production web (GitHub Pages) | Push to `main` triggers `.github/workflows/main.yml` | Serves at https://chrisstoy.github.io/tictacdoh/ |
 | Local web build | `npm run build` | Base path `/` unless `GITHUB_PAGES` is set |
 | Native shell web bundle | `npm run build:native` | Forces `GITHUB_PAGES` unset so the base path is `/` even if the variable is set in the environment |
-| EAS Hosting | `npm run deploy` (`expo export -p web` + `eas-cli deploy`) | Manual; not used by CI. Unchanged by the Capacitor shell |
-| iOS / Android | Capacitor (`ios/`, `android/`) | App id `com.stoyco.tictacdoh`. `npm run cap:sync` copies `dist/` in. `npm run cap:ios` / `cap:android` open the native IDEs. No store pipeline. Expo `npm run ios` / `android` remain until #9 |
+| iOS / Android | Capacitor (`ios/`, `android/`) | App id `com.stoyco.tictacdoh`. `npm run build:native && npm run cap:sync` copies `dist/` in. `npm run cap:ios` / `cap:android` open the native IDEs. Signed release is local; see below. No store pipeline in CI |
 
 No preview/staging environment exists.
 
@@ -35,6 +34,15 @@ Verifies `index.html`, `manifest.json`, `sw.js`, `icons/` exist at the end.
 `ios/` and `android/` are committed. Their own gitignores drop copied web assets (`ios/App/App/public`, `android/app/src/main/assets/public`), `local.properties` (SDK path), Pods, and generated Capacitor config JSON. The repo root also ignores `*.keystore` and `*.jks`. Run `npm run build:native && npm run cap:sync` before launching a simulator or emulator so those ignored asset folders exist locally. Native sound and setup music are committed copies in `ios/App/App/sounds/` and `android/app/src/main/assets/sounds/`; the audio plugin cannot play the URL the web build emits. See `architecture.md`.
 
 Inside the shell, `isNativeShell()` skips service-worker registration and the install prompt. Options still persist through AsyncStorage in the webview.
+
+## Native release
+Not run by CI. Start from a web bundle whose base path is `/`:
+
+1. `npm run build:native && npm run cap:sync`
+2. iOS: `npm run cap:ios`. Signing input is an Apple Developer team on bundle id `com.stoyco.tictacdoh` (Xcode automatic signing; no team id is committed). Archive with Product → Archive. Uploading to App Store Connect / TestFlight stays a manual store step and is not performed from this repo.
+3. Android: from `android/`, `./gradlew bundleRelease`. Signing inputs are a keystore plus store password, key alias, and key password, kept outside git. The committed `android/app/build.gradle` release build type has no `signingConfig`. Do not commit a keystore or passwords. Play Console upload stays manual and is not performed from this repo.
+
+Full steps live in `.agents/skills/deploy-app/SKILL.md`.
 
 ## CI (`main.yml`)
 Build job: checkout → configure-pages → Node 20 + npm cache → `npm ci` → `npm run build` (GITHUB_PAGES) → upload `./dist`. Deploy job: `actions/deploy-pages@v4` into environment `github-pages`. Also runnable via `workflow_dispatch`. CI does **not** run lint or tests.
