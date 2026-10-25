@@ -35,7 +35,12 @@ Single page, mode-based (`src/app/index.tsx`): `NEW` → SetupGameScreen, `OPTIO
 - `pickNextMoveOnBoardForPlayer()` is the entry used by the play screen (CPU move delay `CPU_MOVE_DELAY_MS` = 500ms in `PlayGameScreen.tsx`; `design/game-state.md` still says 200ms and is stale).
 
 ## Audio
-`audioService.tsx`: React context for effects + music via `expo-audio`, gated by options state. Large music files are excluded from the service-worker precache.
+`audioService.tsx` exposes `playSound`, `playMusic`, and `stopMusic`. `selectAudioBackend` in `audioBackend.ts` picks the implementation. The only music key is `setup` (`setup-music.mp3`). `assets/sounds/game-setup-music.mp3` is not a track.
+
+- **Web** keeps `expo-audio` and its current behavior: one effect player and one music player, gated by the options store. Looping setup music restarts from the playback-status listener. Large music files stay out of the service-worker precache.
+- **iOS and Android** use `@capacitor-community/native-audio` 8.0.0 behind that same API. Each sound and the one music asset (`music`) are preloaded once. `@capacitor/app` 8.1.2 `appStateChange` pauses that music instance when the app is inactive and resumes it only when music is enabled and it was playing. Rapid inactive/active toggles call pause/resume on that same id. On iOS, `appStateChange` follows `willResignActive` / `didBecomeActive`, so a phone call pauses and resumes the same instance. `NativeAudio.configure({ focus: false })` selects `AVAudioSession` category ambient, so the hardware silent switch mutes the game.
+
+The plugin cannot play the web bundle's `http://localhost` or `capacitor://` URL (`isUrl: true` is a filesystem path). The mp3s the app already plays are copied to `ios/App/App/sounds/` (bundle resources, loaded by filename) and `android/app/src/main/assets/sounds/` (`sounds/<file>`, with `noCompress 'mp3'` so Android can open them). Web `require()`s are unchanged.
 
 ## PWA
 `registerServiceWorker.ts` registers `sw.js` (scope `/tictacdoh/` on GitHub Pages, `/` otherwise). Both registration and `PWAInstallPrompt` return immediately when `isNativeShell()` is true (false when `window` is missing, otherwise `Capacitor.isNativePlatform()`), so the shell does not register a worker or show an install prompt. Browser behavior is unchanged. Generation details in `deployment.md`.

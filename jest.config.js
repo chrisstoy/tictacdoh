@@ -15,6 +15,8 @@ module.exports = {
     '**/*.(test|spec).(ts|tsx|js|jsx)',
   ],
   moduleNameMapper: {
+    '\\.mp3$': '<rootDir>/jest/fileMock.js',
+    '^@/assets/(.*)$': '<rootDir>/assets/$1',
     '^@/(.*)$': '<rootDir>/src/$1',
   },
 };
