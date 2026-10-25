@@ -83,6 +83,7 @@ async function preloadNative(assetId: string, assetPath: string): Promise<void> 
       audioChannelNum: 1,
       isUrl: false,
     });
+    console.info(`Native audio preloaded ${assetId} from ${assetPath}`);
   } catch (error) {
     if (!/already exists/i.test(errorText(error))) {
       console.warn(`Native audio preload failed for ${assetId} (${assetPath})`, error);
@@ -91,6 +92,7 @@ async function preloadNative(assetId: string, assetPath: string): Promise<void> 
 }
 
 async function startNativeMusic(loop: boolean, offset: number): Promise<void> {
+  console.info(`Native music start ${NATIVE_MUSIC_ASSET_ID} loop=${loop} offset=${offset}`);
   if (Capacitor.getPlatform() === 'ios') {
     if (loop) {
       await NativeAudio.loop({ assetId: NATIVE_MUSIC_ASSET_ID });
@@ -138,6 +140,7 @@ function NativeAudioServiceProvider({ children }: AudioServiceProviderProps) {
         wasPlaying: desiredPlaying.current,
         isActive,
       });
+      console.info(`Native music transport ${transport} active=${isActive}`);
       if (transport === 'resume') {
         void NativeAudio.resume({ assetId: NATIVE_MUSIC_ASSET_ID });
         return;

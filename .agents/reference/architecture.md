@@ -40,6 +40,8 @@ Single page, mode-based (`src/app/index.tsx`): `NEW` → SetupGameScreen, `OPTIO
 - **Web** keeps `expo-audio` and its current behavior: one effect player and one music player, gated by the options store. Looping setup music restarts from the playback-status listener. Large music files stay out of the service-worker precache.
 - **iOS and Android** use `@capacitor-community/native-audio` 8.0.0 behind that same API. Each sound and the one music asset (`music`) are preloaded once. `@capacitor/app` 8.1.2 `appStateChange` pauses that music instance when the app is inactive and resumes it only when music is enabled and it was playing. Rapid inactive/active toggles call pause/resume on that same id. On iOS, `appStateChange` follows `willResignActive` / `didBecomeActive`, so a phone call pauses and resumes the same instance. `NativeAudio.configure({ focus: false })` selects `AVAudioSession` category ambient, so the hardware silent switch mutes the game.
 
+Metro resolves `@capacitor-community/native-audio` to `dist/esm/index.js` (`metro.config.js`). The package `main` (`dist/plugin.js`) expects a webpack `capacitorExports` global and breaks the static web export.
+
 The plugin cannot play the web bundle's `http://localhost` or `capacitor://` URL (`isUrl: true` is a filesystem path). The mp3s the app already plays are copied to `ios/App/App/sounds/` (bundle resources, loaded by filename) and `android/app/src/main/assets/sounds/` (`sounds/<file>`, with `noCompress 'mp3'` so Android can open them). Web `require()`s are unchanged.
 
 ## PWA
