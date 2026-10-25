@@ -1,0 +1,130 @@
+name: Close issue on PR merge
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  issues: write
+  pull-requests: read
+  contents: write
+
+jobs:
+  close-issue:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Extract linked issue number
+        id: extract
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          # Untrusted values arrive via env, never interpolated into the script.
+          # Try "Closes/Fixes/Resolves #N" in PR body
+          ISSUE=$(printf '%s' "$PR_BODY" \
+            | grep -oiE '(closes|fixes|resolves)[[:space:]]+#[0-9]+' \
+            | grep -oE '[0-9]+' \
+            | head -1)
+
+          # Fall back to branch name pattern (e.g. feature/MOC-93-...)
+          if [ -z "$ISSUE" ]; then
+            ISSUE=$(printf '%s' "$HEAD_REF" \
+              | grep -oiE '[A-Z]+-[0-9]+' \
+              | grep -oE '[0-9]+' \
+              | head -1)
+          fi
+
+          echo "issue_number=$ISSUE" >> "$GITHUB_OUTPUT"
+          echo "Linked issue: #${ISSUE:-none}"
+
+      - name: Close issue
+        if: steps.extract.outputs.issue_number != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUM: ${{ steps.extract.outputs.issue_number }}
+          REPO_FULL: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          gh issue close "$ISSUE_NUM" \
+            --repo "$REPO_FULL" \
+            --comment "Closed via PR #${PR_NUMBER}"
+
+      - name: Mark Done in GitHub Project
+        if: steps.extract.outputs.issue_number != ''
+        env:
+          GH_TOKEN: ${{ secrets.GH_PROJECT_TOKEN }}
+          ISSUE_NUM: ${{ steps.extract.outputs.issue_number }}
+          OWNER: ${{ github.repository_owner }}
+          REPO: ${{ github.event.repository.name }}
+          PROJECT_ID: "PVT_kwHOAAXeQ84BomWb"
+          STATUS_FIELD_ID: "PVTSSF_lAHOAAXeQ84BomWbzhnFs6U"
+          DONE_OPTION_ID: "98236657"
+        run: |
+          RESULT=$(gh api graphql \
+            -F owner="$OWNER" \
+            -F repo="$REPO" \
+            -F num="$ISSUE_NUM" \
+            -f query='
+              query($owner: String!, $repo: String!, $num: Int!) {
+                repository(owner: $owner, name: $repo) {
+                  issue(number: $num) {
+                    projectItems(first: 10) {
+                      nodes { id project { id } }
+                    }
+                  }
+                }
+              }
+            ')
+
+          ITEM_ID=$(echo "$RESULT" | jq -r \
+            --arg pid "$PROJECT_ID" \
+            '.data.repository.issue.projectItems.nodes[] | select(.project.id == $pid) | .id')
+
+          if [ -z "$ITEM_ID" ] || [ "$ITEM_ID" = "null" ]; then
+            echo "Issue #$ISSUE_NUM not found in project — skipping status update"
+            exit 0
+          fi
+
+          gh api graphql \
+            -f project="$PROJECT_ID" \
+            -f item="$ITEM_ID" \
+            -f field="$STATUS_FIELD_ID" \
+            -f value="$DONE_OPTION_ID" \
+            -f query='
+              mutation($project: ID!, $item: ID!, $field: ID!, $value: String!) {
+                updateProjectV2ItemFieldValue(input: {
+                  projectId: $project
+                  itemId: $item
+                  fieldId: $field
+                  value: { singleSelectOptionId: $value }
+                }) {
+                  projectV2Item { id }
+                }
+              }
+            '
+
+          echo "✓ Issue #$ISSUE_NUM marked as Done in project"
+
+      - name: Delete PR branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+          REPO_FULL: ${{ github.repository }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+        run: |
+          # A fork's branch name means nothing in the base repo; never delete by it.
+          if [ "$HEAD_REPO" != "$REPO_FULL" ]; then
+            echo "Skipping fork PR branch: $HEAD_REPO:$BRANCH"
+            exit 0
+          fi
+          if [[ "$BRANCH" =~ ^(main|master|develop)$ ]]; then
+            echo "Skipping protected branch: $BRANCH"
+            exit 0
+          fi
+          # Encode everything but "/" so a "#" or "?" can't truncate the path.
+          ENCODED=$(jq -rn --arg b "$BRANCH" '$b | @uri' | sed 's|%2F|/|g')
+          gh api -X DELETE "repos/${REPO_FULL}/git/refs/heads/${ENCODED}" \
+            && echo "✓ Deleted branch: $BRANCH" \
+            || echo "Branch already deleted or not found: $BRANCH"
