@@ -44,5 +44,17 @@ Metro resolves `@capacitor-community/native-audio` to `dist/esm/index.js` (`metr
 
 The plugin cannot play the web bundle's `http://localhost` or `capacitor://` URL (`isUrl: true` is a filesystem path). The mp3s the app already plays are copied to `ios/App/App/sounds/` (bundle resources, loaded by filename) and `android/app/src/main/assets/sounds/` (`sounds/<file>`, with `noCompress 'mp3'` so Android can open them). Web `require()`s are unchanged.
 
+## Native chrome
+`npm run generate:native-assets` (`scripts/generate-native-assets.js`) stages the existing artwork and runs `@capacitor/assets` for iOS and Android only. It does not regenerate PWA icons.
+
+- `assets/icon.png` → home-screen icons (`icon-only`)
+- `assets/adaptive-icon.png` → Android adaptive foreground. The generator insets it 16.7%, which is the adaptive-icon safe zone, so round and squircle masks do not clip the mark. The adaptive background is a solid `#fdde97`.
+- `assets/splash-screen.png` (1024×1536, below the documented 2732×2732 square) → launch splash. It is contained, not cropped, on a `#fdde97` 2732 canvas before generation so the square iOS splash keeps the title and character.
+- `assets/splash-icon.png` → Android 12 splash icon at `android/app/src/main/res/drawable-nodpi/splash_icon.png`. Android 12 shows a masked icon; the full-bleed splash is the portrait `splash-screen` artwork.
+
+Portrait is locked to `UIInterfaceOrientationPortrait` for both iPhone and iPad in `Info.plist`, and `android:screenOrientation="portrait"` on the Android activity. iPad stays supported (`TARGETED_DEVICE_FAMILY` 1,2). The 30em centered column is unchanged.
+
+`src/app/+html.tsx` sets `viewport-fit=cover` on the shared web document (Pages and the native bundle). The existing `SafeAreaView` is the only inset, so the browser PWA is not padded twice. `applyNativeStatusBar()` in `nativeStatusBar.ts` calls `@capacitor/status-bar` 8.0.4 only when `isNativeShell()` is true: background `#fdde97` and `Style.Light` (dark icons on the yellow background). `capacitor.config.ts` sets the same splash and status-bar values so they apply before JavaScript. The status bar overlays the webview.
+
 ## PWA
 `registerServiceWorker.ts` registers `sw.js` (scope `/tictacdoh/` on GitHub Pages, `/` otherwise). Both registration and `PWAInstallPrompt` return immediately when `isNativeShell()` is true (false when `window` is missing, otherwise `Capacitor.isNativePlatform()`), so the shell does not register a worker or show an install prompt. Browser behavior is unchanged. Generation details in `deployment.md`.

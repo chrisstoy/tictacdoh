@@ -30,7 +30,7 @@ Verifies `index.html`, `manifest.json`, `sw.js`, `icons/` exist at the end.
 - `npm run build:native` assigns `GITHUB_PAGES=` (empty) for that process, so a dirty shell cannot bake `/tictacdoh/` into the Capacitor bundle. The Pages workflow is not changed.
 
 ## Capacitor
-`capacitor.config.ts`: `appId` `com.stoyco.tictacdoh`, `appName` `Tic-Tac-Doh`, `webDir` `dist`. Platforms are `@capacitor/core`, `@capacitor/cli`, `@capacitor/ios`, and `@capacitor/android`, pinned to 8.5.3, plus `@capacitor/app` 8.1.2 and `@capacitor-community/native-audio` 8.0.0.
+`capacitor.config.ts`: `appId` `com.stoyco.tictacdoh`, `appName` `Tic-Tac-Doh`, `webDir` `dist`. Platforms are `@capacitor/core`, `@capacitor/cli`, `@capacitor/ios`, and `@capacitor/android`, pinned to 8.5.3, plus `@capacitor/app` 8.1.2, `@capacitor/status-bar` 8.0.4, and `@capacitor-community/native-audio` 8.0.0. Splash and status-bar background are `#fdde97`. `@capacitor/assets` 3.0.5 is a devDependency used by `npm run generate:native-assets`; the generated iOS and Android images are committed.
 
 `ios/` and `android/` are committed. Their own gitignores drop copied web assets (`ios/App/App/public`, `android/app/src/main/assets/public`), `local.properties` (SDK path), Pods, and generated Capacitor config JSON. The repo root also ignores `*.keystore` and `*.jks`. Run `npm run build:native && npm run cap:sync` before launching a simulator or emulator so those ignored asset folders exist locally. Native sound and setup music are committed copies in `ios/App/App/sounds/` and `android/app/src/main/assets/sounds/`; the audio plugin cannot play the URL the web build emits. See `architecture.md`.
 

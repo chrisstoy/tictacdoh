@@ -4,6 +4,17 @@ const config: CapacitorConfig = {
   appId: 'com.stoyco.tictacdoh',
   appName: 'Tic-Tac-Doh',
   webDir: 'dist',
+  plugins: {
+    SplashScreen: {
+      backgroundColor: '#fdde97',
+    },
+    StatusBar: {
+      backgroundColor: '#fdde97',
+      // LIGHT is dark status-bar content (dark icons on the yellow background).
+      style: 'LIGHT',
+      overlaysWebView: true,
+    },
+  },
 };
 
 export default config;
