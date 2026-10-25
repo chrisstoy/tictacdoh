@@ -2,6 +2,7 @@ import { NativeAudio } from '@capacitor-community/native-audio';
 import { App } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 import { act, render } from '@testing-library/react-native';
+import { useEffect } from 'react';
 import { createAudioPlayer } from 'expo-audio';
 import { AudioServiceProvider, useAudioService } from '../audioService';
 import { isNativeShell } from '../nativeShell';
@@ -103,7 +104,8 @@ describe('AudioServiceProvider', () => {
     mockedGetPlatform.mockReset();
     mockedGetPlatform.mockReturnValue('ios');
     mockedConfigure.mockClear();
-    mockedPreload.mockClear();
+    mockedPreload.mockReset();
+    mockedPreload.mockImplementation(() => Promise.resolve());
     mockedPlay.mockClear();
     mockedPause.mockClear();
     mockedResume.mockClear();
@@ -300,6 +302,40 @@ describe('AudioServiceProvider', () => {
 
     expect(mockedResume).not.toHaveBeenCalled();
     expect(mockedPause).toHaveBeenCalledWith({ assetId: 'music' });
+  });
+
+  it('does not start music until native preload finishes', async () => {
+    mockedIsNativeShell.mockReturnValue(true);
+    let releasePreload: () => void = () => {};
+    const pendingPreload = new Promise<void>((resolve) => {
+      releasePreload = () => resolve();
+    });
+    mockedPreload.mockImplementation(() => pendingPreload);
+
+    function AutoPlay() {
+      const api = useAudioService();
+      useEffect(() => {
+        api.playMusic('setup', { loop: true });
+      }, [api]);
+      return null;
+    }
+
+    render(
+      <AudioServiceProvider>
+        <AutoPlay />
+      </AudioServiceProvider>
+    );
+    await flush();
+
+    expect(mockedLoop).not.toHaveBeenCalled();
+    expect(mockedPlay).not.toHaveBeenCalled();
+
+    await act(async () => {
+      releasePreload();
+    });
+    await flush();
+
+    expect(mockedLoop).toHaveBeenCalledWith({ assetId: 'music' });
   });
 
   it('removes the app state listener on unmount', async () => {

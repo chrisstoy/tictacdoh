@@ -108,6 +108,14 @@ async function startNativeMusic(loop: boolean, offset: number): Promise<void> {
   }
 }
 
+function createReadyGate(): { promise: Promise<void>; resolve: () => void } {
+  let resolve: () => void = () => {};
+  const promise = new Promise<void>((done) => {
+    resolve = done;
+  });
+  return { promise, resolve };
+}
+
 function NativeAudioServiceProvider({ children }: AudioServiceProviderProps) {
   const soundEnabled = useOptionsStore(selectEnableSound);
   const musicEnabled = useOptionsStore(selectEnableMusic);
@@ -117,20 +125,29 @@ function NativeAudioServiceProvider({ children }: AudioServiceProviderProps) {
   const activeMusic = useRef<MusicKey | null>(null);
   const musicStarted = useRef(false);
   const appIsActive = useRef(true);
-  const ready = useRef<Promise<void>>(Promise.resolve());
+  const sawMusicOption = useRef(false);
+  const readyGate = useRef<ReturnType<typeof createReadyGate> | null>(null);
+  if (readyGate.current === null) {
+    readyGate.current = createReadyGate();
+  }
+  const ready = readyGate.current.promise;
 
   useEffect(() => {
     let cancelled = false;
     let removeListener: (() => Promise<void>) | undefined;
 
-    ready.current = (async () => {
-      await NativeAudio.configure({ focus: false, fade: false });
-      await Promise.all([
-        ...(Object.keys(nativeSoundFiles) as SoundKey[]).map((key) =>
-          preloadNative(key, nativeAssetPath(nativeSoundFiles[key]))
-        ),
-        preloadNative(NATIVE_MUSIC_ASSET_ID, nativeAssetPath(nativeMusicFile.setup)),
-      ]);
+    void (async () => {
+      try {
+        await NativeAudio.configure({ focus: false, fade: false });
+        await Promise.all([
+          ...(Object.keys(nativeSoundFiles) as SoundKey[]).map((key) =>
+            preloadNative(key, nativeAssetPath(nativeSoundFiles[key]))
+          ),
+          preloadNative(NATIVE_MUSIC_ASSET_ID, nativeAssetPath(nativeMusicFile.setup)),
+        ]);
+      } finally {
+        readyGate.current?.resolve();
+      }
     })();
 
     void App.addListener('appStateChange', ({ isActive }) => {
@@ -165,9 +182,14 @@ function NativeAudioServiceProvider({ children }: AudioServiceProviderProps) {
   }, []);
 
   useEffect(() => {
+    if (!sawMusicOption.current) {
+      sawMusicOption.current = true;
+      return;
+    }
+
     if (!musicEnabled) {
       desiredPlaying.current = false;
-      void ready.current.then(() => NativeAudio.pause({ assetId: NATIVE_MUSIC_ASSET_ID }));
+      void ready.then(() => NativeAudio.pause({ assetId: NATIVE_MUSIC_ASSET_ID }));
       return;
     }
 
@@ -176,7 +198,7 @@ function NativeAudioServiceProvider({ children }: AudioServiceProviderProps) {
     desiredPlaying.current = true;
     if (!appIsActive.current) return;
 
-    void ready.current.then(async () => {
+    void ready.then(async () => {
       if (!desiredPlaying.current || !appIsActive.current) return;
       if (musicStarted.current) {
         await NativeAudio.resume({ assetId: NATIVE_MUSIC_ASSET_ID });
@@ -190,7 +212,7 @@ function NativeAudioServiceProvider({ children }: AudioServiceProviderProps) {
   const playSound = (soundKey: SoundKey, offset = 0) => {
     if (!soundEnabled) return;
 
-    void ready.current.then(() => {
+    void ready.then(() => {
       void NativeAudio.play({ assetId: soundKey, time: offset });
     });
   };
@@ -204,7 +226,7 @@ function NativeAudioServiceProvider({ children }: AudioServiceProviderProps) {
 
     if (!musicEnabled || !appIsActive.current) return;
 
-    void ready.current.then(async () => {
+    void ready.then(async () => {
       if (!desiredPlaying.current || !appIsActive.current) return;
       musicStarted.current = true;
       await startNativeMusic(loopMusic.current, musicOffset.current);
