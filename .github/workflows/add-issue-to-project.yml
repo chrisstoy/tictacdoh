@@ -1,0 +1,31 @@
+name: Add issue to project
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: read
+
+jobs:
+  add-to-project:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add issue to project
+        env:
+          GH_TOKEN: ${{ secrets.GH_PROJECT_TOKEN }}
+          NODE_ID: ${{ github.event.issue.node_id }}
+        run: |
+          gh api graphql \
+            -f item="$NODE_ID" \
+            -f query='
+              mutation($item: ID!) {
+                addProjectV2ItemById(input: {
+                  projectId: "PVT_kwHOAAXeQ84BomWb"
+                  contentId: $item
+                }) {
+                  item { id }
+                }
+              }
+            '
+          echo "✓ Issue #${{ github.event.issue.number }} added to project"
