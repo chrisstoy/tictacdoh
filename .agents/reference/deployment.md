@@ -40,7 +40,7 @@ Not run by CI. Start from a web bundle whose base path is `/`:
 
 1. `npm run build:native && npm run cap:sync`
 2. iOS: `npm run cap:ios`. Signing input is an Apple Developer team on bundle id `com.stoyco.tictacdoh` (Xcode automatic signing; no team id is committed). Archive with Product → Archive. Uploading to App Store Connect / TestFlight stays a manual store step and is not performed from this repo.
-3. Android: from `android/`, `./gradlew bundleRelease`. Signing inputs are a keystore plus store password, key alias, and key password, kept outside git. The committed `android/app/build.gradle` release build type has no `signingConfig`. Do not commit a keystore or passwords. Play Console upload stays manual and is not performed from this repo.
+3. Android: write gitignored `android/keystore.properties` (`storeFile` relative to `android/`, plus `storePassword`, `keyAlias`, `keyPassword`) and only then run `./gradlew bundleRelease` from `android/`. The release build type signs only when that file exists; otherwise the AAB is unsigned and must not be uploaded. The keystore stays outside git (`*.keystore` / `*.jks` at the repo root, `keystore.properties` in `android/.gitignore`). Play Console upload stays manual and is not performed from this repo.
 
 Full steps live in `.agents/skills/deploy-app/SKILL.md`.
 

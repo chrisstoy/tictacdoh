@@ -23,7 +23,7 @@ Nothing invokes it automatically.
 |---|---|---|---|
 | `production-web` (GitHub Pages, https://chrisstoy.github.io/tictacdoh/) | `main` | `.github/workflows/main.yml` runs on push to `main` or manual `workflow_dispatch` | Active (CI) |
 | `ios` (`com.stoyco.tictacdoh`) | local | `npm run build:native && npm run cap:sync`, then Xcode Product → Archive | Local signed archive. App Store Connect / TestFlight upload is manual and is not performed |
-| `android` (`com.stoyco.tictacdoh`) | local | `npm run build:native && npm run cap:sync`, then `./gradlew bundleRelease` in `android/` | Local release AAB. Keystore stays outside git. Play Console upload is manual and is not performed |
+| `android` (`com.stoyco.tictacdoh`) | local | `npm run build:native && npm run cap:sync`, then a gitignored `android/keystore.properties`, then `./gradlew bundleRelease` | Signed release AAB only when that file exists. Play Console upload is manual and is not performed |
 
 No preview/staging target exists. Web hosting is GitHub Pages only.
 
@@ -56,9 +56,16 @@ wrong.
 
 **android**
 1. Same web build and sync: `npm run build:native && npm run cap:sync`. Confirm `dist/manifest.json` `start_url` is `/`.
-2. From `android/`, build the release AAB: `./gradlew bundleRelease`. Output is `android/app/build/outputs/bundle/release/`.
-3. Signing inputs are a keystore plus store password, key alias, and key password, kept outside git. Do not commit a keystore or passwords. The committed `android/app/build.gradle` release build type has no `signingConfig` (`minifyEnabled false` only). Apply the keystore locally — Android Studio's Generate Signed Bundle dialog, or a gitignored local config — and do not add those secrets to the repo.
-4. Play Console upload stays manual and is not performed by this skill.
+2. Create a release keystore outside git. The repo root ignores `*.keystore` and `*.jks`. Example (pick your own passwords; do not commit the file): `keytool -genkeypair -v -keystore /absolute/path/tictacdoh-release.keystore -alias tictacdoh -keyalg RSA -keysize 2048 -validity 10000`
+3. Write `android/keystore.properties` before building. That file is gitignored. `storeFile` is a path relative to the `android/` directory, and an absolute path is fine:
+   ```
+   storeFile=/absolute/path/tictacdoh-release.keystore
+   storePassword=...
+   keyAlias=tictacdoh
+   keyPassword=...
+   ```
+4. From `android/`, `./gradlew bundleRelease`. `android/app/build.gradle` applies the release `signingConfig` only when `keystore.properties` exists, so this writes a signed AAB at `android/app/build/outputs/bundle/release/`. Without that file the same command writes an unsigned AAB — do not upload it.
+5. Play Console upload stays manual and is not performed by this skill.
 
 ## Verify after deploying
 

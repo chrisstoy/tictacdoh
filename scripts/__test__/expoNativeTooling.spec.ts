@@ -42,10 +42,20 @@ describe('expo native tooling removal', () => {
     expect(source).not.toMatch(/^\s+android:\s*\{/m);
     expect(config.expo.ios).toBeUndefined();
     expect(config.expo.android).toBeUndefined();
-    expect(config.expo.web.publicPath).toBe('/');
-    expect(config.expo.experiments.baseUrl).toBe('/');
+    const pagesBase = process.env.GITHUB_PAGES ? '/tictacdoh/' : '/';
+    expect(config.expo.web.publicPath).toBe(pagesBase);
+    expect(config.expo.experiments.baseUrl).toBe(pagesBase);
     expect(
       config.expo.plugins.map((plugin) => (Array.isArray(plugin) ? plugin[0] : plugin))
     ).toEqual(['expo-splash-screen', 'expo-audio']);
+  });
+
+  it('signs the Android release build only when a gitignored keystore file is present', () => {
+    const gradle = fs.readFileSync(path.join(root, 'android/app/build.gradle'), 'utf8');
+    const gitignore = fs.readFileSync(path.join(root, 'android/.gitignore'), 'utf8');
+
+    expect(gradle).toContain('rootProject.file("keystore.properties")');
+    expect(gradle).toContain('signingConfig signingConfigs.release');
+    expect(gitignore).toMatch(/^keystore\.properties$/m);
   });
 });
