@@ -50,7 +50,7 @@ The plugin cannot play the web bundle's `http://localhost` or `capacitor://` URL
 - `assets/icon.png` → home-screen icons (`icon-only`)
 - `assets/adaptive-icon.png` → Android adaptive foreground. The art is first fit to the square inscribed in a circle, then `@capacitor/assets` insets it 16.7%. The adaptive background inset is `0%` so the mask shows `#fdde97` instead of black corners. Round and squircle masks keep the whole mark.
 - `assets/splash-screen.png` (1024×1536, below the documented 2732×2732 square) → launch splash. It is contained, not cropped, on a `#fdde97` 2732 canvas before generation. `LaunchScreen.storyboard` uses `scaleAspectFit`, so an iPhone shows that whole square instead of aspect-filling the sides off.
-- `assets/splash-icon.png` → Android 12 splash icon at `android/app/src/main/res/drawable-nodpi/splash_icon.png`, fit inside the circular mask on `#fdde97`. The portrait `splash-screen` artwork is the full-bleed launch drawable.
+- `assets/splash-icon.png` → Android 12 splash icon at `android/app/src/main/res/drawable-nodpi/splash_icon.png`, fit inside the inner two-thirds circle Android actually masks, on `#fdde97`. The portrait `splash-screen` artwork is the full-bleed launch drawable. The iOS launch images are resized to 1366 after generation so the storyboard can draw them.
 
 Portrait is locked to `UIInterfaceOrientationPortrait` for both iPhone and iPad in `Info.plist`, and `android:screenOrientation="portrait"` on the Android activity. iPad stays supported (`TARGETED_DEVICE_FAMILY` 1,2). The 30em centered column is unchanged.
 

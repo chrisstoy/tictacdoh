@@ -3,6 +3,7 @@ import {
   LAUNCH_IMAGE_CONTENT_MODE,
   SPLASH_CANVAS_SIZE,
   adaptiveBackgroundInset,
+  android12SplashScale,
   androidSplashIconRelativePath,
   circleSafeScale,
   nativeAssetSources,
@@ -25,6 +26,7 @@ describe('generate-native-assets', () => {
   it('fits the iOS launch image and keeps adaptive artwork inside a circular mask', () => {
     expect(LAUNCH_IMAGE_CONTENT_MODE).toBe('scaleAspectFit');
     expect(circleSafeScale()).toBeCloseTo(1 / Math.sqrt(2), 5);
+    expect(android12SplashScale()).toBeCloseTo((2 / 3) / Math.sqrt(2), 5);
     expect(adaptiveBackgroundInset()).toBe('0%');
   });
 

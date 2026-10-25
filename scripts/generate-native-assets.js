@@ -13,9 +13,17 @@ const APP_BACKGROUND = '#fdde97';
 const SPLASH_CANVAS_SIZE = 2732;
 const LAUNCH_IMAGE_CONTENT_MODE = 'scaleAspectFit';
 
-/** Square that fits inside a circular launcher or Android 12 splash mask. */
+/** Square that fits inside a circular launcher mask. */
 function circleSafeScale() {
   return 1 / Math.sqrt(2);
+}
+
+/**
+ * Android 12 splash icons are masked to the inner two-thirds of the bitmap.
+ * The artwork has to sit inside that smaller circle, not the bitmap's own circle.
+ */
+function android12SplashScale() {
+  return (2 / 3) * circleSafeScale();
 }
 
 /** Yellow should fill the mask. A non-zero background inset leaves black corners. */
@@ -141,22 +149,46 @@ async function generateNativeAssets() {
       { cwd: root, stdio: 'inherit' }
     );
 
-    const storyboardPath = path.join(root, 'ios/App/App/Base.lproj/LaunchScreen.storyboard');
-    const storyboard = await fs.promises.readFile(storyboardPath, 'utf8');
-    await fs.promises.writeFile(
-      storyboardPath,
-      storyboard.replace(
-        /contentMode="scaleAspectFill"/g,
-        `contentMode="${LAUNCH_IMAGE_CONTENT_MODE}"`
-      )
-    );
-
     await containArtwork(
       path.join(root, nativeAssetSources.splashIcon),
       path.join(root, androidSplashIconRelativePath),
       1024,
-      circleSafeScale()
+      android12SplashScale()
     );
+
+    const splashImageset = path.join(root, 'ios/App/App/Assets.xcassets/Splash.imageset');
+    const splashFiles = await fs.promises.readdir(splashImageset);
+    for (const file of splashFiles) {
+      if (!file.endsWith('.png')) continue;
+      const full = path.join(splashImageset, file);
+      const resized = await sharp(full)
+        .resize(1366, 1366, { fit: 'fill' })
+        .png({ compressionLevel: 9 })
+        .toBuffer();
+      await fs.promises.writeFile(full, resized);
+    }
+
+    const storyboardPath = path.join(root, 'ios/App/App/Base.lproj/LaunchScreen.storyboard');
+    let storyboard = await fs.promises.readFile(storyboardPath, 'utf8');
+    storyboard = storyboard.replace(
+      /contentMode="scaleAspectFill"/g,
+      `contentMode="${LAUNCH_IMAGE_CONTENT_MODE}"`
+    );
+    storyboard = storyboard.replace(
+      /<autoresizingMask key="autoresizingMask"\/>/,
+      '<autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>'
+    );
+    await fs.promises.writeFile(storyboardPath, storyboard);
+
+    const stylesPath = path.join(root, 'android/app/src/main/res/values/styles.xml');
+    let styles = await fs.promises.readFile(stylesPath, 'utf8');
+    if (!styles.includes('windowSplashScreenIconBackgroundColor')) {
+      styles = styles.replace(
+        '<item name="windowSplashScreenBackground">#fdde97</item>',
+        '<item name="windowSplashScreenBackground">#fdde97</item>\n        <item name="android:windowSplashScreenIconBackgroundColor">#fdde97</item>'
+      );
+      await fs.promises.writeFile(stylesPath, styles);
+    }
 
     for (const relativePath of [
       'android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml',
@@ -184,6 +216,7 @@ module.exports = {
   adaptiveBackgroundInset,
   androidSplashIconRelativePath,
   circleSafeScale,
+  android12SplashScale,
   nativeAssetSources,
   splashNeedsDocumentedSquare,
   stageSources,
