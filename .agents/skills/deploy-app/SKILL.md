@@ -1,6 +1,6 @@
 ---
 name: deploy-app
-description: Build and deploy Tic-Tac-Doh to a chosen target (GitHub Pages web/PWA, EAS web hosting, iOS/Android builds). Use when the user asks to deploy, ship, release, promote, or push a build of this project — including "deploy to production", "cut a build". Do NOT use for running the app locally; that's the dev server, see .agents/reference/commands.md.
+description: Build and deploy Tic-Tac-Doh to a chosen target (GitHub Pages web/PWA, or a local signed iOS/Android Capacitor release). Use when the user asks to deploy, ship, release, promote, or push a build of this project — including "deploy to production", "cut a build". Do NOT use for running the app locally; that's the dev server, see .agents/reference/commands.md.
 ---
 
 # Deploy Tic-Tac-Doh
@@ -22,10 +22,10 @@ Nothing invokes it automatically.
 | Target | Deploys from | Mechanism | Status |
 |---|---|---|---|
 | `production-web` (GitHub Pages, https://chrisstoy.github.io/tictacdoh/) | `main` | `.github/workflows/main.yml` runs on push to `main` or manual `workflow_dispatch` | Active (CI) |
-| `eas-web` (EAS Hosting) | local | `npm run deploy` | TODO(human): is this target still used? `package.json` and README define it, CI does not |
-| `ios` / `android` (`com.stoyco.tictacdoh`) | local | `npx eas-cli build` (README) | TODO(human): no `eas.json` committed; is a native release planned, and what profile/credentials? |
+| `ios` (`com.stoyco.tictacdoh`) | local | `npm run build:native && npm run cap:sync`, then Xcode Product → Archive | Local signed archive. App Store Connect / TestFlight upload is manual and is not performed |
+| `android` (`com.stoyco.tictacdoh`) | local | `npm run build:native && npm run cap:sync`, then a gitignored `android/keystore.properties`, then `./gradlew bundleRelease` | Signed release AAB only when that file exists. Play Console upload is manual and is not performed |
 
-No preview/staging target exists.
+No preview/staging target exists. Web hosting is GitHub Pages only.
 
 ## Preflight — every target
 
@@ -36,35 +36,54 @@ wrong.
 - [ ] On the branch this target deploys from (`main` for production-web), up to date with the remote.
 - [ ] Working tree clean (`git status --short` is empty).
 - [ ] Full verification suite green locally — see `.agents/reference/commands.md` (`npm run lint`, `npx tsc --noEmit`, `npm test`). CI does **not** run these, so this is the only gate.
-- [ ] Env for this target: `production-web` needs `GITHUB_PAGES=true` (set by the workflow's Build step; don't set it for non-Pages builds). Other targets: TODO(human): required env/secrets for EAS.
+- [ ] Env for this target: `production-web` needs `GITHUB_PAGES=true` (set by the workflow's Build step; don't set it for a non-Pages build). iOS and Android use `npm run build:native`, which forces `GITHUB_PAGES` unset so `start_url` is `/`.
 - [ ] No database migrations in this project (no DB); nothing to review.
+- [ ] Native signing inputs are present locally and are not in git. iOS: an Apple Developer team for bundle id `com.stoyco.tictacdoh`. Android: a keystore, store password, key alias, and key password.
 
 ## Deploy
 
 **production-web**
-1. Optionally dry-run the artifact locally: `GITHUB_PAGES=true npm run build` and confirm `dist/` contains `index.html`, `manifest.json`, `sw.js`, `icons/` (the build script prints a verification list).
+1. Optionally dry-run the artifact locally: `GITHUB_PAGES=true npm run build` and confirm `dist/` contains `index.html`, `manifest.json`, `sw.js`, `icons/` (the build script prints a verification list). `dist/manifest.json` `start_url` is `/tictacdoh/`.
 2. Merge/push to `main`. The workflow builds (Node 20, `npm ci`, `npm run build`) and deploys `./dist` via `actions/deploy-pages@v4`.
 3. Or trigger without a push: `gh workflow run "Build and Deploy to Pages"`. Watch with `gh run watch`.
 
-**eas-web**: `npm run deploy` (runs `npx expo export -p web` then `npx eas-cli@latest deploy`). TODO(human): confirm account/project and whether the web base path needs `GITHUB_PAGES` unset.
+**ios**
+1. `npm run build:native && npm run cap:sync`. Confirm `dist/manifest.json` `start_url` is `/`.
+2. `npm run cap:ios` (opens Xcode on `ios/`).
+3. Signing input is an Apple Developer team on bundle id `com.stoyco.tictacdoh`. The project uses Xcode automatic signing (`CODE_SIGN_STYLE = Automatic`). Select the team in Xcode. No development team is committed.
+4. Archive with Product → Archive.
+5. Uploading that archive to App Store Connect / TestFlight stays a manual store step and is not performed by this skill.
 
-**ios / android**: TODO(human): confirm the `eas build` profile and submit steps.
+**android**
+1. Same web build and sync: `npm run build:native && npm run cap:sync`. Confirm `dist/manifest.json` `start_url` is `/`.
+2. Create a release keystore outside git. The repo root ignores `*.keystore` and `*.jks`. Example (pick your own passwords; do not commit the file): `keytool -genkeypair -v -keystore /absolute/path/tictacdoh-release.keystore -alias tictacdoh -keyalg RSA -keysize 2048 -validity 10000`
+3. Write `android/keystore.properties` before building. That file is gitignored. `storeFile` is a path relative to the `android/` directory, and an absolute path is fine:
+   ```
+   storeFile=/absolute/path/tictacdoh-release.keystore
+   storePassword=...
+   keyAlias=tictacdoh
+   keyPassword=...
+   ```
+4. From `android/`, `./gradlew bundleRelease`. `android/app/build.gradle` applies the release `signingConfig` only when `keystore.properties` exists, so this writes a signed AAB at `android/app/build/outputs/bundle/release/`. Without that file the same command writes an unsigned AAB — do not upload it.
+5. Play Console upload stays manual and is not performed by this skill.
 
 ## Verify after deploying
 
 - Open https://chrisstoy.github.io/tictacdoh/ — setup screen loads with music/fonts/images, no 404s in the network tab (base path `/tictacdoh/`).
 - Start a match vs CPU and play a round to the end.
 - In DevTools → Application: manifest is valid and the service worker `sw.js` is registered with scope `/tictacdoh/`. After a deploy, a hard refresh (or closing all tabs) may be needed to pick up the new worker.
+- A native install from TestFlight or Play internal testing is a later manual follow-up. This skill stops once the archive or signed AAB exists locally.
 
 ## Rollback
 
 - production-web: revert the bad commit on `main` and push (the workflow redeploys), or re-run the workflow on the last good commit's run via the Actions tab.
-- eas-web / native: TODO(human).
+- ios / android: there is no automated store rollback. Ship a newer archive or AAB through the same manual store upload.
 
 ## Manual steps this project genuinely requires
 
 - GitHub Pages must be configured to deploy from "GitHub Actions" in repo settings (already so if the current site is live).
-- TODO(human): any App Store / Play Store submission steps.
+- After the Xcode archive: upload to App Store Connect and distribute through TestFlight or the App Store. This skill does not do that upload.
+- After the Android release AAB is signed locally: upload it in Play Console. This skill does not do that upload.
 
 A required manual *action* with no judgment in it (a click in a vendor UI that
 has no API) is not a blocker — do everything up to it, then report the remaining

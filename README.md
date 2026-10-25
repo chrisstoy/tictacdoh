@@ -14,10 +14,9 @@ npx create-expo-app -e with-router
 
 ## Deploy
 
-Deploy on all platforms with Expo Application Services (EAS).
+The website stays a PWA on GitHub Pages at https://chrisstoy.github.io/tictacdoh/. A push to `main` runs that workflow.
 
-- Deploy the website: `npx eas-cli deploy` — [Learn more](https://docs.expo.dev/eas/hosting/get-started/)
-- Deploy on iOS and Android using: `npx eas-cli build` — [Learn more](https://expo.dev/eas)
+iOS and Android are a Capacitor shell around the same web build. Signed release steps, signing inputs, and the store uploads that stay manual are in `.agents/skills/deploy-app/SKILL.md`.
 
 ## 📝 Notes
 
