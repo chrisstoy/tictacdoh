@@ -24,7 +24,9 @@
     "test:coverage": "jest --coverage"
   },
   "dependencies": {
+    "@capacitor-community/native-audio": "8.0.0",
     "@capacitor/android": "8.5.3",
+    "@capacitor/app": "8.1.2",
     "@capacitor/core": "8.5.3",
     "@capacitor/ios": "8.5.3",
     "@react-native-async-storage/async-storage": "2.2.0",

@@ -19,6 +19,7 @@ your tool provides.
 ## Run it with the lights on
 
 - `npm run web` is the fastest loop (browser DevTools). `npm run ios` / `npm run android` use `expo-dev-client` (Metro logs in the terminal).
+- Native audio plays in the Capacitor shell, not the Expo dev client. `npm run build:native && npm run cap:sync`, then `npm run cap:ios` / `cap:android`. Xcode and `adb logcat` show `Native audio preload failed` when a copied mp3 is missing. iOS uses an ambient session, so the hardware silent switch mutes the game.
 - Zustand state: every store is wrapped by `withZustandDevtools` (`src/services/zustandDevtools.ts`), so, in dev on web only, the Redux DevTools browser extension shows match/round/options state and actions.
 - `src/components/DebugViewData.tsx` renders state inline for quick inspection.
 - To test the production PWA locally: `npm run build`, then serve `dist/` (`http-server` is a devDependency), e.g. `npx http-server dist`.
@@ -35,6 +36,7 @@ your tool provides.
 - **Wrong base path on web (404 for JS/assets/sw.js):** `GITHUB_PAGES=true` must match where it is served (`/tictacdoh/` vs `/`). Check `app.config.js`, `scripts/build-pwa.js`, `scripts/generate-sw.js`, `registerServiceWorker.ts`.
 - **Stale app after deploy:** old service worker still controlling the page; unregister it or hard-refresh.
 - **SSR/static-export crash:** browser-only API used without a `typeof window !== 'undefined'` guard.
+- **Native shell has no sound:** `npm run ios` / `android` are the Expo dev client. Use `build:native` and `cap:sync`. Playback uses `ios/App/App/sounds` and `android/app/src/main/assets/sounds`, not the web bundle URL.
 - **CPU hangs/odd moves:** logic in `src/services/game.ts` (`pickMove`, `solveBoard`); covered by `src/services/__test__/game.spec.ts`. Play-state flow bugs: see the PlayMode machine in `design/game-state.md` and `matchState.spec.ts`.
 - **Round recorded after match is won:** `recordRound` warns "Cannot record round: match already has a winner".
 
