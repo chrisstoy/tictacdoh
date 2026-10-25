@@ -5,6 +5,10 @@
   "scripts": {
     "start": "expo start",
     "build": "node scripts/build-pwa.js",
+    "build:native": "GITHUB_PAGES= node scripts/build-pwa.js",
+    "cap:sync": "cap sync",
+    "cap:ios": "cap open ios",
+    "cap:android": "cap open android",
     "generate:icons": "node scripts/generate-icons.js",
     "generate:manifest": "node scripts/generate-manifest.js",
     "generate:sw": "node scripts/generate-sw.js",

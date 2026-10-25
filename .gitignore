@@ -8,12 +8,13 @@ node_modules/
 dist/
 web-build/
 expo-env.d.ts
-ios
-android
 
 # Native
+# Capacitor ios/ and android/ projects are committed. Ignore signing
+# material and local machine files only.
 *.orig.*
 *.jks
+*.keystore
 *.p8
 *.p12
 *.key
