@@ -1,6 +1,7 @@
-import { useEffect, useState, useCallback } from 'react';
-import { Platform, Text, View, Pressable } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useCallback, useEffect, useState } from 'react';
+import { Platform, Pressable, Text, View } from 'react-native';
+import { isNativeShell } from '@/services/nativeShell';
 
 const INSTALL_PROMPT_DISMISSED_KEY = '@tic-tac-doh/install-prompt-dismissed';
 const PROMPT_DELAY_MS = 30000; // 30 seconds
@@ -14,17 +15,17 @@ interface BeforeInstallPromptEvent extends Event {
 /**
  * PWA Install Prompt component that shows a custom install prompt
  * after the user has engaged with the app for 30 seconds.
- * Only renders on web platform with beforeinstallprompt support.
+ * Only renders on web, outside the Capacitor shell, with beforeinstallprompt support.
  */
 export function PWAInstallPrompt() {
+  const nativeShell = isNativeShell();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [dismissed, setDismissed] = useState(false);
 
   // Check if prompt was previously dismissed
   useEffect(() => {
-    // Only run on web platform
-    if (Platform.OS !== 'web') {
+    if (nativeShell || Platform.OS !== 'web') {
       return;
     }
 
@@ -45,12 +46,11 @@ export function PWAInstallPrompt() {
     };
 
     checkDismissed();
-  }, []);
+  }, [nativeShell]);
 
   // Listen for beforeinstallprompt event
   useEffect(() => {
-    // Only run on web platform
-    if (Platform.OS !== 'web') {
+    if (nativeShell || Platform.OS !== 'web') {
       return;
     }
 
@@ -80,7 +80,7 @@ export function PWAInstallPrompt() {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
     };
-  }, []);
+  }, [nativeShell]);
 
   // Show prompt after delay
   useEffect(() => {
@@ -128,8 +128,8 @@ export function PWAInstallPrompt() {
     }
   }, []);
 
-  // Don't render if not on web, no prompt available, or was dismissed
-  if (Platform.OS !== 'web' || !showPrompt || dismissed) {
+  // Don't render inside the native shell, off web, without a prompt, or after dismiss
+  if (nativeShell || Platform.OS !== 'web' || !showPrompt || dismissed) {
     return null;
   }
 
