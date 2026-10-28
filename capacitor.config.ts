@@ -4,6 +4,8 @@ const config: CapacitorConfig = {
   appId: 'com.chrisstoy.tictacdoh',
   appName: 'Tic-Tac-Doh',
   webDir: 'dist',
+  // WebView background shown before the page paints. Default is white, which flashes after the splash.
+  backgroundColor: '#fdde97',
   plugins: {
     SplashScreen: {
       backgroundColor: '#fdde97',

@@ -46,6 +46,10 @@ describe('native chrome', () => {
     });
   });
 
+  it('paints the WebView the app background so no white flash follows the splash', () => {
+    expect(config.backgroundColor).toBe('#fdde97');
+  });
+
   it('paints the Android launch splash yellow and uses the splash icon', () => {
     const styles = fs.readFileSync(
       path.join(root, 'android/app/src/main/res/values/styles.xml'),
