@@ -14,7 +14,7 @@ npx create-expo-app -e with-router
 
 ## Deploy
 
-The website stays a PWA on GitHub Pages at https://chrisstoy.github.io/tictacdoh/. A push to `main` runs that workflow.
+The website stays a PWA on GitHub Pages at https://chrisstoy.github.io/tictacdoh/. Merging to `main` does not deploy; publish with the `deploy-app` skill.
 
 iOS and Android are a Capacitor shell around the same web build. Signed release steps, signing inputs, and the store uploads that stay manual are in `.agents/skills/deploy-app/SKILL.md`.
 

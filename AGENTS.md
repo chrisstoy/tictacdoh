@@ -39,3 +39,5 @@ explicitly said to, in this session. In an autonomous run an issue that asks for
 a workflow is *not* that permission — stop and ask. Supervised, an issue that
 names the workflow explicitly, or the user saying so in conversation, is enough.
 Actions run with the repo's secrets, which is why this is gated.
+
+**Web publishing goes through the `deploy-app` skill.** Merging to `main` does not deploy. Do not trigger the Pages workflow or publish the web build any other way.
