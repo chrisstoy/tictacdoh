@@ -16,11 +16,11 @@ Do not deploy by improvising around it.
 
 ## Targets
 
-| Target | Deploys from | Mechanism |
-|---|---|---|
-| `production-web` (GitHub Pages, https://chrisstoy.github.io/tictacdoh/) | `main` | `.github/workflows/main.yml`, `workflow_dispatch` only. Merging to `main` does **not** deploy |
-| `ios` (`com.chrisstoy.tictacdoh`, App Store Connect app `6826927007`) | `main`, clean tree | `scripts/release-ios.sh` archives and uploads |
-| `android` (`com.chrisstoy.tictacdoh`) | `main`, clean tree | `scripts/release-android.sh`, then `scripts/upload-android.py` |
+| Target                                                                  | Deploys from       | Mechanism                                                                                     |
+| ----------------------------------------------------------------------- | ------------------ | --------------------------------------------------------------------------------------------- |
+| `production-web` (GitHub Pages, https://chrisstoy.github.io/tictacdoh/) | `main`             | `.github/workflows/main.yml`, `workflow_dispatch` only. Merging to `main` does **not** deploy |
+| `ios` (`com.chrisstoy.tictacdoh`, App Store Connect app `6826927007`)   | `main`, clean tree | `scripts/release-ios.sh` archives and uploads                                                 |
+| `android` (`com.chrisstoy.tictacdoh`)                                   | `main`, clean tree | `scripts/release-android.sh`, then `scripts/upload-android.py`                                |
 
 No preview/staging target exists. Web hosting is GitHub Pages only. There is
 no EAS, no fastlane, and no store workflow in CI. Play Console has no app yet.
@@ -39,6 +39,7 @@ no EAS, no fastlane, and no store workflow in CI. Play Console has no app yet.
 ## Deploy
 
 **production-web**
+
 1. Optionally dry-run the artifact locally: `GITHUB_PAGES=true npm run build` and confirm `dist/` contains `index.html`, `manifest.json`, `sw.js`, `icons/`. `dist/manifest.json` `start_url` is `/tictacdoh/`.
 2. Trigger the workflow from `main`: `gh workflow run "Build and Deploy to Pages" --ref main`, then `gh run watch`. It builds (Node 20, `npm ci`, `npm run build`) and deploys `./dist` via `actions/deploy-pages@v4`. This skill is the only sanctioned way to publish the web build; do not re-add a push trigger or deploy any other way.
 
@@ -52,6 +53,12 @@ npm run release:ios
 The script checks App Store Connect for this commit's build number, builds the
 web bundle, runs `cap sync`, archives scheme `App`, and uploads. The export
 step is the upload. There is no Transporter or altool step.
+
+Scheme `App` embeds the watchOS app (`com.chrisstoy.tictacdoh.watchkitapp`).
+The archive contains `Watch/TicTacDohWatch.app`. After upload, installing that
+watch app from TestFlight and adding watch screenshots in App Store Connect are
+human steps. Do not upload, and do not let automatic signing register the watch
+bundle id, unless this run was asked to release.
 
 Do **not** pass App Store Connect API-key flags to `xcodebuild`. That path
 failed on ShopN with this same key. Details in `deployment.md`.
@@ -95,7 +102,7 @@ Say that and stop. Do not invent a Play app from this script.
 - Create the Play Console app for `com.chrisstoy.tictacdoh`, enroll Play App Signing, and grant a service account testing-track access. Then `--apply` can upload.
 - Back up `~/.android/release-keys/tictacdoh-upload.keystore` and `tictacdoh-upload-keystore-passwords.txt`. That keystore is the only upload key.
 
-A required manual *action* with no judgment in it (a click in a vendor UI that
+A required manual _action_ with no judgment in it (a click in a vendor UI that
 has no API) is not a blocker — do everything up to it, then report the remaining
-step clearly. A manual *decision* (a release window, submitting for review,
+step clearly. A manual _decision_ (a release window, submitting for review,
 promoting past internal testing) is a stop-and-ask.

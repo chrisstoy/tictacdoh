@@ -1,6 +1,5 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-
 import { BoardState, PlayerId, TileState } from '../../types';
 import { determineWinner, pickMove } from '../game';
 

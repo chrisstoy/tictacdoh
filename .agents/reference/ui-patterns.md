@@ -12,3 +12,4 @@ description: Styling with NativeWind and the custom color palette, component con
 - **Buttons/text:** `PushButton`, `JiggleButton`, `Toggle`, `OutlineText`, `TextWithBackground` are the shared primitives; animations (`src/animations/`) use react-native-reanimated 4 (`FadeIn`/`FadeOut` between screens).
 - **Fonts:** Komigo3D, loaded via expo-font from `assets/fonts/`.
 - **Debug:** `DebugViewData.tsx` for inspecting state.
+- **watchOS:** the wrist app does not use NativeWind. It is SwiftUI in `ios/App/TicTacDohWatch`, on the same `#fdde97` background, with X and O drawn as shapes. See `architecture.md`.
