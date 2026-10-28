@@ -7,6 +7,25 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A11C0D220000000000000200 /* TicTacDohWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C0D220000000000000100 /* TicTacDohWatchApp.swift */; };
+		A11C0D220000000000000201 /* Board.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C0D220000000000000101 /* Board.swift */; };
+		A11C0D220000000000000202 /* Rules.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C0D220000000000000102 /* Rules.swift */; };
+		A11C0D220000000000000203 /* CPU.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C0D220000000000000103 /* CPU.swift */; };
+		A11C0D220000000000000204 /* Match.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C0D220000000000000104 /* Match.swift */; };
+		A11C0D220000000000000205 /* Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C0D220000000000000105 /* Session.swift */; };
+		A11C0D220000000000000206 /* TileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C0D220000000000000106 /* TileView.swift */; };
+		A11C0D220000000000000207 /* SetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C0D220000000000000107 /* SetupView.swift */; };
+		A11C0D220000000000000208 /* PlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C0D220000000000000108 /* PlayView.swift */; };
+		A11C0D220000000000000209 /* RoundOverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C0D220000000000000109 /* RoundOverView.swift */; };
+		A11C0D22000000000000020A /* MatchOverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C0D22000000000000010A /* MatchOverView.swift */; };
+		A11C0D22000000000000020B /* WatchHaptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C0D22000000000000010B /* WatchHaptics.swift */; };
+		A11C0D220000000000000400 /* FixtureLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C0D220000000000000300 /* FixtureLoader.swift */; };
+		A11C0D220000000000000401 /* RulesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C0D220000000000000301 /* RulesTests.swift */; };
+		A11C0D220000000000000402 /* CPUTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C0D220000000000000302 /* CPUTests.swift */; };
+		A11C0D220000000000000403 /* MatchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C0D220000000000000303 /* MatchTests.swift */; };
+		A11C0D220000000000000015 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A11C0D220000000000000014 /* Assets.xcassets */; };
+		A11C0D220000000000000017 /* game-cases.json in Resources */ = {isa = PBXBuildFile; fileRef = A11C0D220000000000000016 /* game-cases.json */; };
+		A11C0D22000000000000000C /* TicTacDohWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = A11C0D220000000000000003 /* TicTacDohWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		2FAD9763203C412B000D30F8 /* config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2FAD9762203C412B000D30F8 /* config.xml */; };
 		4D22ABE92AF431CB00220026 /* CapApp-SPM in Frameworks */ = {isa = PBXBuildFile; productRef = 4D22ABE82AF431CB00220026 /* CapApp-SPM */; };
 		50379B232058CBB4000EE86E /* capacitor.config.json in Resources */ = {isa = PBXBuildFile; fileRef = 50379B222058CBB4000EE86E /* capacitor.config.json */; };
@@ -28,6 +47,27 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		A11C0D220000000000000100 /* TicTacDohWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TicTacDohWatchApp.swift; sourceTree = "<group>"; };
+		A11C0D220000000000000101 /* Board.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Game/Board.swift; sourceTree = "<group>"; };
+		A11C0D220000000000000102 /* Rules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Game/Rules.swift; sourceTree = "<group>"; };
+		A11C0D220000000000000103 /* CPU.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Game/CPU.swift; sourceTree = "<group>"; };
+		A11C0D220000000000000104 /* Match.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Game/Match.swift; sourceTree = "<group>"; };
+		A11C0D220000000000000105 /* Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Game/Session.swift; sourceTree = "<group>"; };
+		A11C0D220000000000000106 /* TileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/TileView.swift; sourceTree = "<group>"; };
+		A11C0D220000000000000107 /* SetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/SetupView.swift; sourceTree = "<group>"; };
+		A11C0D220000000000000108 /* PlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/PlayView.swift; sourceTree = "<group>"; };
+		A11C0D220000000000000109 /* RoundOverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/RoundOverView.swift; sourceTree = "<group>"; };
+		A11C0D22000000000000010A /* MatchOverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/MatchOverView.swift; sourceTree = "<group>"; };
+		A11C0D22000000000000010B /* WatchHaptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/WatchHaptics.swift; sourceTree = "<group>"; };
+		A11C0D220000000000000300 /* FixtureLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FixtureLoader.swift; sourceTree = "<group>"; };
+		A11C0D220000000000000301 /* RulesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RulesTests.swift; sourceTree = "<group>"; };
+		A11C0D220000000000000302 /* CPUTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CPUTests.swift; sourceTree = "<group>"; };
+		A11C0D220000000000000303 /* MatchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchTests.swift; sourceTree = "<group>"; };
+		A11C0D220000000000000013 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A11C0D220000000000000014 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A11C0D220000000000000016 /* game-cases.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = game-cases.json; path = ../../../test-fixtures/game-cases.json; sourceTree = "<group>"; };
+		A11C0D220000000000000003 /* TicTacDohWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TicTacDohWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A11C0D220000000000000004 /* TicTacDohWatchTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TicTacDohWatchTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2FAD9762203C412B000D30F8 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = config.xml; sourceTree = "<group>"; };
 		50379B222058CBB4000EE86E /* capacitor.config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = capacitor.config.json; sourceTree = "<group>"; };
 		504EC3041FED79650016851F /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -59,6 +99,20 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A11C0D220000000000000006 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A11C0D220000000000000009 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -67,6 +121,8 @@
 			children = (
 				958DCC722DB07C7200EA8C5F /* debug.xcconfig */,
 				504EC3061FED79650016851F /* App */,
+				A11C0D220000000000000011 /* TicTacDohWatch */,
+				A11C0D220000000000000012 /* TicTacDohWatchTests */,
 				504EC3051FED79650016851F /* Products */,
 			);
 			sourceTree = "<group>";
@@ -75,6 +131,8 @@
 			isa = PBXGroup;
 			children = (
 				504EC3041FED79650016851F /* App.app */,
+				A11C0D220000000000000003 /* TicTacDohWatch.app */,
+				A11C0D220000000000000004 /* TicTacDohWatchTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -104,6 +162,39 @@
 			path = App;
 			sourceTree = "<group>";
 		};
+		A11C0D220000000000000011 /* TicTacDohWatch */ = {
+			isa = PBXGroup;
+			children = (
+				A11C0D220000000000000100 /* TicTacDohWatchApp.swift */,
+				A11C0D220000000000000101 /* Board.swift */,
+				A11C0D220000000000000102 /* Rules.swift */,
+				A11C0D220000000000000103 /* CPU.swift */,
+				A11C0D220000000000000104 /* Match.swift */,
+				A11C0D220000000000000105 /* Session.swift */,
+				A11C0D220000000000000106 /* TileView.swift */,
+				A11C0D220000000000000107 /* SetupView.swift */,
+				A11C0D220000000000000108 /* PlayView.swift */,
+				A11C0D220000000000000109 /* RoundOverView.swift */,
+				A11C0D22000000000000010A /* MatchOverView.swift */,
+				A11C0D22000000000000010B /* WatchHaptics.swift */,
+				A11C0D220000000000000013 /* Info.plist */,
+				A11C0D220000000000000014 /* Assets.xcassets */,
+			);
+			path = TicTacDohWatch;
+			sourceTree = "<group>";
+		};
+		A11C0D220000000000000012 /* TicTacDohWatchTests */ = {
+			isa = PBXGroup;
+			children = (
+				A11C0D220000000000000300 /* FixtureLoader.swift */,
+				A11C0D220000000000000301 /* RulesTests.swift */,
+				A11C0D220000000000000302 /* CPUTests.swift */,
+				A11C0D220000000000000303 /* MatchTests.swift */,
+				A11C0D220000000000000016 /* game-cases.json */,
+			);
+			path = TicTacDohWatchTests;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -114,10 +205,12 @@
 				504EC3001FED79650016851F /* Sources */,
 				504EC3011FED79650016851F /* Frameworks */,
 				504EC3021FED79650016851F /* Resources */,
+				A11C0D22000000000000000B /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				A11C0D22000000000000000D /* PBXTargetDependency */,
 			);
 			name = App;
 			packageProductDependencies = (
@@ -126,6 +219,41 @@
 			productName = App;
 			productReference = 504EC3041FED79650016851F /* App.app */;
 			productType = "com.apple.product-type.application";
+		};
+		A11C0D220000000000000001 /* TicTacDohWatch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A11C0D220000000000000018 /* Build configuration list for PBXNativeTarget "TicTacDohWatch" */;
+			buildPhases = (
+				A11C0D220000000000000005 /* Sources */,
+				A11C0D220000000000000006 /* Frameworks */,
+				A11C0D220000000000000007 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = TicTacDohWatch;
+			productName = TicTacDohWatch;
+			productReference = A11C0D220000000000000003 /* TicTacDohWatch.app */;
+			productType = "com.apple.product-type.application";
+		};
+		A11C0D220000000000000002 /* TicTacDohWatchTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A11C0D220000000000000019 /* Build configuration list for PBXNativeTarget "TicTacDohWatchTests" */;
+			buildPhases = (
+				A11C0D220000000000000008 /* Sources */,
+				A11C0D220000000000000009 /* Frameworks */,
+				A11C0D22000000000000000A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A11C0D22000000000000000F /* PBXTargetDependency */,
+			);
+			name = TicTacDohWatchTests;
+			productName = TicTacDohWatchTests;
+			productReference = A11C0D220000000000000004 /* TicTacDohWatchTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
 
@@ -160,6 +288,8 @@
 			projectRoot = "";
 			targets = (
 				504EC3031FED79650016851F /* App */,
+				A11C0D220000000000000001 /* TicTacDohWatch */,
+				A11C0D220000000000000002 /* TicTacDohWatchTests */,
 			);
 		};
 /* End PBXProject section */
@@ -187,6 +317,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A11C0D220000000000000007 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A11C0D220000000000000015 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A11C0D22000000000000000A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A11C0D220000000000000017 /* game-cases.json in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -196,6 +342,36 @@
 			files = (
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
 				9582B6832FE993A70072D4E8 /* SceneDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A11C0D220000000000000005 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A11C0D220000000000000200 /* TicTacDohWatchApp.swift in Sources */,
+				A11C0D220000000000000201 /* Board.swift in Sources */,
+				A11C0D220000000000000202 /* Rules.swift in Sources */,
+				A11C0D220000000000000203 /* CPU.swift in Sources */,
+				A11C0D220000000000000204 /* Match.swift in Sources */,
+				A11C0D220000000000000205 /* Session.swift in Sources */,
+				A11C0D220000000000000206 /* TileView.swift in Sources */,
+				A11C0D220000000000000207 /* SetupView.swift in Sources */,
+				A11C0D220000000000000208 /* PlayView.swift in Sources */,
+				A11C0D220000000000000209 /* RoundOverView.swift in Sources */,
+				A11C0D22000000000000020A /* MatchOverView.swift in Sources */,
+				A11C0D22000000000000020B /* WatchHaptics.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A11C0D220000000000000008 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A11C0D220000000000000400 /* FixtureLoader.swift in Sources */,
+				A11C0D220000000000000401 /* RulesTests.swift in Sources */,
+				A11C0D220000000000000402 /* CPUTests.swift in Sources */,
+				A11C0D220000000000000403 /* MatchTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -219,6 +395,51 @@
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
+
+
+/* Begin PBXContainerItemProxy section */
+		A11C0D22000000000000000E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 504EC2FC1FED79650016851F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A11C0D220000000000000001;
+			remoteInfo = TicTacDohWatch;
+		};
+		A11C0D220000000000000010 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 504EC2FC1FED79650016851F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A11C0D220000000000000001;
+			remoteInfo = TicTacDohWatch;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		A11C0D22000000000000000B /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				A11C0D22000000000000000C /* TicTacDohWatch.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A11C0D22000000000000000D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A11C0D220000000000000001 /* TicTacDohWatch */;
+			targetProxy = A11C0D22000000000000000E /* PBXContainerItemProxy */;
+		};
+		A11C0D22000000000000000F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A11C0D220000000000000001 /* TicTacDohWatch */;
+			targetProxy = A11C0D220000000000000010 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		504EC3141FED79650016851F /* Debug */ = {
@@ -376,6 +597,122 @@
 			};
 			name = Release;
 		};
+		A11C0D22000000000000001A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = J866FQ2YZ9;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TicTacDohWatch/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Tic-Tac-Doh";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.chrisstoy.tictacdoh;
+				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.chrisstoy.tictacdoh.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Debug;
+		};
+		A11C0D22000000000000001B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = J866FQ2YZ9;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TicTacDohWatch/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Tic-Tac-Doh";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.chrisstoy.tictacdoh;
+				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.chrisstoy.tictacdoh.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Release;
+		};
+		A11C0D22000000000000001C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = J866FQ2YZ9;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.chrisstoy.tictacdoh.watchkitapp.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TicTacDohWatch.app/TicTacDohWatch";
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Debug;
+		};
+		A11C0D22000000000000001D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = J866FQ2YZ9;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.chrisstoy.tictacdoh.watchkitapp.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TicTacDohWatch.app/TicTacDohWatch";
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -393,6 +730,24 @@
 			buildConfigurations = (
 				504EC3171FED79650016851F /* Debug */,
 				504EC3181FED79650016851F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A11C0D220000000000000018 /* Build configuration list for PBXNativeTarget "TicTacDohWatch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A11C0D22000000000000001A /* Debug */,
+				A11C0D22000000000000001B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A11C0D220000000000000019 /* Build configuration list for PBXNativeTarget "TicTacDohWatchTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A11C0D22000000000000001C /* Debug */,
+				A11C0D22000000000000001D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
