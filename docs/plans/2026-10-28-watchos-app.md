@@ -11,7 +11,7 @@ The iOS/Android apps are a Capacitor WebView around the Expo web bundle (ADR 000
 
 ## Non-goals
 - No sync with the phone game (no WatchConnectivity, no Capacitor plugin). Standalone only.
-- No CPU-vs-CPU mode, no options screen beyond what is listed below.
+- No options screen beyond what is listed below. CPU vs CPU is in scope: Start stays enabled, and each CPU moves after 500 ms until the round ends.
 - No music. No web/PWA/Android changes.
 - No changes under `.github/workflows/` (guardrail: needs explicit user permission). CI will not build or test the watch app; verification is local.
 - Do not publish web (`deploy-app` skill rules).
@@ -28,7 +28,7 @@ The iOS/Android apps are a Capacitor WebView around the Expo web bundle (ADR 000
 ## Behavior spec (mirror the phone game)
 - Board: 9 tiles, indices 0–8; lines `[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]`.
 - Setup screen: Player X and Player O each Human/CPU (default X human, O CPU), rounds 3/5/7/9/∞ (default match with the phone's default; read `src/screens/setup/` and `matchState.ts`).
-- Play: tap an empty tile to place; CPU moves after 500 ms (`CPU_MOVE_DELAY_MS`). Round over → winner/draw banner + "Next round". Match over → winner + "New match". Quit returns to setup.
+- Play: tap an empty tile to place; CPU moves after 500 ms (`CPU_MOVE_DELAY_MS`). Round over and match over keep the board on screen, with the winning line highlighted, plus a winner/draw banner and "Next round" or "New match". Quit returns to setup.
 - Match winner = first to a majority of rounds (read `matchState.ts` for exact rule, including ∞ and draws; port it exactly).
 - CPU = same `pickMove` order as `src/services/game.ts`: random tile on empty board → immediate win → block opponent's immediate win → random valid move. Note: it is *not* minimax; do not "improve" it.
 - Haptics (`WKInterfaceDevice.current().play(...)`) on place/win/lose/draw. Optional short sound effects: skip in v1 (watch audio needs a speaker route and ambient-session handling).

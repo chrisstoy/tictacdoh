@@ -5,9 +5,9 @@ struct PlayView: View {
 
     var body: some View {
         VStack(spacing: 4) {
-            if session.playMode == .playing {
-                board
-            } else if session.playMode == .roundOver {
+            board
+                .layoutPriority(1)
+            if session.playMode == .roundOver {
                 RoundOverView(session: session)
             } else if session.playMode == .matchOver {
                 MatchOverView(session: session)
