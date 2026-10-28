@@ -1,3 +1,4 @@
+// @ts-expect-error react-dom ships no types here; this test only needs renderToStaticMarkup
 import { renderToStaticMarkup } from 'react-dom/server';
 import Root from '../../app/+html';
 
