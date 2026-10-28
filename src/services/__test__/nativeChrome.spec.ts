@@ -28,6 +28,12 @@ describe('native chrome', () => {
     ]);
   });
 
+  it('declares exempt-only encryption so uploads skip the export compliance prompt', () => {
+    const plist = fs.readFileSync(path.join(root, 'ios/App/App/Info.plist'), 'utf8');
+
+    expect(plist).toMatch(/<key>ITSAppUsesNonExemptEncryption<\/key>\s*<false\/>/);
+  });
+
   it('locks the Android activity to portrait', () => {
     const manifest = fs.readFileSync(
       path.join(root, 'android/app/src/main/AndroidManifest.xml'),

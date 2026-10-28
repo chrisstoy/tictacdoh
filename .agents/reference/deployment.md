@@ -58,3 +58,4 @@ Build job: checkout → configure-pages → Node 20 + npm cache → `npm ci` →
 - Base path is hard-coded in several places (`/tictacdoh/`); renaming the repo/Pages path means updating all of them plus `registerServiceWorker.ts`.
 - Web builds must be SSR-safe (see `conventions.md`).
 - The iOS app is portrait-only and supports iPad (`TARGETED_DEVICE_FAMILY` 1,2). `Info.plist` sets `UIRequiresFullScreen` so App Store Connect accepts that. Without it, upload fails with error 90474 (iPad multitasking requires every orientation).
+- `Info.plist` sets `ITSAppUsesNonExemptEncryption` to `false` (the app only uses HTTPS). Without it, every upload sits at "Missing Export Compliance" in TestFlight until someone answers the prompt in App Store Connect.
