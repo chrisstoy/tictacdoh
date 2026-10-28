@@ -1,0 +1,324 @@
+{
+  "cases": [
+    {
+      "id": "empty",
+      "board": [
+        " ",
+        " ",
+        " ",
+        " ",
+        " ",
+        " ",
+        " ",
+        " ",
+        " "
+      ],
+      "turn": "X",
+      "expectedWinner": null,
+      "expectedLine": null,
+      "expectedDraw": false,
+      "expectedImmediateWinMoves": [],
+      "expectedBlockMoves": [],
+      "expectedMoves": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ]
+    },
+    {
+      "id": "win-index-2",
+      "board": [
+        "X",
+        "X",
+        " ",
+        " ",
+        "O",
+        " ",
+        "O",
+        "X",
+        "O"
+      ],
+      "turn": "X",
+      "expectedWinner": null,
+      "expectedLine": null,
+      "expectedDraw": false,
+      "expectedImmediateWinMoves": [
+        2
+      ],
+      "expectedBlockMoves": [
+        2
+      ],
+      "expectedMoves": [
+        2
+      ]
+    },
+    {
+      "id": "win-index-3",
+      "board": [
+        "X",
+        "O",
+        " ",
+        " ",
+        "O",
+        "X",
+        "X",
+        " ",
+        "O"
+      ],
+      "turn": "X",
+      "expectedWinner": null,
+      "expectedLine": null,
+      "expectedDraw": false,
+      "expectedImmediateWinMoves": [
+        3
+      ],
+      "expectedBlockMoves": [
+        7
+      ],
+      "expectedMoves": [
+        3
+      ]
+    },
+    {
+      "id": "win-index-7",
+      "board": [
+        "X",
+        "O",
+        " ",
+        "O",
+        "O",
+        " ",
+        "X",
+        " ",
+        "X"
+      ],
+      "turn": "X",
+      "expectedWinner": null,
+      "expectedLine": null,
+      "expectedDraw": false,
+      "expectedImmediateWinMoves": [
+        7
+      ],
+      "expectedBlockMoves": [
+        5,
+        7
+      ],
+      "expectedMoves": [
+        7
+      ]
+    },
+    {
+      "id": "block-index-2",
+      "board": [
+        "X",
+        " ",
+        " ",
+        "X",
+        "O",
+        " ",
+        "O",
+        "X",
+        "O"
+      ],
+      "turn": "X",
+      "expectedWinner": null,
+      "expectedLine": null,
+      "expectedDraw": false,
+      "expectedImmediateWinMoves": [],
+      "expectedBlockMoves": [
+        2
+      ],
+      "expectedMoves": [
+        2
+      ]
+    },
+    {
+      "id": "block-index-0-as-o",
+      "board": [
+        " ",
+        "X",
+        "O",
+        "X",
+        "O",
+        " ",
+        "X",
+        "O",
+        "X"
+      ],
+      "turn": "O",
+      "expectedWinner": null,
+      "expectedLine": null,
+      "expectedDraw": false,
+      "expectedImmediateWinMoves": [],
+      "expectedBlockMoves": [
+        0
+      ],
+      "expectedMoves": [
+        0
+      ]
+    },
+    {
+      "id": "block-index-0-as-o-2",
+      "board": [
+        " ",
+        "X",
+        "X",
+        "X",
+        "O",
+        "O",
+        "O",
+        "X",
+        " "
+      ],
+      "turn": "O",
+      "expectedWinner": null,
+      "expectedLine": null,
+      "expectedDraw": false,
+      "expectedImmediateWinMoves": [],
+      "expectedBlockMoves": [
+        0
+      ],
+      "expectedMoves": [
+        0
+      ]
+    },
+    {
+      "id": "single-x-corner",
+      "board": [
+        "X",
+        " ",
+        " ",
+        " ",
+        " ",
+        " ",
+        " ",
+        " ",
+        " "
+      ],
+      "turn": "O",
+      "expectedWinner": null,
+      "expectedLine": null,
+      "expectedDraw": false,
+      "expectedImmediateWinMoves": [],
+      "expectedBlockMoves": [],
+      "expectedMoves": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ]
+    },
+    {
+      "id": "x-top-row",
+      "board": [
+        "X",
+        "X",
+        "X",
+        " ",
+        "O",
+        " ",
+        "O",
+        " ",
+        "O"
+      ],
+      "turn": "O",
+      "expectedWinner": "X",
+      "expectedLine": [
+        0,
+        1,
+        2
+      ],
+      "expectedDraw": false,
+      "expectedImmediateWinMoves": [],
+      "expectedBlockMoves": [],
+      "expectedMoves": []
+    },
+    {
+      "id": "o-left-col",
+      "board": [
+        "O",
+        " ",
+        " ",
+        "O",
+        "X",
+        " ",
+        "O",
+        " ",
+        "X"
+      ],
+      "turn": "X",
+      "expectedWinner": "O",
+      "expectedLine": [
+        0,
+        3,
+        6
+      ],
+      "expectedDraw": false,
+      "expectedImmediateWinMoves": [],
+      "expectedBlockMoves": [],
+      "expectedMoves": []
+    },
+    {
+      "id": "draw",
+      "board": [
+        "X",
+        "O",
+        "X",
+        "O",
+        "X",
+        "O",
+        "O",
+        "X",
+        "X"
+      ],
+      "turn": "X",
+      "expectedWinner": "X",
+      "expectedLine": [
+        0,
+        4,
+        8
+      ],
+      "expectedDraw": false,
+      "expectedImmediateWinMoves": [],
+      "expectedBlockMoves": [],
+      "expectedMoves": []
+    },
+    {
+      "id": "x-can-win-or-block",
+      "board": [
+        "X",
+        "X",
+        " ",
+        "O",
+        "O",
+        " ",
+        " ",
+        " ",
+        " "
+      ],
+      "turn": "X",
+      "expectedWinner": null,
+      "expectedLine": null,
+      "expectedDraw": false,
+      "expectedImmediateWinMoves": [
+        2
+      ],
+      "expectedBlockMoves": [
+        5
+      ],
+      "expectedMoves": [
+        2
+      ]
+    }
+  ]
+}
