@@ -8,7 +8,7 @@ description: Web/PWA build pipeline, GitHub Pages CI deploy, and the local iOS a
 ## Targets
 | Target | How | Notes |
 |---|---|---|
-| Production web (GitHub Pages) | Push to `main` triggers `.github/workflows/main.yml` | Serves at https://chrisstoy.github.io/tictacdoh/ |
+| Production web (GitHub Pages) | `.github/workflows/main.yml` is `workflow_dispatch` only; merging to `main` does not deploy. Publish through the `deploy-app` skill (`gh workflow run "Build and Deploy to Pages" --ref main`) | Serves at https://chrisstoy.github.io/tictacdoh/ |
 | Local web build | `npm run build` | Base path `/` unless `GITHUB_PAGES` is set |
 | Native shell web bundle | `npm run build:native` | Forces `GITHUB_PAGES` unset so the base path is `/` even if the variable is set in the environment |
 | iOS | `scripts/release-ios.sh` | Bundle id `com.chrisstoy.tictacdoh`. App Store Connect app `6826927007` ("Tic-Tac-DOH!"). Version `1.0` is `PREPARE_FOR_SUBMISSION`. Build 52 is on TestFlight and was confirmed working on a device. Archive + upload from this machine. No store job in CI |
@@ -52,7 +52,7 @@ The Android project is committed source. The release script does not run `expo p
 Full steps live in `.agents/skills/deploy-app/SKILL.md`.
 
 ## CI (`main.yml`)
-Build job: checkout → configure-pages → Node 20 + npm cache → `npm ci` → `npm run build` (GITHUB_PAGES) → upload `./dist`. Deploy job: `actions/deploy-pages@v4` into environment `github-pages`. Also runnable via `workflow_dispatch`. CI does **not** run lint or tests.
+Build job: checkout → configure-pages → Node 20 + npm cache → `npm ci` → `npm run build` (GITHUB_PAGES) → upload `./dist`. Deploy job: `actions/deploy-pages@v4` into environment `github-pages`. Triggered only by `workflow_dispatch` (no push trigger), via the `deploy-app` skill. CI does **not** run lint or tests.
 
 ## Gotchas
 - Base path is hard-coded in several places (`/tictacdoh/`); renaming the repo/Pages path means updating all of them plus `registerServiceWorker.ts`.

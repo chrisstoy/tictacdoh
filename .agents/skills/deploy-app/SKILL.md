@@ -18,7 +18,7 @@ Do not deploy by improvising around it.
 
 | Target | Deploys from | Mechanism |
 |---|---|---|
-| `production-web` (GitHub Pages, https://chrisstoy.github.io/tictacdoh/) | `main` | `.github/workflows/main.yml` on push to `main` or `workflow_dispatch` |
+| `production-web` (GitHub Pages, https://chrisstoy.github.io/tictacdoh/) | `main` | `.github/workflows/main.yml`, `workflow_dispatch` only. Merging to `main` does **not** deploy |
 | `ios` (`com.chrisstoy.tictacdoh`, App Store Connect app `6826927007`) | `main`, clean tree | `scripts/release-ios.sh` archives and uploads |
 | `android` (`com.chrisstoy.tictacdoh`) | `main`, clean tree | `scripts/release-android.sh`, then `scripts/upload-android.py` |
 
@@ -40,8 +40,7 @@ no EAS, no fastlane, and no store workflow in CI. Play Console has no app yet.
 
 **production-web**
 1. Optionally dry-run the artifact locally: `GITHUB_PAGES=true npm run build` and confirm `dist/` contains `index.html`, `manifest.json`, `sw.js`, `icons/`. `dist/manifest.json` `start_url` is `/tictacdoh/`.
-2. Merge/push to `main`. The workflow builds (Node 20, `npm ci`, `npm run build`) and deploys `./dist` via `actions/deploy-pages@v4`.
-3. Or trigger without a push: `gh workflow run "Build and Deploy to Pages"`. Watch with `gh run watch`.
+2. Trigger the workflow from `main`: `gh workflow run "Build and Deploy to Pages" --ref main`, then `gh run watch`. It builds (Node 20, `npm ci`, `npm run build`) and deploys `./dist` via `actions/deploy-pages@v4`. This skill is the only sanctioned way to publish the web build; do not re-add a push trigger or deploy any other way.
 
 **ios**
 
@@ -85,7 +84,7 @@ Say that and stop. Do not invent a Play app from this script.
 
 ## Rollback
 
-- production-web: revert the bad commit on `main` and push (the workflow redeploys), or re-run the workflow on the last good commit.
+- production-web: revert the bad commit on `main`, then run the workflow again; or run it with `--ref <last-good-commit>`.
 - ios / android: there is no automated store rollback. Ship a newer build (a new commit, so the build number changes) through the same scripts. Expiring a TestFlight build or halting a Play release is a console action.
 
 ## Manual steps this project genuinely requires
