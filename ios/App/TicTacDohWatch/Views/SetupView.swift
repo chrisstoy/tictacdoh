@@ -24,7 +24,6 @@ struct SetupView: View {
             .tint(Color.white.opacity(0.55))
             .foregroundStyle(ink)
             .frame(maxWidth: .infinity, minHeight: 44)
-            .disabled(!session.canStart)
             .accessibilityLabel("Start match")
         }
         .padding(.horizontal, 4)

@@ -20,12 +20,6 @@ final class GameSession: ObservableObject {
         self.playMode = .setupMatch
     }
 
-    var canStart: Bool {
-        let xIsCPU = match.isCPU[.x] ?? false
-        let oIsCPU = match.isCPU[.o] ?? false
-        return !(xIsCPU && oIsCPU)
-    }
-
     func isCPU(_ player: Player) -> Bool {
         match.isCPU[player] ?? false
     }
@@ -48,7 +42,6 @@ final class GameSession: ObservableObject {
     }
 
     func startMatch() {
-        guard canStart else { return }
         match.initNewMatch()
         round = .newRound()
         playMode = .playing

@@ -171,16 +171,24 @@ final class MatchTests: XCTestCase {
         XCTAssertEqual(session.feedback?.kind, .place)
     }
 
-    func testBothCPUCannotStartAndQuitReturnsToSetup() {
+    func testBothCPUCanStartAndPlayTheRound() {
         let session = GameSession()
-        XCTAssertTrue(session.canStart)
         session.setCPU(.x, true)
-        XCTAssertFalse(session.canStart)
+        session.setCPU(.o, true)
         session.startMatch()
-        XCTAssertEqual(session.playMode, .setupMatch)
+        XCTAssertEqual(session.playMode, .playing)
+        XCTAssertTrue(session.needsCPUMove)
 
-        session.setCPU(.x, false)
-        session.startMatch()
+        var moves = 0
+        while session.playMode == .playing && moves < 9 {
+            session.performCPUMove(rng: ZeroRandomSource())
+            moves += 1
+        }
+
+        XCTAssertEqual(session.playMode, .roundOver)
+        XCTAssertLessThanOrEqual(moves, 9)
+        XCTAssertTrue(session.round.board.contains(.x))
+        XCTAssertTrue(session.round.board.contains(.o))
         session.quit()
         XCTAssertEqual(session.playMode, .setupMatch)
     }
