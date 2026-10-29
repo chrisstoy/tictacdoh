@@ -1,6 +1,7 @@
 import Foundation
 
 enum PlayMode: Equatable {
+    case splash
     case setupMatch
     case setupRound
     case playing
@@ -55,8 +56,8 @@ struct MatchModel: Equatable {
         MatchModel(isCPU: [.x: false, .o: false], roundsInMatch: 3, rounds: [], winner: nil)
     }
 
-    /// Watch setup screen: X human, O CPU, best of 3. The phone store starts
-    /// both players as human; the watch plan asks for a CPU opponent.
+    /// Watch setup screen: X Meatbag, O Clanker, best of 3. The phone store
+    /// starts both as Meatbag; the watch plan asks for a Clanker opponent.
     static func watchSetup() -> MatchModel {
         MatchModel(isCPU: [.x: false, .o: true], roundsInMatch: 3, rounds: [], winner: nil)
     }

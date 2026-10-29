@@ -17,7 +17,48 @@ final class GameSession: ObservableObject {
     init(match: MatchModel = .watchSetup()) {
         self.match = match
         self.round = .newRound()
-        self.playMode = .setupMatch
+        self.playMode = .splash
+        // Spike-only launch seeds so the simulator can show states without taps.
+        let args = ProcessInfo.processInfo.arguments
+        if args.contains("--menu") {
+            self.playMode = .setupMatch
+        } else if args.contains("--play") || args.contains("--round-over") || args.contains("--match-over") {
+            self.match.isCPU[.x] = false
+            self.match.isCPU[.o] = false
+            var board = RoundModel.newRound()
+            _ = board.apply(at: 0) // X
+            _ = board.apply(at: 3) // O
+            _ = board.apply(at: 1) // X
+            _ = board.apply(at: 4) // O
+            _ = board.apply(at: 2) // X wins top row
+            round = board
+
+            if args.contains("--play") {
+                // Open mid-game board without a winner.
+                var mid = RoundModel.newRound()
+                _ = mid.apply(at: 0)
+                _ = mid.apply(at: 4)
+                _ = mid.apply(at: 2)
+                _ = mid.apply(at: 1)
+                _ = mid.apply(at: 6)
+                round = mid
+                playMode = .playing
+            } else if args.contains("--match-over") {
+                self.match.record(RoundRecord(board: board.board, winner: board.winner))
+                var second = RoundModel.newRound()
+                _ = second.apply(at: 0)
+                _ = second.apply(at: 3)
+                _ = second.apply(at: 1)
+                _ = second.apply(at: 4)
+                _ = second.apply(at: 2)
+                round = second
+                self.match.record(RoundRecord(board: second.board, winner: second.winner))
+                playMode = .matchOver
+            } else {
+                self.match.record(RoundRecord(board: board.board, winner: board.winner))
+                playMode = .roundOver
+            }
+        }
     }
 
     func isCPU(_ player: Player) -> Bool {
@@ -45,6 +86,11 @@ final class GameSession: ObservableObject {
         match.initNewMatch()
         round = .newRound()
         playMode = .playing
+        feedback = nil
+    }
+
+    func showMenu() {
+        playMode = .setupMatch
         feedback = nil
     }
 

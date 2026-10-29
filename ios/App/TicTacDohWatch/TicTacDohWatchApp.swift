@@ -17,9 +17,12 @@ struct RootView: View {
     var body: some View {
         NavigationStack {
             Group {
-                if session.playMode == .setupMatch {
+                switch session.playMode {
+                case .splash:
+                    SplashView(session: session)
+                case .setupMatch:
                     SetupView(session: session)
-                } else {
+                default:
                     PlayView(session: session)
                 }
             }

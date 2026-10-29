@@ -15,10 +15,12 @@
 		A11C0D220000000000000205 /* Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C0D220000000000000105 /* Session.swift */; };
 		A11C0D220000000000000206 /* TileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C0D220000000000000106 /* TileView.swift */; };
 		A11C0D220000000000000207 /* SetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C0D220000000000000107 /* SetupView.swift */; };
+		A11C0D22000000000000020F /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C0D22000000000000010F /* SplashView.swift */; };
 		A11C0D220000000000000208 /* PlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C0D220000000000000108 /* PlayView.swift */; };
 		A11C0D220000000000000209 /* RoundOverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C0D220000000000000109 /* RoundOverView.swift */; };
 		A11C0D22000000000000020A /* MatchOverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C0D22000000000000010A /* MatchOverView.swift */; };
 		A11C0D22000000000000020B /* WatchHaptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C0D22000000000000010B /* WatchHaptics.swift */; };
+		A11C0D22000000000000020C /* BoardArt.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C0D22000000000000010C /* BoardArt.swift */; };
 		A11C0D220000000000000400 /* FixtureLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C0D220000000000000300 /* FixtureLoader.swift */; };
 		A11C0D220000000000000401 /* RulesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C0D220000000000000301 /* RulesTests.swift */; };
 		A11C0D220000000000000402 /* CPUTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C0D220000000000000302 /* CPUTests.swift */; };
@@ -53,8 +55,10 @@
 		A11C0D220000000000000103 /* CPU.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Game/CPU.swift; sourceTree = "<group>"; };
 		A11C0D220000000000000104 /* Match.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Game/Match.swift; sourceTree = "<group>"; };
 		A11C0D220000000000000105 /* Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Game/Session.swift; sourceTree = "<group>"; };
+		A11C0D22000000000000010C /* BoardArt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Game/BoardArt.swift; sourceTree = "<group>"; };
 		A11C0D220000000000000106 /* TileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/TileView.swift; sourceTree = "<group>"; };
 		A11C0D220000000000000107 /* SetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/SetupView.swift; sourceTree = "<group>"; };
+		A11C0D22000000000000010F /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/SplashView.swift; sourceTree = "<group>"; };
 		A11C0D220000000000000108 /* PlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/PlayView.swift; sourceTree = "<group>"; };
 		A11C0D220000000000000109 /* RoundOverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/RoundOverView.swift; sourceTree = "<group>"; };
 		A11C0D22000000000000010A /* MatchOverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/MatchOverView.swift; sourceTree = "<group>"; };
@@ -171,8 +175,10 @@
 				A11C0D220000000000000103 /* CPU.swift */,
 				A11C0D220000000000000104 /* Match.swift */,
 				A11C0D220000000000000105 /* Session.swift */,
+				A11C0D22000000000000010C /* BoardArt.swift */,
 				A11C0D220000000000000106 /* TileView.swift */,
 				A11C0D220000000000000107 /* SetupView.swift */,
+				A11C0D22000000000000010F /* SplashView.swift */,
 				A11C0D220000000000000108 /* PlayView.swift */,
 				A11C0D220000000000000109 /* RoundOverView.swift */,
 				A11C0D22000000000000010A /* MatchOverView.swift */,
@@ -355,8 +361,10 @@
 				A11C0D220000000000000203 /* CPU.swift in Sources */,
 				A11C0D220000000000000204 /* Match.swift in Sources */,
 				A11C0D220000000000000205 /* Session.swift in Sources */,
+				A11C0D22000000000000020C /* BoardArt.swift in Sources */,
 				A11C0D220000000000000206 /* TileView.swift in Sources */,
 				A11C0D220000000000000207 /* SetupView.swift in Sources */,
+				A11C0D22000000000000020F /* SplashView.swift in Sources */,
 				A11C0D220000000000000208 /* PlayView.swift in Sources */,
 				A11C0D220000000000000209 /* RoundOverView.swift in Sources */,
 				A11C0D22000000000000020A /* MatchOverView.swift in Sources */,
