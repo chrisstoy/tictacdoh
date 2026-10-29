@@ -55,6 +55,7 @@ WATCH_SWIFT = [
     "Game/Session.swift",
     "Views/TileView.swift",
     "Views/SetupView.swift",
+    "Views/SplashView.swift",
     "Views/PlayView.swift",
     "Views/RoundOverView.swift",
     "Views/MatchOverView.swift",
