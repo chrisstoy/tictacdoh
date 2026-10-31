@@ -49,7 +49,7 @@ describe('TitleScreen', () => {
   beforeEach(() => {
     mockedReduceMotion.mockReturnValue(false);
     mockedRepeat.mockClear();
-    useAudioService().playSound.mockClear();
+    (useAudioService().playSound as jest.Mock).mockClear();
     jest.useFakeTimers();
   });
 

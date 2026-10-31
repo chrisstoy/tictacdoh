@@ -57,9 +57,9 @@ jest.mock('@/screens/options/OptionsScreen', () => {
 
 describe('Index', () => {
   beforeEach(() => {
-    useAudioService().playMusic.mockClear();
-    useAudioService().stopMusic.mockClear();
-    useAudioService().playSound.mockClear();
+    (useAudioService().playMusic as jest.Mock).mockClear();
+    (useAudioService().stopMusic as jest.Mock).mockClear();
+    (useAudioService().playSound as jest.Mock).mockClear();
     jest.useFakeTimers();
   });
 
