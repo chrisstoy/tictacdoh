@@ -1,9 +1,9 @@
 import { render } from '@testing-library/react-native';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
-import RootLayout from '../_layout';
+import RootLayout from '../../app/_layout';
 
-jest.mock('../globals.css', () => ({}));
+jest.mock('../../app/globals.css', () => ({}));
 jest.mock('@/assets/fonts/komigo-font/Komigo3DRegular-rg1lK.ttf', () => 1);
 jest.mock('react-native-safe-area-context', () => {
   const { View } = jest.requireActual('react-native');
