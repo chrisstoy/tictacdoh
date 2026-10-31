@@ -23,9 +23,9 @@ export function OutlineText({
           style,
           {
             // @ts-ignore - WebkitTextStroke is not in RN types but works on web
-            WebkitTextStroke: `${outlineWidth / 4}px ${outlineColor}`,
+            WebkitTextStroke: `${outlineWidth}px ${outlineColor}`,
             // @ts-ignore
-            textStroke: `${outlineWidth / 4}px ${outlineColor}`,
+            textStroke: `${outlineWidth}px ${outlineColor}`,
           },
         ]}
       >

@@ -5,18 +5,19 @@ import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
 import { OptionsScreen } from '@/screens/options/OptionsScreen';
 import { PlayGameScreen } from '@/screens/play/PlayGameScreen';
 import { SetupGameScreen } from '@/screens/setup/SetupGameScreen';
+import { TitleScreen } from '@/screens/title/TitleScreen';
 import { useAudioService } from '@/services/audioService';
 import { useFrameMaxWidth } from '@/services/useFrameMaxWidth';
 
-type ActiveMode = 'PLAY' | 'NEW' | 'OPTIONS';
+type ActiveMode = 'TITLE' | 'PLAY' | 'NEW' | 'OPTIONS';
 
 export default function Index() {
   const { playMusic, stopMusic } = useAudioService();
-  const [gameMode, setGameMode] = useState<ActiveMode>('NEW');
+  const [gameMode, setGameMode] = useState<ActiveMode>('TITLE');
   const maxWidth = useFrameMaxWidth();
 
   useEffect(() => {
-    if (gameMode === 'NEW' || gameMode === 'OPTIONS') {
+    if (gameMode === 'TITLE' || gameMode === 'NEW' || gameMode === 'OPTIONS') {
       playMusic('setup', { loop: true });
     } else {
       stopMusic();
@@ -29,6 +30,16 @@ export default function Index() {
 
   return (
     <View className="flex-1 self-center w-full" style={{ maxWidth }}>
+      {gameMode === 'TITLE' && (
+        <Animated.View
+          entering={FadeIn}
+          exiting={FadeOut}
+          layout={FadingTransition.duration(100)}
+          style={{ flex: 1 }}
+        >
+          <TitleScreen onPlay={() => setGameMode('NEW')} />
+        </Animated.View>
+      )}
       {gameMode === 'NEW' && (
         <View className="flex-1">
           <Animated.View
