@@ -10,7 +10,7 @@ Tic-Tac-Doh: React Native tic-tac-toe on Expo SDK 54 (expo-router 6, React 19, R
 ## Layout
 
 - `src/app/` — expo-router entry (`_layout.tsx`, `index.tsx`, `globals.css`)
-- `src/screens/{setup,play,options}/` — one screen each, with `components/`
+- `src/screens/{title,setup,play,options}/` — one screen each; setup and play keep subcomponents in `components/`
 - `src/components/` — shared UI; `components/images/` wraps each PNG in `assets/`
 - `src/services/` — stores, game logic, audio, service-worker registration, `nativeShell.ts` (`isNativeShell()`)
 - `capacitor.config.ts` — `appId` `com.chrisstoy.tictacdoh` (the App Store Connect app, not `com.stoyco.tictacdoh`), `appName` `Tic-Tac-Doh`, `webDir` `dist`
@@ -30,7 +30,9 @@ Three stores, each wrapped in `withZustandDevtools` (`zustandDevtools.ts`; real 
 
 ## Screen flow
 
-Single page, mode-based (`src/app/index.tsx`): `NEW` → SetupGameScreen, `OPTIONS` → OptionsScreen, `PLAY` → PlayGameScreen. Setup/options screens play looping setup music; play stops it.
+Single page, mode-based (`src/app/index.tsx`): cold start is `TITLE` → `TitleScreen`. Play opens `NEW` → `SetupGameScreen`. `OPTIONS` → `OptionsScreen`. `PLAY` → `PlayGameScreen`. Quitting a match still returns to setup (`NEW`), not the title. Title, setup, and options play looping setup music via `playMusic('setup', { loop: true })`, which stays silent when the music option is off. Play stops it.
+
+`TitleScreen` shows `assets/splash-screen.png` contained (not cropped) on `#fdde97`, through `SplashScreenImage`, with a Play control under the artwork. The control's accessibility label is Play. While reduce motion is off it idles with a repeating scale pulse; a press plays the existing `push` sound and opens setup. Face overlays (blink, raised brows, closed mouth) are decorative shapes on the character, positioned as fractions of that splash and sampled from `facePoseAt`. `useReducedMotion` holds the face at rest and skips the Play pulse. The watch splash is a separate SwiftUI screen and is unchanged. The native launch splash uses the same artwork, so it hands off onto this screen.
 
 ## watchOS app
 
