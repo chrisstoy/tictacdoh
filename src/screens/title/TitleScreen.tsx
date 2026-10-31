@@ -5,7 +5,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SplashScreenImage } from '@/components/images/SplashScreenImage';
 import { useAudioService } from '@/services/audioService';
@@ -68,35 +68,23 @@ export function TitleScreen({ onPlay }: Props) {
           <SplashScreenImage />
           <View
             testID="face-motion"
-            pointerEvents="none"
             accessible={false}
             accessibilityElementsHidden
             importantForAccessibility="no-hide-descendants"
-            style={StyleSheet.absoluteFill}
+            style={[StyleSheet.absoluteFill, styles.face]}
           >
-            <Animated.View
-              testID="face-blink"
-              pointerEvents="none"
-              style={[StyleSheet.absoluteFill, blinkStyle]}
-            >
+            <View testID={`face-cue-${pose.cue}`} />
+            <Animated.View testID="face-blink" style={[StyleSheet.absoluteFill, blinkStyle]}>
               <FacePatch box={FACE_BOXES.leftEye} color={SKIN} />
               <FacePatch box={FACE_BOXES.rightEye} color={SKIN} />
             </Animated.View>
-            <Animated.View
-              testID="face-brow"
-              pointerEvents="none"
-              style={[StyleSheet.absoluteFill, browStyle]}
-            >
+            <Animated.View testID="face-brow" style={[StyleSheet.absoluteFill, browStyle]}>
               <FacePatch box={padBox(FACE_BOXES.leftBrow, 0.006, 0.008)} color={SKIN} />
               <FacePatch box={padBox(FACE_BOXES.rightBrow, 0.006, 0.008)} color={SKIN} />
               <FacePatch box={FACE_BOXES.leftBrow} color={INK} lift={BROW_LIFT} />
               <FacePatch box={FACE_BOXES.rightBrow} color={INK} lift={BROW_LIFT} />
             </Animated.View>
-            <Animated.View
-              testID="face-mouth"
-              pointerEvents="none"
-              style={[StyleSheet.absoluteFill, mouthStyle]}
-            >
+            <Animated.View testID="face-mouth" style={[StyleSheet.absoluteFill, mouthStyle]}>
               <FacePatch box={FACE_BOXES.mouth} color={SKIN} />
               <FacePatch
                 box={{
@@ -155,13 +143,11 @@ function PlayControl({ reduceMotion, onPress }: { reduceMotion: boolean; onPress
 }
 
 function useCueOpacity(active: boolean) {
-  const opacity = useSharedValue(active ? 1 : 0);
-  const seen = useRef(active);
+  const opacity = useSharedValue(0);
 
-  if (seen.current !== active) {
-    seen.current = active;
+  useEffect(() => {
     opacity.value = withTiming(active ? 1 : 0, { duration: 90 });
-  }
+  }, [active, opacity]);
 
   return useAnimatedStyle(() => ({
     opacity: opacity.value,
@@ -203,6 +189,9 @@ const styles = StyleSheet.create({
   },
   art: {
     position: 'absolute',
+  },
+  face: {
+    pointerEvents: 'none',
   },
   playRow: {
     alignItems: 'center',

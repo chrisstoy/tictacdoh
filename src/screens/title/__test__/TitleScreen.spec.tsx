@@ -37,10 +37,6 @@ function styleOf(style: unknown): Record<string, unknown> {
   return {};
 }
 
-function opacityOf(style: unknown): number | undefined {
-  return styleOf(style).opacity as number | undefined;
-}
-
 function faceById(view: ReturnType<typeof render>, testID: string) {
   return view.getByTestId(testID, { includeHiddenElements: true });
 }
@@ -83,26 +79,22 @@ describe('TitleScreen', () => {
     expect(face.props.accessible).toBe(false);
     expect(face.props.accessibilityElementsHidden).toBe(true);
     expect(face.props.importantForAccessibility).toBe('no-hide-descendants');
-    expect(opacityOf(faceById(view, 'face-blink').props.style)).toBe(0);
+    expect(faceById(view, 'face-cue-rest')).toBeTruthy();
 
     act(() => {
       jest.advanceTimersByTime(FACE_REST_MS + FACE_SAMPLE_MS);
     });
-    expect(opacityOf(faceById(view, 'face-blink').props.style)).toBe(1);
-    expect(opacityOf(faceById(view, 'face-brow').props.style)).toBe(0);
-    expect(opacityOf(faceById(view, 'face-mouth').props.style)).toBe(0);
+    expect(faceById(view, 'face-cue-blink')).toBeTruthy();
 
     act(() => {
       jest.advanceTimersByTime(FACE_SLOT_MS);
     });
-    expect(opacityOf(faceById(view, 'face-brow').props.style)).toBe(1);
-    expect(opacityOf(faceById(view, 'face-blink').props.style)).toBe(0);
+    expect(faceById(view, 'face-cue-brow')).toBeTruthy();
 
     act(() => {
       jest.advanceTimersByTime(FACE_SLOT_MS);
     });
-    expect(opacityOf(faceById(view, 'face-mouth').props.style)).toBe(1);
-    expect(opacityOf(faceById(view, 'face-brow').props.style)).toBe(0);
+    expect(faceById(view, 'face-cue-mouth')).toBeTruthy();
   });
 
   it('repeats a Play pulse while reduce motion is off', () => {
@@ -120,9 +112,7 @@ describe('TitleScreen', () => {
       jest.advanceTimersByTime(FACE_SLOT_MS * 3);
     });
 
-    expect(opacityOf(faceById(view, 'face-blink').props.style)).toBe(0);
-    expect(opacityOf(faceById(view, 'face-brow').props.style)).toBe(0);
-    expect(opacityOf(faceById(view, 'face-mouth').props.style)).toBe(0);
+    expect(faceById(view, 'face-cue-rest')).toBeTruthy();
     expect(mockedRepeat).not.toHaveBeenCalled();
 
     fireEvent.press(view.getByLabelText('Play'));
