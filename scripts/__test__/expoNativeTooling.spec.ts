@@ -73,4 +73,14 @@ describe('expo native tooling removal', () => {
     expect(applicationId).toBeTruthy();
     expect(test).toContain(`assertEquals("${applicationId}", appContext.getPackageName())`);
   });
+
+  it('assigns the release signingConfig only inside the keystore existence guard', () => {
+    const gradle = fs.readFileSync(path.join(root, 'android/app/build.gradle'), 'utf8');
+    const release = gradle.match(/buildTypes\s*\{\s*release\s*\{([\s\S]*?)\n {8}\}\n {4}\}/)?.[1];
+
+    expect(release).toBeTruthy();
+    const guard = release!.match(/if \(keystorePropertiesFile\.exists\(\)\) \{([^}]*)\}/);
+    expect(guard?.[1]).toContain('signingConfig signingConfigs.release');
+    expect(release!.replace(guard![0], '')).not.toContain('signingConfig signingConfigs.release');
+  });
 });
