@@ -58,4 +58,19 @@ describe('expo native tooling removal', () => {
     expect(gradle).toContain('signingConfig signingConfigs.release');
     expect(gitignore).toMatch(/^keystore\.properties$/m);
   });
+
+  it('asserts the real applicationId in the Android instrumented test', () => {
+    const gradle = fs.readFileSync(path.join(root, 'android/app/build.gradle'), 'utf8');
+    const test = fs.readFileSync(
+      path.join(
+        root,
+        'android/app/src/androidTest/java/com/getcapacitor/myapp/ExampleInstrumentedTest.java'
+      ),
+      'utf8'
+    );
+    const applicationId = gradle.match(/applicationId "([^"]+)"/)?.[1];
+
+    expect(applicationId).toBeTruthy();
+    expect(test).toContain(`assertEquals("${applicationId}", appContext.getPackageName())`);
+  });
 });
