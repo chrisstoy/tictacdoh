@@ -5,6 +5,8 @@ export type FaceCue = (typeof FACE_CUES)[number];
 export const FACE_REST_MS = 900;
 export const FACE_CUE_MS = 280;
 export const FACE_SLOT_MS = FACE_REST_MS + FACE_CUE_MS;
+/** How often the title screen samples {@link facePoseAt}. */
+export const FACE_SAMPLE_MS = 50;
 export const FACE_CYCLE_MS = FACE_SLOT_MS * FACE_CUES.length;
 
 export type FacePose = {
