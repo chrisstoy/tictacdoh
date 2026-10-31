@@ -6,7 +6,8 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { OutlineText } from '@/components/OutlineText';
 import { SplashScreenImage } from '@/components/images/SplashScreenImage';
 import { useAudioService } from '@/services/audioService';
 import { BROW_LIFT, FACE_BOXES, type FaceBox, INK, SKIN } from './faceLayout';
@@ -133,9 +134,14 @@ function PlayControl({ reduceMotion, onPress }: { reduceMotion: boolean; onPress
           onPress={onPress}
           style={styles.play}
         >
-          <Text accessible={false} style={styles.playLabel}>
+          <OutlineText
+            accessible={false}
+            outlineColor="#51200b"
+            outlineWidth={3}
+            style={styles.playLabel}
+          >
             PLAY
-          </Text>
+          </OutlineText>
         </Pressable>
       </Animated.View>
     </View>
@@ -211,8 +217,5 @@ const styles = StyleSheet.create({
     fontFamily: 'Komigo',
     fontSize: 40,
     color: '#e86a2a',
-    textShadowColor: '#51200b',
-    textShadowOffset: { width: 2, height: 2 },
-    textShadowRadius: 1,
   },
 });

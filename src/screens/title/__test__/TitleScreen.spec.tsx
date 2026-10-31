@@ -59,7 +59,9 @@ describe('TitleScreen', () => {
     expect(styleOf(view.getByTestId('title-screen').props.style).backgroundColor).toBe('#fdde97');
     expect(view.getByTestId('splash-screen-image').props.resizeMode).toBe('contain');
     expect(view.getByLabelText('Play')).toBeTruthy();
-    expect(view.getByText('PLAY')).toBeTruthy();
+    const playGlyphs = view.getAllByText('PLAY').map((node) => styleOf(node.props.style).color);
+    expect(playGlyphs).toContain('#e86a2a');
+    expect(playGlyphs).toContain('#51200b');
   });
 
   it('plays the push sound and opens setup when Play is pressed', () => {
