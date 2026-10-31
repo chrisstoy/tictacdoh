@@ -72,7 +72,7 @@ Portrait is locked to `UIInterfaceOrientationPortrait` for both iPhone and iPad 
 
 ## Hydration
 
-The static export prerenders the whole route tree, and `expo-font` reports fonts as loaded on the server. `RootLayout` therefore renders its tree on the first client render even while the Komigo font is still loading (text swaps when it arrives). Returning `null` until `useFonts` resolved made the first client render differ from the prerendered HTML and threw React error #418 on every load, web and Capacitor alike. Do not gate `RootLayout` on font state.
+The static export prerenders the whole route tree, and `expo-font` reports fonts as loaded on the server (`useStaticFonts` in `expo-font/build/FontHooks.js`, selected when `window` is undefined). `RootLayout` therefore renders its tree on the first client render even while the Komigo font is still loading (text swaps when it arrives). Returning `null` until `useFonts` resolved made the first client render differ from the prerendered HTML and threw React error #418 on every load, web and Capacitor alike. Do not gate `RootLayout` on font state.
 
 ## PWA
 
