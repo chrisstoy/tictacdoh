@@ -32,10 +32,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     void applyNativeStatusBar();
   }, []);
 
-  if (!loaded && !error) {
-    return null;
-  }
-
+  // Render before the font loads: the static export prerenders this tree, so a null
+  // first client render breaks hydration (React error #418).
   return (
     <SafeAreaProvider>
       <AudioServiceProvider>

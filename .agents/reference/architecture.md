@@ -70,6 +70,10 @@ Portrait is locked to `UIInterfaceOrientationPortrait` for both iPhone and iPad 
 
 `src/app/+html.tsx` sets `viewport-fit=cover` on the shared web document (Pages and the native bundle). The existing `SafeAreaView` is the only inset, so the browser PWA is not padded twice. `applyNativeStatusBar()` in `nativeStatusBar.ts` calls `@capacitor/status-bar` 8.0.4 only when `isNativeShell()` is true: background `#fdde97` and `Style.Light` (dark icons on the yellow background). `capacitor.config.ts` sets the same splash and status-bar values so they apply before JavaScript. The status bar overlays the webview.
 
+## Hydration
+
+The static export prerenders the whole route tree, and `expo-font` reports fonts as loaded on the server. `RootLayout` therefore renders its tree on the first client render even while the Komigo font is still loading (text swaps when it arrives). Returning `null` until `useFonts` resolved made the first client render differ from the prerendered HTML and threw React error #418 on every load, web and Capacitor alike. Do not gate `RootLayout` on font state.
+
 ## PWA
 
 `registerServiceWorker.ts` registers `sw.js` (scope `/tictacdoh/` on GitHub Pages, `/` otherwise). Both registration and `PWAInstallPrompt` return immediately when `isNativeShell()` is true (false when `window` is missing, otherwise `Capacitor.isNativePlatform()`), so the shell does not register a worker or show an install prompt. Browser behavior is unchanged. Generation details in `deployment.md`.
