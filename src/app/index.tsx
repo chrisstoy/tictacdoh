@@ -1,19 +1,19 @@
 import Animated, { FadeIn, FadeOut, FadingTransition } from 'react-native-reanimated';
 import { useEffect, useState } from 'react';
-import { View, useWindowDimensions } from 'react-native';
+import { View } from 'react-native';
 import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
 import { OptionsScreen } from '@/screens/options/OptionsScreen';
 import { PlayGameScreen } from '@/screens/play/PlayGameScreen';
 import { SetupGameScreen } from '@/screens/setup/SetupGameScreen';
 import { useAudioService } from '@/services/audioService';
-import { frameMaxWidth } from '@/services/frameWidth';
+import { useFrameMaxWidth } from '@/services/useFrameMaxWidth';
 
 type ActiveMode = 'PLAY' | 'NEW' | 'OPTIONS';
 
 export default function Index() {
   const { playMusic, stopMusic } = useAudioService();
   const [gameMode, setGameMode] = useState<ActiveMode>('NEW');
-  const { width, height } = useWindowDimensions();
+  const maxWidth = useFrameMaxWidth();
 
   useEffect(() => {
     if (gameMode === 'NEW' || gameMode === 'OPTIONS') {
@@ -28,7 +28,7 @@ export default function Index() {
   }, [gameMode, playMusic, stopMusic]);
 
   return (
-    <View className="flex-1 self-center w-full" style={{ maxWidth: frameMaxWidth(width, height) }}>
+    <View className="flex-1 self-center w-full" style={{ maxWidth }}>
       {gameMode === 'NEW' && (
         <View className="flex-1">
           <Animated.View
