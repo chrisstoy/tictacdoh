@@ -27,6 +27,7 @@ Three stores, each wrapped in `withZustandDevtools` (`zustandDevtools.ts`; real 
 - `matchState.ts` — rounds in match, `isCPU` per player, round history, match winner, and `playMode`: `SETUP_MATCH` → `SETUP_ROUND` → `PLAYING` → `ROUND_OVER` → `MATCH_OVER` (loops back to `SETUP_MATCH`/`SETUP_ROUND`).
 - `roundState.ts` — 9-tile board, current turn, round winner/draw.
 - `optionsState.ts` — sound, music, auto-replay; persisted to AsyncStorage key `@tic-tac-doh:options`. The web bundle's AsyncStorage uses the webview's localStorage, so the same store survives an app restart inside the Capacitor shell. No separate native store.
+- `appVersion.ts` — `useAppVersion()` for the Options screen footer. Inside the Capacitor shell it is `App.getInfo()` from `@capacitor/app`: the installed marketing version and build number, shown as `v1.0 (60)`. On web, and until the native lookup resolves or if it fails, it is `v<package.json version>` with no build, so the first render matches the prerendered HTML.
 
 ## Screen flow
 
