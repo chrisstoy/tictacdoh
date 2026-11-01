@@ -2,7 +2,7 @@ import { act, fireEvent, render } from '@testing-library/react-native';
 import { useReducedMotion, withRepeat } from 'react-native-reanimated';
 import { useAudioService } from '@/services/audioService';
 import { TitleScreen } from '../TitleScreen';
-import { FACE_REST_MS, FACE_SAMPLE_MS, FACE_SLOT_MS } from '../faceMotion';
+import { FACE_SAMPLE_MS } from '../faceMotion';
 import { startPlayIdle } from '../playIdle';
 
 jest.mock('react-native-reanimated', () => {
@@ -57,7 +57,7 @@ describe('TitleScreen', () => {
     const view = render(<TitleScreen onPlay={jest.fn()} />);
 
     expect(styleOf(view.getByTestId('title-screen').props.style).backgroundColor).toBe('#fdde97');
-    expect(view.getByTestId('splash-screen-image').props.resizeMode).toBe('contain');
+    expect(view.getByTestId('mascot-base-image').props.resizeMode).toBe('contain');
     expect(view.getByLabelText('Play')).toBeTruthy();
     expect(view.getByTestId('play-image').props.resizeMode).toBe('contain');
     expect(view.queryByText('PLAY')).toBeNull();
@@ -73,29 +73,45 @@ describe('TitleScreen', () => {
     expect(onPlay).toHaveBeenCalledTimes(1);
   });
 
-  it('cycles blink, brow, and mouth while reduce motion is off', () => {
+  it('animates the eyes, brows, and mouth on their own while reduce motion is off', () => {
     const view = render(<TitleScreen onPlay={jest.fn()} />);
     const face = faceById(view, 'face-motion');
 
     expect(face.props.accessible).toBe(false);
     expect(face.props.accessibilityElementsHidden).toBe(true);
     expect(face.props.importantForAccessibility).toBe('no-hide-descendants');
-    expect(faceById(view, 'face-cue-rest')).toBeTruthy();
+    expect(faceById(view, 'face-eyes-open')).toBeTruthy();
+    expect(faceById(view, 'face-brows-rest-rest')).toBeTruthy();
+    expect(faceById(view, 'face-mouth-open')).toBeTruthy();
 
+    // 900ms: only the eyes blink.
     act(() => {
-      jest.advanceTimersByTime(FACE_REST_MS + FACE_SAMPLE_MS);
+      jest.advanceTimersByTime(900 + FACE_SAMPLE_MS);
     });
-    expect(faceById(view, 'face-cue-blink')).toBeTruthy();
+    expect(faceById(view, 'face-eyes-blink')).toBeTruthy();
+    expect(faceById(view, 'face-brows-rest-rest')).toBeTruthy();
+    expect(faceById(view, 'face-mouth-open')).toBeTruthy();
 
+    // 1500ms: the eyes have reopened and both brows rise.
     act(() => {
-      jest.advanceTimersByTime(FACE_SLOT_MS);
+      jest.advanceTimersByTime(600);
     });
-    expect(faceById(view, 'face-cue-brow')).toBeTruthy();
+    expect(faceById(view, 'face-eyes-open')).toBeTruthy();
+    expect(faceById(view, 'face-brows-raised-raised')).toBeTruthy();
 
+    // 2500ms: the mouth shrinks while the eyes look aside.
     act(() => {
-      jest.advanceTimersByTime(FACE_SLOT_MS);
+      jest.advanceTimersByTime(1000);
     });
-    expect(faceById(view, 'face-cue-mouth')).toBeTruthy();
+    expect(faceById(view, 'face-eyes-lookLeft')).toBeTruthy();
+    expect(faceById(view, 'face-mouth-small')).toBeTruthy();
+  });
+
+  it('draws the eyes, brows, and mouth as separate pieces over the base image', () => {
+    const view = render(<TitleScreen onPlay={jest.fn()} />);
+
+    expect(view.getByTestId('mascot-base-image')).toBeTruthy();
+    expect(faceById(view, 'mascot-mouth-bar')).toBeTruthy();
   });
 
   it('repeats a Play pulse while reduce motion is off', () => {
@@ -110,10 +126,12 @@ describe('TitleScreen', () => {
     const view = render(<TitleScreen onPlay={onPlay} />);
 
     act(() => {
-      jest.advanceTimersByTime(FACE_SLOT_MS * 3);
+      jest.advanceTimersByTime(10000);
     });
 
-    expect(faceById(view, 'face-cue-rest')).toBeTruthy();
+    expect(faceById(view, 'face-eyes-open')).toBeTruthy();
+    expect(faceById(view, 'face-brows-rest-rest')).toBeTruthy();
+    expect(faceById(view, 'face-mouth-open')).toBeTruthy();
     expect(mockedRepeat).not.toHaveBeenCalled();
 
     fireEvent.press(view.getByLabelText('Play'));

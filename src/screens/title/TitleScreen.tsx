@@ -3,15 +3,14 @@ import Animated, {
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
-  withTiming,
 } from 'react-native-reanimated';
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
+import { MascotImage } from '@/components/images/MascotImage';
 import { PlayImage } from '@/components/images/PlayImage';
-import { SplashScreenImage } from '@/components/images/SplashScreenImage';
 import { useAudioService } from '@/services/audioService';
-import { BROW_LIFT, FACE_BOXES, type FaceBox, INK, SKIN } from './faceLayout';
-import { FACE_SAMPLE_MS, type FacePose, facePoseAt } from './faceMotion';
+import { MascotFace } from './MascotFace';
+import { FACE_SAMPLE_MS, type FacePose, REST_POSE, facePoseAt, poseKey } from './faceMotion';
 import { startPlayIdle } from './playIdle';
 import { containedSplashRect } from './splashFrame';
 
@@ -22,34 +21,30 @@ interface Props {
 export function TitleScreen({ onPlay }: Props) {
   const reduceMotion = useReducedMotion();
   const { playSound } = useAudioService();
-  const [elapsed, setElapsed] = useState(0);
+  const [pose, setPose] = useState<FacePose>(REST_POSE);
   const [frame, setFrame] = useState({ width: 0, height: 0 });
-  const pose = facePoseAt(reduceMotion ? 0 : elapsed);
   const rect = containedSplashRect(frame.width, frame.height);
 
   useEffect(() => {
     if (reduceMotion) {
-      setElapsed(0);
+      setPose(REST_POSE);
       return;
     }
 
     let elapsedMs = 0;
-    let cue: FacePose['cue'] = 'rest';
+    let shown = poseKey(REST_POSE);
     const id = setInterval(() => {
       elapsedMs += FACE_SAMPLE_MS;
       const next = facePoseAt(elapsedMs);
-      if (next.cue !== cue) {
-        cue = next.cue;
-        setElapsed(elapsedMs);
+      const key = poseKey(next);
+      if (key !== shown) {
+        shown = key;
+        setPose(next);
       }
     }, FACE_SAMPLE_MS);
 
     return () => clearInterval(id);
   }, [reduceMotion]);
-
-  const blinkStyle = useCueOpacity(pose.blink);
-  const browStyle = useCueOpacity(pose.browRaised);
-  const mouthStyle = useCueOpacity(pose.mouthClosed);
 
   return (
     <View testID="title-screen" className="flex-1 bg-background" style={styles.screen}>
@@ -66,38 +61,8 @@ export function TitleScreen({ onPlay }: Props) {
             { left: rect.left, top: rect.top, width: rect.width, height: rect.height },
           ]}
         >
-          <SplashScreenImage />
-          <View
-            testID="face-motion"
-            accessible={false}
-            accessibilityElementsHidden
-            importantForAccessibility="no-hide-descendants"
-            style={[StyleSheet.absoluteFill, styles.face]}
-          >
-            <View testID={`face-cue-${pose.cue}`} />
-            <Animated.View testID="face-blink" style={[StyleSheet.absoluteFill, blinkStyle]}>
-              <FacePatch box={FACE_BOXES.leftEye} color={SKIN} />
-              <FacePatch box={FACE_BOXES.rightEye} color={SKIN} />
-            </Animated.View>
-            <Animated.View testID="face-brow" style={[StyleSheet.absoluteFill, browStyle]}>
-              <FacePatch box={padBox(FACE_BOXES.leftBrow, 0.006, 0.008)} color={SKIN} />
-              <FacePatch box={padBox(FACE_BOXES.rightBrow, 0.006, 0.008)} color={SKIN} />
-              <FacePatch box={FACE_BOXES.leftBrow} color={INK} lift={BROW_LIFT} />
-              <FacePatch box={FACE_BOXES.rightBrow} color={INK} lift={BROW_LIFT} />
-            </Animated.View>
-            <Animated.View testID="face-mouth" style={[StyleSheet.absoluteFill, mouthStyle]}>
-              <FacePatch box={FACE_BOXES.mouth} color={SKIN} />
-              <FacePatch
-                box={{
-                  x: FACE_BOXES.mouth.x,
-                  y: FACE_BOXES.mouth.y + FACE_BOXES.mouth.h * 0.38,
-                  w: FACE_BOXES.mouth.w,
-                  h: FACE_BOXES.mouth.h * 0.28,
-                }}
-                color={INK}
-              />
-            </Animated.View>
-          </View>
+          <MascotImage />
+          <MascotFace pose={pose} width={rect.width} height={rect.height} />
         </View>
       </View>
       <PlayControl
@@ -141,43 +106,6 @@ function PlayControl({ reduceMotion, onPress }: { reduceMotion: boolean; onPress
   );
 }
 
-function useCueOpacity(active: boolean) {
-  const opacity = useSharedValue(0);
-
-  useEffect(() => {
-    opacity.value = withTiming(active ? 1 : 0, { duration: 90 });
-  }, [active, opacity]);
-
-  return useAnimatedStyle(() => ({
-    opacity: opacity.value,
-  }));
-}
-
-function padBox(box: FaceBox, padX: number, padY: number): FaceBox {
-  return {
-    x: box.x - padX,
-    y: box.y - padY,
-    w: box.w + padX * 2,
-    h: box.h + padY * 2,
-  };
-}
-
-function FacePatch({ box, color, lift = 0 }: { box: FaceBox; color: string; lift?: number }) {
-  return (
-    <View
-      style={{
-        position: 'absolute',
-        left: `${box.x * 100}%`,
-        top: `${(box.y - lift) * 100}%`,
-        width: `${box.w * 100}%`,
-        height: `${box.h * 100}%`,
-        borderRadius: 999,
-        backgroundColor: color,
-      }}
-    />
-  );
-}
-
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
@@ -188,9 +116,6 @@ const styles = StyleSheet.create({
   },
   art: {
     position: 'absolute',
-  },
-  face: {
-    pointerEvents: 'none',
   },
   playRow: {
     alignItems: 'center',
