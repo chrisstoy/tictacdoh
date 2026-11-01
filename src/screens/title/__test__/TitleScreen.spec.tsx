@@ -53,15 +53,14 @@ describe('TitleScreen', () => {
     jest.useRealTimers();
   });
 
-  it('shows the contained splash on the yellow background and a Play control', () => {
+  it('shows the contained splash on the yellow background and the Play button art', () => {
     const view = render(<TitleScreen onPlay={jest.fn()} />);
 
     expect(styleOf(view.getByTestId('title-screen').props.style).backgroundColor).toBe('#fdde97');
     expect(view.getByTestId('splash-screen-image').props.resizeMode).toBe('contain');
     expect(view.getByLabelText('Play')).toBeTruthy();
-    const playGlyphs = view.getAllByText('PLAY').map((node) => styleOf(node.props.style).color);
-    expect(playGlyphs).toContain('#e86a2a');
-    expect(playGlyphs).toContain('#51200b');
+    expect(view.getByTestId('play-image').props.resizeMode).toBe('contain');
+    expect(view.queryByText('PLAY')).toBeNull();
   });
 
   it('plays the push sound and opens setup when Play is pressed', () => {
