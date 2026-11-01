@@ -1,7 +1,8 @@
-import { View } from 'react-native';
+import { Text, View } from 'react-native';
 import { PushButton } from '@/components/PushButton';
 import { OptionsImage } from '@/components/images/OptionsImage';
 import { ReturnImage } from '@/components/images/ReturnImage';
+import { useAppVersion } from '@/services/appVersion';
 import {
   selectAutoReplay,
   selectEnableMusic,
@@ -20,6 +21,7 @@ export function OptionsScreen({ onExit }: Props) {
   const autoReplay = useOptionsStore(selectAutoReplay);
   const enableSound = useOptionsStore(selectEnableSound);
   const enableMusic = useOptionsStore(selectEnableMusic);
+  const appVersion = useAppVersion();
 
   return (
     <View className="items-center flex h-full">
@@ -53,10 +55,18 @@ export function OptionsScreen({ onExit }: Props) {
         />
 
         <View className="flex-1"></View>
-        <View className="flex-none mb-4">
-          <PushButton className="self-center w-1/2 h-16" onPress={onExit}>
+        <View className="flex-none mb-4 gap-2">
+          <PushButton
+            className="self-center w-1/2 h-16"
+            accessibilityRole="button"
+            accessibilityLabel="Return"
+            onPress={onExit}
+          >
             <ReturnImage></ReturnImage>
           </PushButton>
+          <Text testID="app-version" className="ui-text text-center text-sm opacity-60">
+            {appVersion}
+          </Text>
         </View>
       </View>
     </View>
