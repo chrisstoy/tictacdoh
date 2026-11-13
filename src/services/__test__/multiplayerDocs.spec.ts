@@ -33,12 +33,13 @@ describe('multiplayer docs (#44)', () => {
     expect(arch).toMatch(/ADR 0004|0004/);
   });
 
-  it('documents wrangler deploy, EXPO_PUBLIC_MULTIPLAYER_URL, and tictacdoh:// in deployment.md', () => {
+  it('documents wrangler deploy, EXPO_PUBLIC_MULTIPLAYER_URL, CORS, and tictacdoh:// in deployment.md', () => {
     const dep = read('.agents/reference/deployment.md');
     expect(dep).toMatch(/wrangler deploy/);
     expect(dep).toMatch(/EXPO_PUBLIC_MULTIPLAYER_URL/);
     expect(dep).toMatch(/tictacdoh:\/\//);
-    expect(dep).toMatch(/#46/);
+    expect(dep).toMatch(/CORS_ORIGINS/);
+    expect(dep).toMatch(/capacitor:\/\/localhost/);
     expect(dep).toMatch(/two.?device|iOS.*Android|Manual.*checklist/i);
   });
 

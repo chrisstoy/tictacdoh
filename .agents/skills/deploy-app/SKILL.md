@@ -38,7 +38,7 @@ Actions changes (AGENTS.md).
 - [ ] `package.json` `"version"` equals the App Store Connect version string you are shipping. Today that version is `1.0` (`PREPARE_FOR_SUBMISSION`). `1.0.0` is a different string and will not attach to version `1.0`.
 - [ ] iOS: Xcode is signed into an Apple ID that can manage profiles for team `J866FQ2YZ9`. The API key at `~/.appstoreconnect/private_keys/AuthKey_8LQQQ646C6.p8` is only the duplicate-build check. `pip install pyjwt cryptography` once.
 - [ ] Android: `credentials.json` exists (gitignored). Create it once with `scripts/setup-android-signing.sh`. Do not print passwords.
-- [ ] `multiplayer-worker`: Cloudflare account authenticated for Wrangler (`wrangler whoami` / `wrangler login` or API token). `npm run test:multiplayer` green. Decide the `EXPO_PUBLIC_MULTIPLAYER_URL` that native builds will bake after deploy. Known gap: CORS for Capacitor WebView fetches is #46 — call that out before claiming online QA is done.
+- [ ] `multiplayer-worker`: Cloudflare account authenticated for Wrangler (`wrangler whoami` / `wrangler login` or API token). `npm run test:multiplayer` green. Decide the `EXPO_PUBLIC_MULTIPLAYER_URL` that native builds will bake after deploy. If a device Origin is outside the Worker’s native-safe defaults, set Worker `CORS_ORIGINS` (comma-separated) before claiming online QA is done.
 
 ## Deploy
 
@@ -111,7 +111,7 @@ Do **not** add or edit `.github/workflows/` for this target. Local iteration use
 - In DevTools → Application: manifest is valid and the service worker `sw.js` is registered with scope `/tictacdoh/`. After a deploy, a hard refresh (or closing all tabs) may be needed to pick up the new worker.
 - iOS: App Store Connect shows the build processing, then available. Wait for processing before treating the upload as done. TestFlight: https://appstoreconnect.apple.com/apps/6826927007/testflight/ios
 - Android: after `--apply`, the script prints the versionCode on the internal track. There is nothing to verify until the Play app exists.
-- multiplayer-worker: `GET ${EXPO_PUBLIC_MULTIPLAYER_URL}/health` returns OK; create a room from a native build with that env baked in; join landing at `/join/<code>` redirects toward `tictacdoh://join/<code>`. If WebView `fetch` fails with a CORS error, stop and point at #46 — do not invent a workflow to paper over it. Full two-device checklist is in `deployment.md`.
+- multiplayer-worker: `GET ${EXPO_PUBLIC_MULTIPLAYER_URL}/health` returns OK; create a room from a native build with that env baked in; join landing at `/join/<code>` redirects toward `tictacdoh://join/<code>`. If WebView `fetch` fails with a CORS error, extend Worker `CORS_ORIGINS` for that Origin (see `deployment.md`) — do not invent a client workaround. Full two-device checklist is in `deployment.md`.
 
 ## Rollback
 

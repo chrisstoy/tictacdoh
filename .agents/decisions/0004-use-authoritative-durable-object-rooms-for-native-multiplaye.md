@@ -20,7 +20,8 @@ Capacitor shells; the GitHub Pages PWA and the embedded watchOS app (ADR 0003)
 are not online targets. The team already chose Cloudflare Workers tooling for
 the room server (`workers/multiplayer/`, Worker name `tictacdoh-multiplayer`,
 hibernatable `GameRoom` Durable Object) and a shared RN-free rules module under
-`shared/gameRules`. CORS for Capacitor WebView fetches remains an open gap (#46).
+`shared/gameRules`. Capacitor WebView HTTP CORS was tracked as #46 and is now
+handled on the Worker (native-safe defaults + optional `CORS_ORIGINS`).
 
 ## Decision
 
@@ -53,6 +54,6 @@ clients stay thin (session + hydration).
 
 Harder or accepted costs: production needs a manual `wrangler deploy` of
 `workers/multiplayer` and a baked `EXPO_PUBLIC_MULTIPLAYER_URL` in the native
-bundle; Worker availability and CORS (#46) become runtime dependencies; web and
+bundle; Worker availability and CORS allowlist (`CORS_ORIGINS` + defaults) become runtime dependencies; web and
 watch remain offline-only until a later decision; agents must not add a Worker
 CI/deploy GitHub Action without explicit permission (see AGENTS.md guardrail).
