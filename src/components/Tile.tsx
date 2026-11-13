@@ -48,6 +48,8 @@ export function Tile({
   return (
     <View className={`${className} text-white flex items-center justify-center p-[5%]`} {...rest}>
       <Pressable
+        testID={`tile-${index}`}
+        accessibilityLabel={`Tile ${index + 1}`}
         className="flex flex-1 w-full items-center justify-center"
         onPress={() => onClick?.()}
       >

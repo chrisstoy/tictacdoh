@@ -23,6 +23,8 @@ export {
 } from './reconnectStorage';
 export type { OnlineConnectionStatus } from './sessionStore';
 export {
+  selectIsOnlineMatchActive,
+  selectIsOpponentDisconnected,
   selectOnlineInviteUrl,
   selectOnlineLastError,
   selectOnlineLastSnapshot,
