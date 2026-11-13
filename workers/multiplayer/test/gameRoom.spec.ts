@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { GameRoom } from '../src/GameRoom';
 import type { ClientMessage, ServerMessage } from '../src/protocol';
-import { RECLAIM_MS } from '../src/protocol';
+import { IDLE_TTL_MS, RECLAIM_MS } from '../src/protocol';
 
 type CreateRoomResponse = {
   code: string;
@@ -281,5 +281,23 @@ describe('GameRoom websocket protocol', () => {
     }
 
     host.ws.close(1000, 'done');
+  });
+
+  it('idle TTL closes a room with fewer than two connected seats', async () => {
+    const room = await createRoom(3);
+    const host = await joinAsHost(room.code, room.hostToken);
+
+    const id = env.GAME_ROOM.idFromName(room.code);
+    const stub = env.GAME_ROOM.get(id);
+
+    const closed = nextMessage(host.ws, 3000, 'idle roomClosed');
+    await runInDurableObject(stub, async (instance: GameRoom) => {
+      await instance.runDueAlarms(Date.now() + IDLE_TTL_MS + 1);
+    });
+    const msg = await closed;
+    expect(msg.type).toBe('roomClosed');
+    if (msg.type === 'roomClosed') {
+      expect(msg.reason).toBe('idle timeout');
+    }
   });
 });
