@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Text, View } from 'react-native';
 import { PushButton } from '@/components/PushButton';
 import { TextWithBackground } from '@/components/TextWithBackground';
@@ -24,11 +24,13 @@ export function OnlineLobbyScreen({ onReadyToPlay, onLeave }: Props) {
   const hostConnected = useOnlineSessionStore((s) => s.hostConnected);
   const guestConnected = useOnlineSessionStore((s) => s.guestConnected);
   const status = useOnlineSessionStore((s) => s.status);
+  const advancedRef = useRef(false);
 
   const bothConnected = hostConnected && guestConnected;
 
   useEffect(() => {
-    if (bothConnected) {
+    if (bothConnected && !advancedRef.current) {
+      advancedRef.current = true;
       onReadyToPlay();
     }
   }, [bothConnected, onReadyToPlay]);

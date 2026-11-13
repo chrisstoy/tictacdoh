@@ -25,12 +25,25 @@ jest.mock('@/components/PWAInstallPrompt', () => ({
 
 jest.mock('@/screens/setup/SetupGameScreen', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { Pressable, Text } = require('react-native');
+  const { Pressable, Text, View } = require('react-native');
   return {
-    SetupGameScreen: ({ onStartGame }: { onStartGame: () => void }) => (
-      <Pressable accessibilityLabel="Start match" onPress={onStartGame}>
-        <Text>setup screen</Text>
-      </Pressable>
+    SetupGameScreen: ({
+      onStartGame,
+      onEnterLobby,
+    }: {
+      onStartGame: () => void;
+      onEnterLobby?: () => void;
+    }) => (
+      <View>
+        <Pressable accessibilityLabel="Start match" onPress={onStartGame}>
+          <Text>setup screen</Text>
+        </Pressable>
+        {onEnterLobby ? (
+          <Pressable accessibilityLabel="Enter lobby" onPress={onEnterLobby}>
+            <Text>enter lobby</Text>
+          </Pressable>
+        ) : null}
+      </View>
     ),
   };
 });
@@ -57,9 +70,25 @@ jest.mock('@/screens/options/OptionsScreen', () => {
 
 jest.mock('@/screens/lobby/OnlineLobbyScreen', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { Text } = require('react-native');
+  const { Pressable, Text, View } = require('react-native');
   return {
-    OnlineLobbyScreen: () => <Text>lobby screen</Text>,
+    OnlineLobbyScreen: ({
+      onReadyToPlay,
+      onLeave,
+    }: {
+      onReadyToPlay: () => void;
+      onLeave: () => void;
+    }) => (
+      <View>
+        <Text>lobby screen</Text>
+        <Pressable accessibilityLabel="Ready to play" onPress={onReadyToPlay}>
+          <Text>ready</Text>
+        </Pressable>
+        <Pressable accessibilityLabel="Leave lobby" onPress={onLeave}>
+          <Text>leave lobby</Text>
+        </Pressable>
+      </View>
+    ),
   };
 });
 
@@ -106,5 +135,23 @@ describe('Index', () => {
     expect(view.getByText('setup screen')).toBeTruthy();
     expect(view.queryByLabelText('Play')).toBeNull();
     expect(useAudioService().playMusic).toHaveBeenLastCalledWith('setup', { loop: true });
+  });
+
+  it('routes setup → lobby → play and lobby cancel back to setup', () => {
+    const view = render(<Index />);
+
+    fireEvent.press(view.getByLabelText('Play'));
+    fireEvent.press(view.getByLabelText('Enter lobby'));
+    expect(view.getByText('lobby screen')).toBeTruthy();
+    expect(useAudioService().playMusic).toHaveBeenLastCalledWith('setup', { loop: true });
+
+    fireEvent.press(view.getByLabelText('Ready to play'));
+    expect(view.getByText('play screen')).toBeTruthy();
+    expect(useAudioService().stopMusic).toHaveBeenCalled();
+
+    fireEvent.press(view.getByLabelText('Quit match'));
+    fireEvent.press(view.getByLabelText('Enter lobby'));
+    fireEvent.press(view.getByLabelText('Leave lobby'));
+    expect(view.getByText('setup screen')).toBeTruthy();
   });
 });
