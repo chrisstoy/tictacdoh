@@ -1,48 +1,9 @@
+import { determineWinner as sharedDetermineWinner } from '../../shared/gameRules';
 import { BoardState, PlayerId, TileState, Winner } from '../types';
 
+/** Re-export shared rules so fixtures and the app keep importing from here. */
 export function determineWinner(boardState: TileState[]): Winner | undefined {
-  const { X, O } = boardState.reduce(
-    (acc, tileState) => {
-      if (tileState === 'X') {
-        acc.X += 1;
-      } else if (tileState === 'O') {
-        acc.O += 1;
-      }
-      return acc;
-    },
-    { X: 0, O: 0 }
-  );
-  if (X < 3 && O < 3) {
-    return undefined;
-  }
-
-  const lines = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6],
-  ];
-  for (let i = 0; i < lines.length; i++) {
-    const [a, b, c] = lines[i];
-    if (
-      boardState[a] !== ' ' &&
-      boardState[a] === boardState[b] &&
-      boardState[a] === boardState[c]
-    ) {
-      return {
-        player: boardState[a] as PlayerId,
-        line: lines[i],
-      };
-    }
-  }
-  if (!boardState.includes(' ')) {
-    return undefined;
-  }
-  return undefined;
+  return sharedDetermineWinner(boardState);
 }
 
 export function solveBoard(boardState: BoardState, turn: PlayerId, player: PlayerId): BoardState {

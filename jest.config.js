@@ -18,5 +18,6 @@ module.exports = {
     '\\.mp3$': '<rootDir>/jest/fileMock.js',
     '^@/assets/(.*)$': '<rootDir>/assets/$1',
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^@shared/(.*)$': '<rootDir>/shared/$1',
   },
 };
