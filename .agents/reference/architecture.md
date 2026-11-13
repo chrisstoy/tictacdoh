@@ -5,7 +5,7 @@ description: Stack, directory layout, shared gameRules, multiplayer Worker/DO, Z
 
 # Architecture
 
-Tic-Tac-Doh: React Native tic-tac-toe on Expo SDK 54 (expo-router 6, React 19, RN 0.81, new arch enabled). The shipping web artifact is a static export and an installable PWA. iOS and Android apps are a Capacitor 8 shell (`capacitor.config.ts`, committed `ios/` and `android/`) that loads that same bundle from `webDir: dist` — not a remote URL. Expo stays the web toolchain (`expo start --web`, `scripts/build-pwa.js`, expo-router). The iPhone and Android apps are the Capacitor shell: `app.config.js` has no `ios` or `android` block, and `package.json` has no native Expo run or deploy script. The Apple Watch app is not that shell. It is a SwiftUI target embedded in the iOS app (ADR 0003). Modes on the phone: human vs human, human vs CPU, CPU vs CPU, with configurable match length (3/5/7/9/infinite rounds). The watch app has the same lengths and the same choices, including CPU vs CPU. Online multiplayer (native shell only; Create/Join/Lobby UI + in-match play) is authoritative on a Cloudflare Worker + `GameRoom` Durable Object under `workers/multiplayer/`, sharing RN-free rules from `shared/gameRules`.
+Tic-Tac-Doh: React Native tic-tac-toe on Expo SDK 54 (expo-router 6, React 19, RN 0.81, new arch enabled). The shipping web artifact is a static export and an installable PWA. iOS and Android apps are a Capacitor 8 shell (`capacitor.config.ts`, committed `ios/` and `android/`) that loads that same bundle from `webDir: dist` — not a remote URL. Expo stays the web toolchain (`expo start --web`, `scripts/build-pwa.js`, expo-router). The iPhone and Android apps are the Capacitor shell: `app.config.js` has no `ios` or `android` block, and `package.json` has no native Expo run or deploy script. The Apple Watch app is not that shell. It is a SwiftUI target embedded in the iOS app (ADR 0003). Modes on the phone: human vs human, human vs CPU, CPU vs CPU, with configurable match length (3/5/7/9/infinite rounds). The watch app has the same lengths and the same choices, including CPU vs CPU. Online multiplayer (native shell only; Create/Join/Lobby UI + in-match play) is authoritative on a Cloudflare Worker + `GameRoom` Durable Object under `workers/multiplayer/`, sharing RN-free rules from `shared/gameRules` (ADR 0004).
 
 ## Layout
 
@@ -25,11 +25,11 @@ Tic-Tac-Doh: React Native tic-tac-toe on Expo SDK 54 (expo-router 6, React 19, R
 
 ## Online multiplayer Worker (`workers/multiplayer/`)
 
-Server-authoritative rooms (epic #38). One SQLite-backed `GameRoom` Durable Object per room code (`idFromName(code)`), WebSocket hibernation.
+Server-authoritative rooms (epic #38, ADR 0004). Worker package name `tictacdoh-multiplayer`. One SQLite-backed `GameRoom` Durable Object per room code (`idFromName(code)`), WebSocket hibernation.
 
 - **HTTP:** `POST /rooms` `{ roundsInMatch }` → `{ code, hostToken, wsUrl, joinPath }`; `GET /join/:code` HTML landing (Open-in-app + meta/JS redirect to `tictacdoh://join/<code>`, code still visible); `GET /health`
 - **WS:** `GET /rooms/:code/ws` — client messages `join` / `move` / `nextRound` / `rematch` / `quit`; server `welcome` / `sync` / `disconnect` / `error` / `roomClosed`. Host seat = X, guest = O. Reconnect with seat token within 60s reclaim; idle empty-room TTL 30 minutes.
-- **Local:** `npm run test:multiplayer` (or `npm test` inside `workers/multiplayer/`). `npx wrangler dev` from that package for a local Worker. No CI deploy workflow yet (manual `wrangler deploy` later).
+- **Local / deploy:** `npm run test:multiplayer` (or `npm test` inside `workers/multiplayer/`). `npx wrangler dev` from that package for a local Worker. Production is manual `npx wrangler deploy` (see `deployment.md` / `deploy-app`); no CI deploy workflow.
 - **CORS:** Worker responses currently omit CORS headers (#46). Capacitor native WebView fetches to `EXPO_PUBLIC_MULTIPLAYER_URL` may need that fix; the client assumes the configured base URL is reachable from the shell and does not work around missing CORS.
 
 ## Online client session (`src/services/online/`)
