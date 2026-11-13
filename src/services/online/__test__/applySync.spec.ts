@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useMatchStore } from '../../matchState';
 import { useOptionsStore } from '../../optionsState';
 import { useRoundStore } from '../../roundState';
@@ -87,9 +88,14 @@ describe('applySyncToLocalStores', () => {
     expect(useMatchStore.getState().playMode).toBe('MATCH_OVER');
   });
 
-  it('disables local CPU and options autoReplay', () => {
+  it('disables local CPU and options autoReplay', async () => {
     applySyncToLocalStores(baseSnapshot());
     expect(useMatchStore.getState().isCPU).toEqual({ X: false, O: false });
     expect(useOptionsStore.getState().autoReplay).toBe(false);
+    // setAutoReplay persists — raw setState would leave AsyncStorage stale
+    await Promise.resolve();
+    const raw = await AsyncStorage.getItem('@tic-tac-doh:options');
+    expect(raw).toBeTruthy();
+    expect(JSON.parse(raw!).autoReplay).toBe(false);
   });
 });

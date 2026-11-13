@@ -43,5 +43,6 @@ export function applySyncToLocalStores(snapshot: RoomSnapshot): void {
     isDraw: snapshot.isDraw,
   });
 
-  useOptionsStore.setState({ autoReplay: false });
+  // Use the action so AsyncStorage persistence stays in sync with optionsState.
+  useOptionsStore.getState().setAutoReplay(false);
 }
