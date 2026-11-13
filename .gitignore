@@ -51,3 +51,4 @@ __pycache__/
 # Cloudflare Workers local
 .wrangler/
 workers/**/.wrangler/
+artifacts/

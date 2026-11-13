@@ -5,28 +5,32 @@ import { GearImage } from '@/components/images/GearImage';
 import { StartGameImage } from '@/components/images/StartGameImage';
 import { TitleImage } from '@/components/images/TitleImage';
 import { selectIsPlayerCPU, useMatchActions, useMatchStore } from '@/services/matchState';
+import { isOnlineSetupAvailable } from '@/services/online/onlineSetupGate';
+import { OnlineSetupPanel } from './components/OnlineSetupPanel';
 import { PlayerChoice } from './components/PlayerChoice';
 import { RoundsInMatch } from './components/RoundsInMatch';
 
 interface Props {
   onStartGame: () => void;
   onOptions: () => void;
+  onEnterLobby?: () => void;
 }
 
-export function SetupGameScreen({ onStartGame, onOptions }: Props) {
+export function SetupGameScreen({ onStartGame, onOptions, onEnterLobby }: Props) {
   const { setPlayerIsCPU, setPlayMode } = useMatchActions();
   const isPlayerXCPU = useMatchStore(selectIsPlayerCPU('X'));
   const isPlayerOCPU = useMatchStore(selectIsPlayerCPU('O'));
+  const showOnline = isOnlineSetupAvailable() && typeof onEnterLobby === 'function';
 
   return (
     <View className="h-max flex-1 flex-col">
-      <View className="flex-[0.3] m-2">
+      <View className={showOnline ? 'flex-[0.26] m-2' : 'flex-[0.3] m-2'}>
         <View className="h-full">
           <TitleImage></TitleImage>
         </View>
       </View>
 
-      <View className="flex-[0.5] flex">
+      <View className={showOnline ? 'flex-[0.36] flex' : 'flex-[0.45] flex'}>
         <View className="mx-2 h-1/4">
           <ChoosePlayersImage></ChoosePlayersImage>
         </View>
@@ -53,13 +57,19 @@ export function SetupGameScreen({ onStartGame, onOptions }: Props) {
         </View>
       </View>
 
-      <View className="flex-[0.05]">
+      <View className="flex-[0.06]">
         <RoundsInMatch className="flex flex-1 items-center"></RoundsInMatch>
       </View>
 
-      <View className="flex-[0.15]">
+      {showOnline && onEnterLobby ? (
+        <View className="flex-[0.1] justify-center">
+          <OnlineSetupPanel onEnterLobby={onEnterLobby} />
+        </View>
+      ) : null}
+
+      <View className={showOnline ? 'flex-[0.12]' : 'flex-[0.15]'}>
         <JiggleButton
-          className="flex flex-1 self-center w-1/2 pt-4"
+          className="flex flex-1 self-center w-1/2 pt-2"
           onPress={() => {
             setPlayMode('SETUP_MATCH');
             onStartGame();
