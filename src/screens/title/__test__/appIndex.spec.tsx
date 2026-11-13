@@ -19,6 +19,17 @@ jest.mock('@/services/audioService', () => {
   };
 });
 
+jest.mock('@/services/online', () => ({
+  acceptDeepLinkJoin: jest.fn(() => Promise.resolve()),
+  startDeepLinkListener: jest.fn(() => Promise.resolve(() => undefined)),
+}));
+
+jest.mock('@/services/online/sessionStore', () => ({
+  useOnlineSessionStore: {
+    getState: () => ({ applyError: jest.fn() }),
+  },
+}));
+
 jest.mock('@/components/PWAInstallPrompt', () => ({
   PWAInstallPrompt: () => null,
 }));
