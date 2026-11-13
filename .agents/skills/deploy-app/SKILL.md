@@ -1,6 +1,6 @@
 ---
 name: deploy-app
-description: Build and deploy Tic-Tac-Doh to a chosen target (GitHub Pages web/PWA, App Store Connect, or Google Play internal testing). Use when the user asks to deploy, ship, release, promote, or push a build of this project — including "deploy to production", "cut a build". Do NOT use for running the app locally; that's the dev server, see .agents/reference/commands.md.
+description: Build and deploy Tic-Tac-Doh to a chosen target (GitHub Pages web/PWA, App Store Connect, Google Play internal testing, or the multiplayer Cloudflare Worker). Use when the user asks to deploy, ship, release, promote, or push a build of this project — including "deploy to production", "cut a build", "deploy the Worker". Do NOT use for running the app locally; that's the dev server, see .agents/reference/commands.md.
 ---
 
 # Deploy Tic-Tac-Doh
@@ -21,9 +21,12 @@ Do not deploy by improvising around it.
 | `production-web` (GitHub Pages, https://chrisstoy.github.io/tictacdoh/) | `main`             | `.github/workflows/main.yml`, `workflow_dispatch` only. Merging to `main` does **not** deploy |
 | `ios` (`com.chrisstoy.tictacdoh`, App Store Connect app `6826927007`)   | `main`, clean tree | `scripts/release-ios.sh` archives and uploads                                                 |
 | `android` (`com.chrisstoy.tictacdoh`)                                   | `main`, clean tree | `scripts/release-android.sh`, then `scripts/upload-android.py`                                |
+| `multiplayer-worker` (`tictacdoh-multiplayer`)                          | any clean tree     | Manual `npx wrangler deploy` from `workers/multiplayer/` — **no** GitHub Actions             |
 
 No preview/staging target exists. Web hosting is GitHub Pages only. There is
 no EAS, no fastlane, and no store workflow in CI. Play Console has no app yet.
+Do **not** create a Worker deploy workflow unless the human explicitly approves
+Actions changes (AGENTS.md).
 
 ## Preflight — every target
 
@@ -35,6 +38,7 @@ no EAS, no fastlane, and no store workflow in CI. Play Console has no app yet.
 - [ ] `package.json` `"version"` equals the App Store Connect version string you are shipping. Today that version is `1.0` (`PREPARE_FOR_SUBMISSION`). `1.0.0` is a different string and will not attach to version `1.0`.
 - [ ] iOS: Xcode is signed into an Apple ID that can manage profiles for team `J866FQ2YZ9`. The API key at `~/.appstoreconnect/private_keys/AuthKey_8LQQQ646C6.p8` is only the duplicate-build check. `pip install pyjwt cryptography` once.
 - [ ] Android: `credentials.json` exists (gitignored). Create it once with `scripts/setup-android-signing.sh`. Do not print passwords.
+- [ ] `multiplayer-worker`: Cloudflare account authenticated for Wrangler (`wrangler whoami` / `wrangler login` or API token). `npm run test:multiplayer` green. Decide the `EXPO_PUBLIC_MULTIPLAYER_URL` that native builds will bake after deploy. Known gap: CORS for Capacitor WebView fetches is #46 — call that out before claiming online QA is done.
 
 ## Deploy
 
@@ -81,6 +85,25 @@ enrolled Play App Signing, and saved a service-account JSON at the path in
 `credentials.json` (`~/.android/release-keys/tictacdoh-play-service-account.json`).
 Say that and stop. Do not invent a Play app from this script.
 
+**multiplayer-worker**
+
+```bash
+npm run test:multiplayer
+cd workers/multiplayer
+npx wrangler deploy
+```
+
+Worker name is `tictacdoh-multiplayer` (`wrangler.jsonc`). First deploy applies
+Durable Object migration tag `v1` (`GameRoom`). Capture the printed HTTPS URL
+(no trailing slash) and set `EXPO_PUBLIC_MULTIPLAYER_URL` to that base when
+running `npm run build:native` / store release scripts for builds that should
+expose Online Create/Join. Custom scheme for joins: `tictacdoh://join/<code>`
+(see `deployment.md`). Facts and the two-device checklist live in
+`.agents/reference/deployment.md` (ADR 0004).
+
+Do **not** add or edit `.github/workflows/` for this target. Local iteration uses
+`npx wrangler dev` (or `npm run dev` in that package), not a Pages deploy.
+
 ## Verify after deploying
 
 - Open https://chrisstoy.github.io/tictacdoh/ — setup screen loads with music/fonts/images, no 404s in the network tab (base path `/tictacdoh/`).
@@ -88,11 +111,13 @@ Say that and stop. Do not invent a Play app from this script.
 - In DevTools → Application: manifest is valid and the service worker `sw.js` is registered with scope `/tictacdoh/`. After a deploy, a hard refresh (or closing all tabs) may be needed to pick up the new worker.
 - iOS: App Store Connect shows the build processing, then available. Wait for processing before treating the upload as done. TestFlight: https://appstoreconnect.apple.com/apps/6826927007/testflight/ios
 - Android: after `--apply`, the script prints the versionCode on the internal track. There is nothing to verify until the Play app exists.
+- multiplayer-worker: `GET ${EXPO_PUBLIC_MULTIPLAYER_URL}/health` returns OK; create a room from a native build with that env baked in; join landing at `/join/<code>` redirects toward `tictacdoh://join/<code>`. If WebView `fetch` fails with a CORS error, stop and point at #46 — do not invent a workflow to paper over it. Full two-device checklist is in `deployment.md`.
 
 ## Rollback
 
 - production-web: revert the bad commit on `main`, then run the workflow again; or run it with `--ref <last-good-commit>`.
 - ios / android: there is no automated store rollback. Ship a newer build (a new commit, so the build number changes) through the same scripts. Expiring a TestFlight build or halting a Play release is a console action.
+- multiplayer-worker: redeploy a known-good commit from `workers/multiplayer/` with `npx wrangler deploy`, or `wrangler rollback` if the account has version history enabled. Native clients keep the old URL until rebuilt with a new `EXPO_PUBLIC_MULTIPLAYER_URL`.
 
 ## Manual steps this project genuinely requires
 

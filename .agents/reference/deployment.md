@@ -1,6 +1,6 @@
 ---
 name: deployment
-description: Web/PWA build pipeline, GitHub Pages CI deploy, and the local iOS and Android store release.
+description: Web/PWA build pipeline, GitHub Pages CI deploy, local iOS/Android store release, multiplayer Worker deploy, and two-device online checklist.
 ---
 
 # Deployment
@@ -14,7 +14,7 @@ description: Web/PWA build pipeline, GitHub Pages CI deploy, and the local iOS a
 | Native shell web bundle       | `npm run build:native`                                                                                                                                                                         | Forces `GITHUB_PAGES` unset so the base path is `/` even if the variable is set in the environment                                                                                                                                                           |
 | iOS                           | `scripts/release-ios.sh`                                                                                                                                                                       | Bundle id `com.chrisstoy.tictacdoh`. App Store Connect app `6826927007` ("Tic-Tac-DOH!"). Version `1.0` is `PREPARE_FOR_SUBMISSION`. Build 52 is on TestFlight and was confirmed working on a device. Archive + upload from this machine. No store job in CI |
 | Android                       | `scripts/release-android.sh` then `scripts/upload-android.py`                                                                                                                                  | Same package name. No Play Console app yet. Signed AAB locally; upload is the Play Developer API internal track and only runs with `--apply`                                                                                                                 |
-| Multiplayer Worker            | Local: `cd workers/multiplayer && npx wrangler dev` (or `npm run dev`). Tests: `npm run test:multiplayer`. Production deploy is manual `wrangler deploy` from that package — **no** GitHub Actions workflow yet (do not add one without explicit permission). | Durable Object rooms; Capacitor client reads `EXPO_PUBLIC_MULTIPLAYER_URL` (`src/services/online/`). CORS for WebView fetches is tracked in #46.                                                                                                                                              |
+| Multiplayer Worker            | Local: `cd workers/multiplayer && npx wrangler dev` (or `npm run dev`). Tests: `npm run test:multiplayer`. Production: from `workers/multiplayer/`, `npx wrangler deploy` (Worker name `tictacdoh-multiplayer` in `wrangler.jsonc`) — **no** GitHub Actions workflow (do not add one without explicit permission). Full steps in `deploy-app`. | Durable Object rooms (ADR 0004); Capacitor client reads `EXPO_PUBLIC_MULTIPLAYER_URL`. Custom scheme `tictacdoh://join/<code>`. Known gap: CORS headers for WebView fetches — #46 (still open).                                                                                                                                                              |
 
 No preview/staging environment exists.
 
@@ -32,7 +32,33 @@ No preview/staging environment exists.
 
 - `GITHUB_PAGES=true` — sets base path `/tictacdoh/` (in `app.config.js` `publicPath`/`baseUrl`, `build-pwa.js`, `generate-sw.js`). Must be set for the Pages build; CI sets it in the Build step. Omit locally.
 - `npm run build:native` assigns `GITHUB_PAGES=` (empty) for that process, so a dirty shell cannot bake `/tictacdoh/` into the Capacitor bundle. The Pages workflow is not changed.
-- `EXPO_PUBLIC_MULTIPLAYER_URL` — base URL of the multiplayer Worker (no trailing slash required). When unset/empty, `isOnlineMultiplayerConfigured()` is false and Online Create/Join stay hidden. Online UI also requires the Capacitor native shell (`isOnlineSetupAvailable()`). Used by `src/services/online/` for `POST /rooms` and WebSocket URLs. For local native QA: run `npm run dev` in `workers/multiplayer/`, point this env at the wrangler URL when building the native bundle, and note CORS (#46) may still block WebView `fetch` until fixed.
+- `EXPO_PUBLIC_MULTIPLAYER_URL` — base URL of the multiplayer Worker (no trailing slash required), e.g. `https://tictacdoh-multiplayer.<account>.workers.dev` after `wrangler deploy`. When unset/empty, `isOnlineMultiplayerConfigured()` is false and Online Create/Join stay hidden. Online UI also requires the Capacitor native shell (`isOnlineSetupAvailable()`). Used by `src/services/online/` for `POST /rooms` and WebSocket URLs. Bake it into the native web bundle at `build:native` time (Expo public env). For local native QA: run `npm run dev` in `workers/multiplayer/`, point this env at the wrangler URL when building the native bundle, and note CORS (#46) may still block WebView `fetch` until fixed.
+
+## Multiplayer Worker deploy
+
+Package: `workers/multiplayer/` (`wrangler.jsonc` `name`: `tictacdoh-multiplayer`, DO class `GameRoom`). Procedure also lives in `.agents/skills/deploy-app/SKILL.md` (and the `.claude/skills` copy).
+
+1. From repo root: `npm run test:multiplayer` (or `npm test` inside `workers/multiplayer/`).
+2. `cd workers/multiplayer && npx wrangler deploy` (requires Cloudflare auth via `wrangler login` or API token). First deploy applies the DO migration tag `v1`.
+3. Note the deployed HTTPS base URL. Set `EXPO_PUBLIC_MULTIPLAYER_URL` to that base (no trailing slash) when building native clients that should show Online Create/Join.
+4. Smoke: `GET ${base}/health` and open `${base}/join/<code>` after creating a room — landing should offer Open-in-app / `tictacdoh://join/<code>`.
+
+**Do not** add a GitHub Actions workflow for Worker deploy unless explicitly approved (AGENTS.md guardrail). Known gap: Worker responses omit CORS headers — track in #46.
+
+Custom scheme `tictacdoh://join/<code>` is registered on iOS (`CFBundleURLTypes`) and Android (VIEW intent-filter host `join`). Share invites use the Worker HTTPS `/join/:code` link, not the custom scheme. Not Universal Links / App Links.
+
+## Manual two-device online checklist
+
+Documentation of the QA plan for native online multiplayer (ADR 0004). Execute on physical devices (or paired simulators) when validating a release that includes the Worker URL — not a substitute for unit/Worker tests.
+
+Prerequisites: Worker deployed; both builds baked with the same `EXPO_PUBLIC_MULTIPLAYER_URL`; CORS (#46) resolved or otherwise workable for the shells under test.
+
+- [ ] **Two devices** — Device A creates a room (Online → Create); Device B joins via share link or typed code (and/or `tictacdoh://join/<code>` cold/warm open)
+- [ ] **Create / share / join** — Lobby shows room code; Share sheet sends SMS-friendly invite; both seats connected before play
+- [ ] **Full match** — Play all rounds to match end; board/turns follow server sync (no local CPU)
+- [ ] **Rematch** — After match over, Play Again / rematch returns both seats to a new match
+- [ ] **Disconnect / reconnect / forfeit** — Background or kill one client mid-match; reconnect within reclaim window restores seat; letting reclaim expire ends in forfeit `MATCH_OVER`
+- [ ] **iOS ↔ Android** — Repeat create/join and at least one full match with one seat on iOS and the other on Android
 
 ## Capacitor
 
