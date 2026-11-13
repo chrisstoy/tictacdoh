@@ -12,7 +12,8 @@ Tic-Tac-Doh: React Native tic-tac-toe on Expo SDK 54 (expo-router 6, React 19, R
 - `src/app/` — expo-router entry (`_layout.tsx`, `index.tsx`, `globals.css`)
 - `src/screens/{title,setup,play,options}/` — one screen each; setup and play keep subcomponents in `components/`
 - `src/components/` — shared UI; `components/images/` wraps each PNG in `assets/`
-- `src/services/` — stores, game logic, audio, service-worker registration, `nativeShell.ts` (`isNativeShell()`)
+- `src/services/` — stores, game logic, audio, service-worker registration, `nativeShell.ts` (`isNativeShell()`), online multiplayer client (`online/`)
+- `src/services/online/` — Capacitor client session layer: HTTP create-room, WebSocket protocol client, Zustand `sessionStore`, AsyncStorage reconnect tokens, `applySyncToLocalStores` hydration into match/round stores (UI for create/join/play is later issues)
 - `shared/` — RN-free `gameRules` + types used by the app and the multiplayer Worker (`determineWinner`, move validation, match-majority)
 - `workers/multiplayer/` — Cloudflare Worker package (`wrangler.jsonc`, hibernatable `GameRoom` DO, Vitest via `@cloudflare/vitest-plugin`)
 - `capacitor.config.ts` — `appId` `com.chrisstoy.tictacdoh` (the App Store Connect app, not `com.stoyco.tictacdoh`), `appName` `Tic-Tac-Doh`, `webDir` `dist`
@@ -29,14 +30,26 @@ Server-authoritative rooms (epic #38). One SQLite-backed `GameRoom` Durable Obje
 - **HTTP:** `POST /rooms` `{ roundsInMatch }` → `{ code, hostToken, wsUrl, joinPath }`; `GET /join/:code` HTML landing that deep-links `tictacdoh://join/<code>` (native scheme registration is a later issue); `GET /health`
 - **WS:** `GET /rooms/:code/ws` — client messages `join` / `move` / `nextRound` / `rematch` / `quit`; server `welcome` / `sync` / `disconnect` / `error` / `roomClosed`. Host seat = X, guest = O. Reconnect with seat token within 60s reclaim; idle empty-room TTL 30 minutes.
 - **Local:** `npm run test:multiplayer` (or `npm test` inside `workers/multiplayer/`). `npx wrangler dev` from that package for a local Worker. No CI deploy workflow yet (manual `wrangler deploy` later).
+- **CORS:** Worker responses currently omit CORS headers (#46). Capacitor native WebView fetches to `EXPO_PUBLIC_MULTIPLAYER_URL` may need that fix; the client assumes the configured base URL is reachable from the shell and does not work around missing CORS.
+
+## Online client session (`src/services/online/`)
+
+Gated by `EXPO_PUBLIC_MULTIPLAYER_URL` via `isOnlineMultiplayerConfigured()` / `getMultiplayerBaseUrl()` (unset/empty ⇒ online entry stays hidden for later UI). Protocol message types are mirrored in `protocol.ts` (not imported from `workers/`).
+
+- **HTTP:** `createRoom(roundsInMatch)` → builds `inviteUrl` as `${base}${joinPath}`.
+- **Session API:** `createOnlineSession` / `joinOnlineSession` / `reconnectOnlineSession` / `sendMove` / `sendNextRound` / `sendRematch` / `leaveOnlineSession`.
+- **Zustand `useOnlineSessionStore`:** connection status, seat, room code, inviteUrl, reconnect token, reclaim deadline, last snapshot / error, host/guest connected flags.
+- **AsyncStorage** key `@tic-tac-doh:online-session` persists `{ roomCode, reconnectToken, seat }` for reclaim within the Worker disconnect window; cleared on leave / `roomClosed`.
+- **`applySyncToLocalStores(snapshot)`:** maps Worker phase → local `playMode` (`WAITING`→`SETUP_ROUND`, `PLAYING`→`PLAYING`, `ROUND_OVER`→`ROUND_OVER`, `MATCH_OVER`|`CLOSED`→`MATCH_OVER`), hydrates board/turn/round winner/draw and match rounds/winner/roundsInMatch, forces both `isCPU` false, and sets options `autoReplay` to false. Authoritative — does not replay local `applyMove`/`recordRound`.
 
 ## State (Zustand v5)
 
-Three stores, each wrapped in `withZustandDevtools` (`zustandDevtools.ts`; real devtools only when `__DEV__` on web, otherwise a no-op) and following state → actions → selectors → action hooks:
+Four stores, each wrapped in `withZustandDevtools` (`zustandDevtools.ts`; real devtools only when `__DEV__` on web, otherwise a no-op) and following state → actions → selectors → action hooks:
 
 - `matchState.ts` — rounds in match, `isCPU` per player, round history, match winner, and `playMode`: `SETUP_MATCH` → `SETUP_ROUND` → `PLAYING` → `ROUND_OVER` → `MATCH_OVER` (loops back to `SETUP_MATCH`/`SETUP_ROUND`).
 - `roundState.ts` — 9-tile board, current turn, round winner/draw.
 - `optionsState.ts` — sound, music, auto-replay; persisted to AsyncStorage key `@tic-tac-doh:options`. The web bundle's AsyncStorage uses the webview's localStorage, so the same store survives an app restart inside the Capacitor shell. No separate native store.
+- `online/sessionStore.ts` — online connection status, seat, room code, inviteUrl, reclaim deadline, last sync (not persisted beyond reconnect creds in AsyncStorage).
 - `appVersion.ts` — `useAppVersion()` for the Options screen footer. Inside the Capacitor shell it is `App.getInfo()` from `@capacitor/app`: the installed marketing version and build number, shown as `v1.0 (60)`. On web, and until the native lookup resolves or if it fails, it is `v<package.json version>` with no build, so the first render matches the prerendered HTML.
 
 ## Screen flow
