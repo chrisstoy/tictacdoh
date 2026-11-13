@@ -12,4 +12,5 @@ looks relevant to what you are about to decide.
 | 0001 | [Ship native apps by wrapping the web build in Capacitor](0001-ship-native-apps-by-wrapping-the-web-build-in-capacitor.md) | Accepted |
 | 0002 | [Release native binaries with local store scripts](0002-release-native-binaries-with-local-store-scripts.md) | Accepted |
 | 0003 | [Ship the Apple Watch app as an embedded SwiftUI target](0003-ship-the-apple-watch-app-as-an-embedded-swiftui-target.md) | Accepted |
-| 0004 | [Use authoritative Durable Object rooms for native multiplayer](0004-use-authoritative-durable-object-rooms-for-native-multiplaye.md) | Accepted |
+| 0004 | [Use authoritative Durable Object rooms for native multiplayer](0004-use-authoritative-durable-object-rooms-for-native-multiplaye.md) | Superseded in part by |
+| 0005 | [Enable Durable Object multiplayer on the web PWA](0005-enable-durable-object-multiplayer-on-the-web-pwa.md) | Accepted |

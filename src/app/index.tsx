@@ -10,6 +10,7 @@ import { TitleScreen } from '@/screens/title/TitleScreen';
 import { useAudioService } from '@/services/audioService';
 import { acceptDeepLinkJoin, startDeepLinkListener } from '@/services/online';
 import { useOnlineSessionStore } from '@/services/online/sessionStore';
+import { consumeWebJoinQuery } from '@/services/online/webJoinListener';
 import { useFrameMaxWidth } from '@/services/useFrameMaxWidth';
 
 type ActiveMode = 'TITLE' | 'PLAY' | 'NEW' | 'OPTIONS' | 'LOBBY';
@@ -36,26 +37,31 @@ export default function Index() {
     let stop: (() => void) | undefined;
     let cancelled = false;
 
-    void startDeepLinkListener({
-      onJoinCode: (code) => {
-        if (joiningDeepLink.current || cancelled) {
-          return;
-        }
-        joiningDeepLink.current = true;
-        void (async () => {
-          try {
-            await acceptDeepLinkJoin(code);
-            if (!cancelled) {
-              setGameMode('LOBBY');
-            }
-          } catch (e) {
-            const message = e instanceof Error ? e.message : 'Deep-link join failed';
-            useOnlineSessionStore.getState().applyError(message);
-          } finally {
-            joiningDeepLink.current = false;
+    const onJoinCode = (code: string) => {
+      if (joiningDeepLink.current || cancelled) {
+        return;
+      }
+      joiningDeepLink.current = true;
+      void (async () => {
+        try {
+          await acceptDeepLinkJoin(code);
+          if (!cancelled) {
+            setGameMode('LOBBY');
           }
-        })();
-      },
+        } catch (e) {
+          const message = e instanceof Error ? e.message : 'Deep-link join failed';
+          useOnlineSessionStore.getState().applyError(message);
+        } finally {
+          joiningDeepLink.current = false;
+        }
+      })();
+    };
+
+    // PWA / GitHub Pages: ?join=CODE from Worker invite landing
+    consumeWebJoinQuery(onJoinCode);
+
+    void startDeepLinkListener({
+      onJoinCode,
     }).then((remove) => {
       if (cancelled) {
         remove();

@@ -4,9 +4,11 @@
   "main": "src/index.ts",
   "compatibility_date": "2025-11-12",
   "compatibility_flags": ["nodejs_compat"],
-  // Optional comma-separated extra origins (defaults always include Capacitor localhost schemes).
+  // Optional comma-separated extra origins (defaults include Capacitor schemes + Pages Origin).
+  // WEB_JOIN_BASE: PWA origin+path for /join landing fallback (?join=), no trailing slash.
   "vars": {
-    "CORS_ORIGINS": ""
+    "CORS_ORIGINS": "",
+    "WEB_JOIN_BASE": "https://chrisstoy.github.io/tictacdoh"
   },
   "durable_objects": {
     "bindings": [

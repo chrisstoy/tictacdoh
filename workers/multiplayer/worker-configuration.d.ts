@@ -8,6 +8,7 @@ declare namespace Cloudflare {
 	}
 	interface Env {
 		CORS_ORIGINS: string;
+		WEB_JOIN_BASE: string;
 		GAME_ROOM: DurableObjectNamespace<import("./src/index").GameRoom>;
 	}
 }

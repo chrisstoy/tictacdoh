@@ -4,6 +4,8 @@ export const DEFAULT_CORS_ORIGINS = [
   'http://localhost',
   'https://localhost',
   'ionic://localhost',
+  // GitHub Pages PWA (path is not part of Origin)
+  'https://chrisstoy.github.io',
 ] as const;
 
 /** Merge optional comma-separated `CORS_ORIGINS` env onto the native-safe defaults. */

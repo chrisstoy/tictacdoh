@@ -14,7 +14,7 @@ description: Web/PWA build pipeline, GitHub Pages CI deploy, local iOS/Android s
 | Native shell web bundle       | `npm run build:native`                                                                                                                                                                         | Forces `GITHUB_PAGES` unset so the base path is `/` even if the variable is set in the environment                                                                                                                                                           |
 | iOS                           | `scripts/release-ios.sh`                                                                                                                                                                       | Bundle id `com.chrisstoy.tictacdoh`. App Store Connect app `6826927007` ("Tic-Tac-DOH!"). Version `1.0` is `PREPARE_FOR_SUBMISSION`. Build 52 is on TestFlight and was confirmed working on a device. Archive + upload from this machine. No store job in CI |
 | Android                       | `scripts/release-android.sh` then `scripts/upload-android.py`                                                                                                                                  | Same package name. No Play Console app yet. Signed AAB locally; upload is the Play Developer API internal track and only runs with `--apply`                                                                                                                 |
-| Multiplayer Worker            | Local: `cd workers/multiplayer && npx wrangler dev` (or `npm run dev`). Tests: `npm run test:multiplayer`. Production: from `workers/multiplayer/`, `npx wrangler deploy` (Worker name `tictacdoh-multiplayer` in `wrangler.jsonc`) — **no** GitHub Actions workflow (do not add one without explicit permission). Full steps in `deploy-app`. | Durable Object rooms (ADR 0004); Capacitor client reads `EXPO_PUBLIC_MULTIPLAYER_URL`. Custom scheme `tictacdoh://join/<code>`. HTTP CORS: native-safe localhost schemes + optional `CORS_ORIGINS` (see below).                                                                                                                                                              |
+| Multiplayer Worker            | Local: `cd workers/multiplayer && npx wrangler dev` (or `npm run dev`). Tests: `npm run test:multiplayer`. Production: from `workers/multiplayer/`, `npx wrangler deploy` (Worker name `tictacdoh-multiplayer` in `wrangler.jsonc`) — **no** GitHub Actions workflow (do not add one without explicit permission). Full steps in `deploy-app`. | Durable Object rooms (ADR 0004/0005); web + Capacitor clients read `EXPO_PUBLIC_MULTIPLAYER_URL`. Custom scheme `tictacdoh://join/<code>` + Pages `?join=` fallback. HTTP CORS: Capacitor localhost schemes + Pages Origin + optional `CORS_ORIGINS` (see below).                                                                                                                                                              |
 
 No preview/staging environment exists.
 
@@ -32,8 +32,9 @@ No preview/staging environment exists.
 
 - `GITHUB_PAGES=true` — sets base path `/tictacdoh/` (in `app.config.js` `publicPath`/`baseUrl`, `build-pwa.js`, `generate-sw.js`). Must be set for the Pages build; CI sets it in the Build step. Omit locally.
 - `npm run build:native` assigns `GITHUB_PAGES=` (empty) for that process, so a dirty shell cannot bake `/tictacdoh/` into the Capacitor bundle. The Pages workflow is not changed.
-- `EXPO_PUBLIC_MULTIPLAYER_URL` — base URL of the multiplayer Worker (no trailing slash required), e.g. `https://tictacdoh-multiplayer.<account>.workers.dev` after `wrangler deploy`. When unset/empty, `isOnlineMultiplayerConfigured()` is false and Online Create/Join stay hidden. Online UI also requires the Capacitor native shell (`isOnlineSetupAvailable()`). Used by `src/services/online/` for `POST /rooms` and WebSocket URLs. Bake it into the native web bundle at `build:native` time (Expo public env). For local native QA: run `npm run dev` in `workers/multiplayer/`, point this env at the wrangler URL when building the native bundle.
-- `CORS_ORIGINS` (Worker `vars` in `workers/multiplayer/wrangler.jsonc`, or set at deploy time) — optional comma-separated extra origins allowed for HTTP CORS, in addition to the built-in native-safe defaults (`capacitor://localhost`, `http://localhost`, `https://localhost`, `ionic://localhost`). Use this if a real device or staging host sends an Origin string outside those defaults. Unmatched Origins get no `Access-Control-Allow-Origin`. WebSocket upgrades do not use this allowlist.
+- `EXPO_PUBLIC_MULTIPLAYER_URL` — base URL of the multiplayer Worker (no trailing slash required), e.g. `https://tictacdoh-multiplayer.<account>.workers.dev` after `wrangler deploy`. When unset/empty, `isOnlineMultiplayerConfigured()` / `isOnlineSetupAvailable()` are false and Online Create/Join stay hidden on web and native. Used by `src/services/online/` for `POST /rooms` and WebSocket URLs. Bake it into the native web bundle at `build:native` time, and into the Pages build via `.github/workflows/main.yml` (`EXPO_PUBLIC_MULTIPLAYER_URL` on the Build step — permission granted for #53). For local QA: set the env when running `npm run web` / `build:native` and point at `wrangler dev` or production.
+- `CORS_ORIGINS` (Worker `vars`) — optional comma-separated **extra** origins. Defaults already include Capacitor localhost schemes and `https://chrisstoy.github.io`. Unmatched Origins get no `Access-Control-Allow-Origin`. WebSocket upgrades do not use this allowlist.
+- `WEB_JOIN_BASE` (Worker `vars`, default `https://chrisstoy.github.io/tictacdoh`) — base for `/join/:code` landing “Open in browser” → `/?join=<CODE>`.
 
 ## Multiplayer Worker deploy
 
@@ -41,20 +42,22 @@ Package: `workers/multiplayer/` (`wrangler.jsonc` `name`: `tictacdoh-multiplayer
 
 1. From repo root: `npm run test:multiplayer` (or `npm test` inside `workers/multiplayer/`).
 2. `cd workers/multiplayer && npx wrangler deploy` (requires Cloudflare auth via `wrangler login` or API token). First deploy applies the DO migration tag `v1`.
-3. Note the deployed HTTPS base URL. Set `EXPO_PUBLIC_MULTIPLAYER_URL` to that base (no trailing slash) when building native clients that should show Online Create/Join.
-4. Smoke: `GET ${base}/health` and open `${base}/join/<code>` after creating a room — landing should offer Open-in-app / `tictacdoh://join/<code>`.
+3. Note the deployed HTTPS base URL. Set `EXPO_PUBLIC_MULTIPLAYER_URL` to that base (no trailing slash) for native `build:native` and keep the Pages workflow Build env in sync.
+4. Smoke: `GET ${base}/health` and open `${base}/join/<code>` — landing should offer Open-in-app (`tictacdoh://`) and Open-in-browser (Pages `?join=`).
 
 **Do not** add a GitHub Actions workflow for Worker deploy unless explicitly approved (AGENTS.md guardrail). CORS for Capacitor WebView HTTP fetches is implemented on the Worker (defaults + optional `CORS_ORIGINS`); if a device Origin is rejected, extend `CORS_ORIGINS` rather than inventing a client workaround.
 
-Custom scheme `tictacdoh://join/<code>` is registered on iOS (`CFBundleURLTypes`) and Android (VIEW intent-filter host `join`). Share invites use the Worker HTTPS `/join/:code` link, not the custom scheme. Not Universal Links / App Links.
+Custom scheme `tictacdoh://join/<code>` is registered on iOS (`CFBundleURLTypes`) and Android (VIEW intent-filter host `join`). Share invites use the Worker HTTPS `/join/:code` link (landing dual-path to app + PWA). Not Universal Links / App Links.
 
 ## Manual two-device online checklist
 
-Documentation of the QA plan for native online multiplayer (ADR 0004). Execute on physical devices (or paired simulators) when validating a release that includes the Worker URL — not a substitute for unit/Worker tests.
+Documentation of the QA plan for online multiplayer (ADR 0004/0005). Execute on browsers and/or devices when validating a release that includes the Worker URL — not a substitute for unit/Worker tests.
 
-Prerequisites: Worker deployed; both builds baked with the same `EXPO_PUBLIC_MULTIPLAYER_URL`; device/shell Origins covered by the Worker CORS allowlist (defaults and/or `CORS_ORIGINS`).
+Prerequisites: Worker deployed; clients baked with the same `EXPO_PUBLIC_MULTIPLAYER_URL`; Origins covered by Worker CORS defaults (includes Pages) and/or `CORS_ORIGINS`.
 
-- [ ] **Two devices** — Device A creates a room (Online → Create); Device B joins via share link or typed code (and/or `tictacdoh://join/<code>` cold/warm open)
+- [ ] **Two clients** — Client A creates a room (Online → Create); Client B joins via share link or typed code (and/or `tictacdoh://join/<code>` / Pages `?join=`)
+- [ ] **Web↔web** — two browser/PWA tabs or machines
+- [ ] **Web↔native** — Pages host vs iOS/Android guest (or reverse)
 - [ ] **Create / share / join** — Lobby shows room code; Share sheet sends SMS-friendly invite; both seats connected before play
 - [ ] **Full match** — Play all rounds to match end; board/turns follow server sync (no local CPU)
 - [ ] **Rematch** — After match over, Play Again / rematch returns both seats to a new match

@@ -96,7 +96,7 @@ export default {
     if (request.method === 'GET' && joinMatch) {
       const code = joinMatch[1]!.toUpperCase();
       return respond(
-        new Response(joinLandingHtml(code), {
+        new Response(joinLandingHtml(code, env.WEB_JOIN_BASE), {
           headers: { 'content-type': 'text/html; charset=utf-8' },
         })
       );

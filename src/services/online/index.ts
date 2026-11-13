@@ -50,3 +50,6 @@ export {
   sendRematch,
 } from './onlineSession';
 export { buildInviteShareText, shareOnlineInvite } from './shareInvite';
+export { consumeWebJoinQuery } from './webJoinListener';
+export type { WebJoinHandler } from './webJoinListener';
+export { parseJoinQueryParam, stripJoinQueryFromLocation } from './webJoinQuery';
