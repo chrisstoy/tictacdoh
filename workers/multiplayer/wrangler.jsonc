@@ -4,6 +4,10 @@
   "main": "src/index.ts",
   "compatibility_date": "2025-11-12",
   "compatibility_flags": ["nodejs_compat"],
+  // Optional comma-separated extra origins (defaults always include Capacitor localhost schemes).
+  "vars": {
+    "CORS_ORIGINS": ""
+  },
   "durable_objects": {
     "bindings": [
       { "name": "GAME_ROOM", "class_name": "GameRoom" }

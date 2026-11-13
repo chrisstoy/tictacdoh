@@ -30,7 +30,7 @@ Server-authoritative rooms (epic #38, ADR 0004). Worker package name `tictacdoh-
 - **HTTP:** `POST /rooms` `{ roundsInMatch }` → `{ code, hostToken, wsUrl, joinPath }`; `GET /join/:code` HTML landing (Open-in-app + meta/JS redirect to `tictacdoh://join/<code>`, code still visible); `GET /health`
 - **WS:** `GET /rooms/:code/ws` — client messages `join` / `move` / `nextRound` / `rematch` / `quit`; server `welcome` / `sync` / `disconnect` / `error` / `roomClosed`. Host seat = X, guest = O. Reconnect with seat token within 60s reclaim; idle empty-room TTL 30 minutes.
 - **Local / deploy:** `npm run test:multiplayer` (or `npm test` inside `workers/multiplayer/`). `npx wrangler dev` from that package for a local Worker. Production is manual `npx wrangler deploy` (see `deployment.md` / `deploy-app`); no CI deploy workflow.
-- **CORS:** Worker responses currently omit CORS headers (#46). Capacitor native WebView fetches to `EXPO_PUBLIC_MULTIPLAYER_URL` may need that fix; the client assumes the configured base URL is reachable from the shell and does not work around missing CORS.
+- **CORS:** HTTP routes (`OPTIONS` preflight + `GET /health`, `POST /rooms`, `GET /join/:code`, and other non-WS responses) use a native-safe allowlist: `capacitor://localhost`, `http://localhost`, `https://localhost`, `ionic://localhost`, plus optional Worker var `CORS_ORIGINS` (comma-separated production HTTPS origins). A matching `Origin` is echoed in `Access-Control-Allow-Origin` with `Vary: Origin`; unmatched/missing Origin omits ACAO (no credentials). WebSocket upgrade (`GET /rooms/:code/ws`) is unchanged — browsers do not apply the same CORS preflight to WS.
 
 ## Online client session (`src/services/online/`)
 
