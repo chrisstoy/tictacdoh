@@ -38,7 +38,7 @@ No preview/staging environment exists.
 
 ## Multiplayer Worker deploy
 
-Package: `workers/multiplayer/` (`wrangler.jsonc` `name`: `tictacdoh-multiplayer`, DO class `GameRoom`). Procedure also lives in `.agents/skills/deploy-app/SKILL.md` (and the `.claude/skills` copy).
+Package: `workers/multiplayer/` (`wrangler.jsonc` `name`: `tictacdoh-multiplayer`, DO class `GameRoom`). Procedure also lives in `.agents/skills/deploy-app/references/multiplayer-worker.md` (via the `deploy-app` skill).
 
 1. From repo root: `npm run test:multiplayer` (or `npm test` inside `workers/multiplayer/`).
 2. `cd workers/multiplayer && npx wrangler deploy` (requires Cloudflare auth via `wrangler login` or API token). First deploy applies the DO migration tag `v1`.
@@ -88,7 +88,7 @@ Do not pass `-authenticationKeyID` / `-authenticationKeyPath` to `xcodebuild`. A
 
 The Android project is committed source. The release script does not run `expo prebuild --clean` and does not patch Gradle. ShopN patches Gradle because prebuild wipes `android/` every release; that does not apply here.
 
-Full steps live in `.agents/skills/deploy-app/SKILL.md`.
+Full steps live in `.agents/skills/deploy-app/references/` (`ios.md`, `android.md`, `production-web.md`).
 
 ## CI (`main.yml`)
 

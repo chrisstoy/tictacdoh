@@ -1,6 +1,11 @@
 ---
 name: deploy-app
 description: Build and deploy Tic-Tac-Doh to a chosen target (GitHub Pages web/PWA, App Store Connect, Google Play internal testing, or the multiplayer Cloudflare Worker). Use when the user asks to deploy, ship, release, promote, or push a build of this project — including "deploy to production", "cut a build", "deploy the Worker". Do NOT use for running the app locally; that's the dev server, see .agents/reference/commands.md.
+references:
+  - production-web
+  - ios
+  - android
+  - multiplayer-worker
 ---
 
 # Deploy Tic-Tac-Doh
@@ -11,17 +16,33 @@ decides some batch of merged work is ready for a real-infrastructure check.
 Nothing invokes it automatically.
 
 Facts (bundle id, signing gotchas, version rules) live in
-`.agents/reference/deployment.md` and ADR 0002. This file is the procedure.
-Do not deploy by improvising around it.
+`.agents/reference/deployment.md` and ADR 0002. This file is the router;
+platform procedure lives in the referenced subskills. Do not deploy by
+improvising around them.
 
-## Targets
+## How to use
 
-| Target                                                                  | Deploys from       | Mechanism                                                                                     |
-| ----------------------------------------------------------------------- | ------------------ | --------------------------------------------------------------------------------------------- |
-| `production-web` (GitHub Pages, https://chrisstoy.github.io/tictacdoh/) | `main`             | `.github/workflows/main.yml`, `workflow_dispatch` only. Merging to `main` does **not** deploy |
-| `ios` (`com.chrisstoy.tictacdoh`, App Store Connect app `6826927007`)   | `main`, clean tree | `scripts/release-ios.sh` archives and uploads                                                 |
-| `android` (`com.chrisstoy.tictacdoh`)                                   | `main`, clean tree | `scripts/release-android.sh`, then `scripts/upload-android.py`                                |
-| `multiplayer-worker` (`tictacdoh-multiplayer`)                          | any clean tree     | Manual `npx wrangler deploy` from `workers/multiplayer/` — **no** GitHub Actions             |
+1. Identify the target from the user's request (or ask once if ambiguous).
+2. Run **Preflight — every target** below.
+3. Open and follow the matching subskill under `references/`:
+
+| Target | Subskill |
+| ------ | -------- |
+| `production-web` (GitHub Pages, https://chrisstoy.github.io/tictacdoh/) | [references/production-web.md](references/production-web.md) |
+| `ios` (`com.chrisstoy.tictacdoh`, App Store Connect app `6826927007`) | [references/ios.md](references/ios.md) |
+| `android` (`com.chrisstoy.tictacdoh`) | [references/android.md](references/android.md) |
+| `multiplayer-worker` (`tictacdoh-multiplayer`) | [references/multiplayer-worker.md](references/multiplayer-worker.md) |
+
+4. Do not load every subskill — only the target being deployed.
+
+## Targets (summary)
+
+| Target | Deploys from | Mechanism |
+| ------ | ------------ | --------- |
+| `production-web` | `main` | `.github/workflows/main.yml`, `workflow_dispatch` only. Merging to `main` does **not** deploy |
+| `ios` | `main`, clean tree | `scripts/release-ios.sh` archives and uploads |
+| `android` | `main`, clean tree | `scripts/release-android.sh`, then `scripts/upload-android.py` |
+| `multiplayer-worker` | any clean tree | Manual `npx wrangler deploy` from `workers/multiplayer/` — **no** GitHub Actions |
 
 No preview/staging target exists. Web hosting is GitHub Pages only. There is
 no EAS, no fastlane, and no store workflow in CI. Play Console has no app yet.
@@ -34,98 +55,13 @@ Actions changes (AGENTS.md).
 - [ ] Working tree clean. `git status --short` is empty.
 - [ ] Full clone. A shallow clone makes the store build number wrong.
 - [ ] Full verification suite green locally — see `.agents/reference/commands.md` (`npm run lint`, `npx tsc --noEmit`, `npm test`). CI does **not** run these.
-- [ ] `production-web` needs `GITHUB_PAGES=true` (the workflow sets it). Native scripts run `npm run build:native`, which forces `GITHUB_PAGES` unset so `start_url` is `/`.
-- [ ] `package.json` `"version"` equals the App Store Connect version string you are shipping. Today that version is `1.0` (`PREPARE_FOR_SUBMISSION`). `1.0.0` is a different string and will not attach to version `1.0`.
-- [ ] iOS: Xcode is signed into an Apple ID that can manage profiles for team `J866FQ2YZ9`. The API key at `~/.appstoreconnect/private_keys/AuthKey_8LQQQ646C6.p8` is only the duplicate-build check. `pip install pyjwt cryptography` once.
-- [ ] Android: `credentials.json` exists (gitignored). Create it once with `scripts/setup-android-signing.sh`. Do not print passwords.
-- [ ] `multiplayer-worker`: Cloudflare account authenticated for Wrangler (`wrangler whoami` / `wrangler login` or API token). `npm run test:multiplayer` green. Decide the `EXPO_PUBLIC_MULTIPLAYER_URL` that native builds and the Pages workflow Build step will bake after deploy (Pages already sets production Worker URL in `main.yml` for #53). Defaults include Capacitor localhost schemes and `https://chrisstoy.github.io`; set Worker `CORS_ORIGINS` only for extra Origins.
+- [ ] Then complete any extra checklist items in the target subskill.
 
-## Deploy
-
-**production-web**
-
-1. Optionally dry-run the artifact locally: `GITHUB_PAGES=true npm run build` and confirm `dist/` contains `index.html`, `manifest.json`, `sw.js`, `icons/`. `dist/manifest.json` `start_url` is `/tictacdoh/`.
-2. Trigger the workflow from `main`: `gh workflow run "Build and Deploy to Pages" --ref main`, then `gh run watch`. It builds (Node 20, `npm ci`, `npm run build`) and deploys `./dist` via `actions/deploy-pages@v4`. This skill is the only sanctioned way to publish the web build; do not re-add a push trigger or deploy any other way.
-
-**ios**
-
-```bash
-npm run release:ios
-# same thing: bash scripts/release-ios.sh
-```
-
-The script checks App Store Connect for this commit's build number, builds the
-web bundle, runs `cap sync`, archives scheme `App`, and uploads. The export
-step is the upload. There is no Transporter or altool step.
-
-Scheme `App` embeds the watchOS app (`com.chrisstoy.tictacdoh.watchkitapp`).
-The archive contains `Watch/TicTacDohWatch.app`. After upload, installing that
-watch app from TestFlight and adding watch screenshots in App Store Connect are
-human steps. Do not upload, and do not let automatic signing register the watch
-bundle id, unless this run was asked to release.
-
-Do **not** pass App Store Connect API-key flags to `xcodebuild`. That path
-failed on ShopN with this same key. Details in `deployment.md`.
-
-**android**
-
-```bash
-bash scripts/setup-android-signing.sh   # once, if credentials.json is missing
-npm run release:android                 # signed .aab under build/release/
-python3 scripts/upload-android.py       # dry run: prints the bundle, uploads nothing
-python3 scripts/upload-android.py --apply   # internal track, only after a human agrees
-```
-
-`--apply` is the only upload. The track argument only accepts `internal`.
-Promoting past internal testing is a Play Console action a human approves;
-this skill does not do it.
-
-The first `--apply` cannot succeed until a human has created the Play app,
-enrolled Play App Signing, and saved a service-account JSON at the path in
-`credentials.json` (`~/.android/release-keys/tictacdoh-play-service-account.json`).
-Say that and stop. Do not invent a Play app from this script.
-
-**multiplayer-worker**
-
-```bash
-npm run test:multiplayer
-cd workers/multiplayer
-npx wrangler deploy
-```
-
-Worker name is `tictacdoh-multiplayer` (`wrangler.jsonc`). First deploy applies
-Durable Object migration tag `v1` (`GameRoom`). Capture the printed HTTPS URL
-(no trailing slash) and set `EXPO_PUBLIC_MULTIPLAYER_URL` to that base when
-running `npm run build:native` / store release scripts for builds that should
-expose Online Create/Join on native and web. Custom scheme: `tictacdoh://join/<code>`; Pages fallback `/?join=<code>` via `WEB_JOIN_BASE` (see `deployment.md`). Checklist: `.agents/reference/deployment.md` (ADR 0004/0005).
-
-Do **not** add or edit `.github/workflows/` for this target. Local iteration uses
-`npx wrangler dev` (or `npm run dev` in that package), not a Pages deploy.
-
-## Verify after deploying
-
-- Open https://chrisstoy.github.io/tictacdoh/ — setup screen loads with music/fonts/images, no 404s in the network tab (base path `/tictacdoh/`).
-- Start a match vs CPU and play a round to the end.
-- In DevTools → Application: manifest is valid and the service worker `sw.js` is registered with scope `/tictacdoh/`. After a deploy, a hard refresh (or closing all tabs) may be needed to pick up the new worker.
-- iOS: App Store Connect shows the build processing, then available. Wait for processing before treating the upload as done. TestFlight: https://appstoreconnect.apple.com/apps/6826927007/testflight/ios
-- Android: after `--apply`, the script prints the versionCode on the internal track. There is nothing to verify until the Play app exists.
-- multiplayer-worker: `GET ${EXPO_PUBLIC_MULTIPLAYER_URL}/health` returns OK; create a room from a native or Pages build with that env baked in; join landing at `/join/<code>` offers app scheme and browser `?join=` fallback. If `fetch` fails with a CORS error, extend Worker `CORS_ORIGINS` (see `deployment.md`) — do not invent a client workaround. Full checklist is in `deployment.md`.
-
-## Rollback
-
-- production-web: revert the bad commit on `main`, then run the workflow again; or run it with `--ref <last-good-commit>`.
-- ios / android: there is no automated store rollback. Ship a newer build (a new commit, so the build number changes) through the same scripts. Expiring a TestFlight build or halting a Play release is a console action.
-- multiplayer-worker: redeploy a known-good commit from `workers/multiplayer/` with `npx wrangler deploy`, or `wrangler rollback` if the account has version history enabled. Native clients keep the old URL until rebuilt with a new `EXPO_PUBLIC_MULTIPLAYER_URL`.
-
-## Manual steps this project genuinely requires
-
-- GitHub Pages must be configured to deploy from "GitHub Actions" (already so if the current site is live).
-- Xcode → Settings → Accounts stays signed in for iOS signing.
-- After the iOS upload finishes processing: add the build to a TestFlight group, select it on version `1.0`, and submit for review. Submitting for review is a human step.
-- Create the Play Console app for `com.chrisstoy.tictacdoh`, enroll Play App Signing, and grant a service account testing-track access. Then `--apply` can upload.
-- Back up `~/.android/release-keys/tictacdoh-upload.keystore` and `tictacdoh-upload-keystore-passwords.txt`. That keystore is the only upload key.
+## Manual steps (policy)
 
 A required manual _action_ with no judgment in it (a click in a vendor UI that
 has no API) is not a blocker — do everything up to it, then report the remaining
 step clearly. A manual _decision_ (a release window, submitting for review,
 promoting past internal testing) is a stop-and-ask.
+
+Platform-specific manual requirements are listed in each subskill.
