@@ -1,5 +1,6 @@
-import { fireEvent, render } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { useAudioService } from '@/services/audioService';
+import { acceptDeepLinkJoin, startDeepLinkListener } from '@/services/online';
 import Index from '../../../app/index';
 
 jest.mock('react-native-reanimated', () => {
@@ -29,6 +30,9 @@ jest.mock('@/services/online/sessionStore', () => ({
     getState: () => ({ applyError: jest.fn() }),
   },
 }));
+
+const mockedStartDeepLinkListener = startDeepLinkListener as jest.Mock;
+const mockedAcceptDeepLinkJoin = acceptDeepLinkJoin as jest.Mock;
 
 jest.mock('@/components/PWAInstallPrompt', () => ({
   PWAInstallPrompt: () => null,
@@ -108,6 +112,10 @@ describe('Index', () => {
     (useAudioService().playMusic as jest.Mock).mockClear();
     (useAudioService().stopMusic as jest.Mock).mockClear();
     (useAudioService().playSound as jest.Mock).mockClear();
+    mockedAcceptDeepLinkJoin.mockClear();
+    mockedAcceptDeepLinkJoin.mockResolvedValue(undefined);
+    mockedStartDeepLinkListener.mockReset();
+    mockedStartDeepLinkListener.mockResolvedValue(() => undefined);
     jest.useFakeTimers();
   });
 
@@ -164,5 +172,25 @@ describe('Index', () => {
     fireEvent.press(view.getByLabelText('Enter lobby'));
     fireEvent.press(view.getByLabelText('Leave lobby'));
     expect(view.getByText('setup screen')).toBeTruthy();
+  });
+
+  it('joins from a deep-link code and opens the lobby', async () => {
+    let onJoinCode: ((code: string) => void) | undefined;
+    mockedStartDeepLinkListener.mockImplementation(async ({ onJoinCode: handler }) => {
+      onJoinCode = handler;
+      return () => undefined;
+    });
+
+    const view = render(<Index />);
+    await waitFor(() => expect(onJoinCode).toBeDefined());
+
+    await act(async () => {
+      onJoinCode?.('ABCD12');
+    });
+
+    await waitFor(() => {
+      expect(mockedAcceptDeepLinkJoin).toHaveBeenCalledWith('ABCD12');
+      expect(view.getByText('lobby screen')).toBeTruthy();
+    });
   });
 });
