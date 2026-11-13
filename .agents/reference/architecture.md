@@ -29,7 +29,7 @@ Server-authoritative rooms (epic #38, ADR 0004). Worker package name `tictacdoh-
 
 - **HTTP:** `POST /rooms` `{ roundsInMatch }` → `{ code, hostToken, wsUrl, joinPath }`; `GET /join/:code` HTML landing (Open-in-app + meta/JS redirect to `tictacdoh://join/<code>`, code still visible); `GET /health`
 - **WS:** `GET /rooms/:code/ws` — client messages `join` / `move` / `nextRound` / `rematch` / `quit`; server `welcome` / `sync` / `disconnect` / `error` / `roomClosed`. Host seat = X, guest = O. Reconnect with seat token within 60s reclaim; idle empty-room TTL 30 minutes.
-- **Local:** `npm run test:multiplayer` (or `npm test` inside `workers/multiplayer/`). `npx wrangler dev` from that package for a local Worker. No CI deploy workflow yet (manual `wrangler deploy` later).
+- **Local / deploy:** `npm run test:multiplayer` (or `npm test` inside `workers/multiplayer/`). `npx wrangler dev` from that package for a local Worker. Production is manual `npx wrangler deploy` (see `deployment.md` / `deploy-app`); no CI deploy workflow.
 - **CORS:** Worker responses currently omit CORS headers (#46). Capacitor native WebView fetches to `EXPO_PUBLIC_MULTIPLAYER_URL` may need that fix; the client assumes the configured base URL is reachable from the shell and does not work around missing CORS.
 
 ## Online client session (`src/services/online/`)
