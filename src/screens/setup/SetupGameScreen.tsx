@@ -5,18 +5,22 @@ import { GearImage } from '@/components/images/GearImage';
 import { StartGameImage } from '@/components/images/StartGameImage';
 import { TitleImage } from '@/components/images/TitleImage';
 import { selectIsPlayerCPU, useMatchActions, useMatchStore } from '@/services/matchState';
+import { isOnlineSetupAvailable } from '@/services/online/onlineSetupGate';
+import { OnlineSetupPanel } from './components/OnlineSetupPanel';
 import { PlayerChoice } from './components/PlayerChoice';
 import { RoundsInMatch } from './components/RoundsInMatch';
 
 interface Props {
   onStartGame: () => void;
   onOptions: () => void;
+  onEnterLobby?: () => void;
 }
 
-export function SetupGameScreen({ onStartGame, onOptions }: Props) {
+export function SetupGameScreen({ onStartGame, onOptions, onEnterLobby }: Props) {
   const { setPlayerIsCPU, setPlayMode } = useMatchActions();
   const isPlayerXCPU = useMatchStore(selectIsPlayerCPU('X'));
   const isPlayerOCPU = useMatchStore(selectIsPlayerCPU('O'));
+  const showOnline = isOnlineSetupAvailable() && typeof onEnterLobby === 'function';
 
   return (
     <View className="h-max flex-1 flex-col">
@@ -26,7 +30,7 @@ export function SetupGameScreen({ onStartGame, onOptions }: Props) {
         </View>
       </View>
 
-      <View className="flex-[0.5] flex">
+      <View className="flex-[0.45] flex">
         <View className="mx-2 h-1/4">
           <ChoosePlayersImage></ChoosePlayersImage>
         </View>
@@ -56,6 +60,12 @@ export function SetupGameScreen({ onStartGame, onOptions }: Props) {
       <View className="flex-[0.05]">
         <RoundsInMatch className="flex flex-1 items-center"></RoundsInMatch>
       </View>
+
+      {showOnline && onEnterLobby ? (
+        <View className="flex-none py-2">
+          <OnlineSetupPanel onEnterLobby={onEnterLobby} />
+        </View>
+      ) : null}
 
       <View className="flex-[0.15]">
         <JiggleButton

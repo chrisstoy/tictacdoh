@@ -55,6 +55,14 @@ jest.mock('@/screens/options/OptionsScreen', () => {
   };
 });
 
+jest.mock('@/screens/lobby/OnlineLobbyScreen', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { Text } = require('react-native');
+  return {
+    OnlineLobbyScreen: () => <Text>lobby screen</Text>,
+  };
+});
+
 describe('Index', () => {
   beforeEach(() => {
     (useAudioService().playMusic as jest.Mock).mockClear();

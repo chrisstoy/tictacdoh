@@ -5,6 +5,8 @@ export {
 export { applySyncToLocalStores, playPhaseToPlayMode } from './applySync';
 export type { CreateRoomResponse } from './http';
 export { createRoom, roomWsUrl, OnlineHttpError } from './http';
+export { isValidJoinCode, normalizeJoinCode } from './joinCode';
+export { isOnlineSetupAvailable } from './onlineSetupGate';
 export type {
   ClientMessage,
   PlayPhase,
@@ -41,3 +43,4 @@ export {
   sendNextRound,
   sendRematch,
 } from './onlineSession';
+export { buildInviteShareText, shareOnlineInvite } from './shareInvite';
