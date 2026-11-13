@@ -41,7 +41,10 @@ jobs:
       - name: Build
         env:
           GITHUB_PAGES: true
+          # Bake production multiplayer Worker into the PWA (Online Create/Join on web).
+          EXPO_PUBLIC_MULTIPLAYER_URL: https://tictacdoh-multiplayer.chrisstoy.workers.dev
         run: npm run build
+        # Permission to set EXPO_PUBLIC_MULTIPLAYER_URL here was granted for #53 (web multiplayer).
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

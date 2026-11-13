@@ -7,20 +7,20 @@ function read(rel: string): string {
   return fs.readFileSync(path.join(root, rel), 'utf8');
 }
 
-describe('multiplayer docs (#44)', () => {
-  it('records ADR 0004 for authoritative DO rooms (rejects P2P and PartyKit; web/watch out of scope)', () => {
-    const adrPath = path.join(
-      root,
+describe('multiplayer docs', () => {
+  it('records ADR 0004 for DO rooms and ADR 0005 for web/PWA parity', () => {
+    const adr4 = read(
       '.agents/decisions/0004-use-authoritative-durable-object-rooms-for-native-multiplaye.md'
     );
-    expect(fs.existsSync(adrPath)).toBe(true);
-    const adr = fs.readFileSync(adrPath, 'utf8');
-    expect(adr).toMatch(/## Status\s*\n\s*Accepted/);
-    expect(adr.toLowerCase()).toMatch(/durable object/);
-    expect(adr).toMatch(/P2P|peer-to-peer/i);
-    expect(adr).toMatch(/PartyKit/i);
-    expect(adr.toLowerCase()).toMatch(/web/);
-    expect(adr.toLowerCase()).toMatch(/watch/);
+    expect(adr4.toLowerCase()).toMatch(/durable object/);
+    expect(adr4).toMatch(/P2P|peer-to-peer/i);
+    expect(adr4).toMatch(/PartyKit/i);
+    expect(adr4).toMatch(/0005|Superseded/i);
+
+    const adr5 = read('.agents/decisions/0005-enable-durable-object-multiplayer-on-the-web-pwa.md');
+    expect(adr5).toMatch(/## Status\s*\n\s*Accepted/);
+    expect(adr5.toLowerCase()).toMatch(/web|pwa/);
+    expect(adr5.toLowerCase()).toMatch(/watch/);
   });
 
   it('documents online mode, Worker, and stores in architecture.md', () => {
@@ -31,19 +31,23 @@ describe('multiplayer docs (#44)', () => {
     expect(arch).toMatch(/matchState|roundState/);
     expect(arch).toMatch(/EXPO_PUBLIC_MULTIPLAYER_URL/);
     expect(arch).toMatch(/ADR 0004|0004/);
+    expect(arch).toMatch(/0005|web\/PWA/);
+    expect(arch).toMatch(/\?join=/);
   });
 
-  it('documents wrangler deploy, EXPO_PUBLIC_MULTIPLAYER_URL, CORS, and tictacdoh:// in deployment.md', () => {
+  it('documents wrangler deploy, Pages env, CORS, and join dual-path in deployment.md', () => {
     const dep = read('.agents/reference/deployment.md');
     expect(dep).toMatch(/wrangler deploy/);
     expect(dep).toMatch(/EXPO_PUBLIC_MULTIPLAYER_URL/);
     expect(dep).toMatch(/tictacdoh:\/\//);
     expect(dep).toMatch(/CORS_ORIGINS/);
-    expect(dep).toMatch(/capacitor:\/\/localhost/);
-    expect(dep).toMatch(/two.?device|iOS.*Android|Manual.*checklist/i);
+    expect(dep).toMatch(/chrisstoy\.github\.io/);
+    expect(dep).toMatch(/WEB_JOIN_BASE|\?join=/);
+    expect(dep).toMatch(/main\.yml|Pages/);
+    expect(dep).toMatch(/two.?device|web.*native|Manual.*checklist/i);
   });
 
-  it('includes Worker deploy steps in both deploy-app skill copies (no new Actions)', () => {
+  it('includes Worker deploy steps in both deploy-app skill copies (no new Worker Actions)', () => {
     for (const rel of [
       '.agents/skills/deploy-app/SKILL.md',
       '.claude/skills/deploy-app/SKILL.md',

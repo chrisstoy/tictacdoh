@@ -1,7 +1,6 @@
-import { isNativeShell } from '@/services/nativeShell';
 import { isOnlineMultiplayerConfigured } from './config';
 
-/** Native shell + configured Worker URL — gates Online Create/Join on setup. */
+/** Configured Worker URL — gates Online Create/Join on setup (web/PWA and native). */
 export function isOnlineSetupAvailable(): boolean {
-  return isNativeShell() && isOnlineMultiplayerConfigured();
+  return isOnlineMultiplayerConfigured();
 }

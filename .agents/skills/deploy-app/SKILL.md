@@ -38,7 +38,7 @@ Actions changes (AGENTS.md).
 - [ ] `package.json` `"version"` equals the App Store Connect version string you are shipping. Today that version is `1.0` (`PREPARE_FOR_SUBMISSION`). `1.0.0` is a different string and will not attach to version `1.0`.
 - [ ] iOS: Xcode is signed into an Apple ID that can manage profiles for team `J866FQ2YZ9`. The API key at `~/.appstoreconnect/private_keys/AuthKey_8LQQQ646C6.p8` is only the duplicate-build check. `pip install pyjwt cryptography` once.
 - [ ] Android: `credentials.json` exists (gitignored). Create it once with `scripts/setup-android-signing.sh`. Do not print passwords.
-- [ ] `multiplayer-worker`: Cloudflare account authenticated for Wrangler (`wrangler whoami` / `wrangler login` or API token). `npm run test:multiplayer` green. Decide the `EXPO_PUBLIC_MULTIPLAYER_URL` that native builds will bake after deploy. If a device Origin is outside the Worker’s native-safe defaults, set Worker `CORS_ORIGINS` (comma-separated) before claiming online QA is done.
+- [ ] `multiplayer-worker`: Cloudflare account authenticated for Wrangler (`wrangler whoami` / `wrangler login` or API token). `npm run test:multiplayer` green. Decide the `EXPO_PUBLIC_MULTIPLAYER_URL` that native builds and the Pages workflow Build step will bake after deploy (Pages already sets production Worker URL in `main.yml` for #53). Defaults include Capacitor localhost schemes and `https://chrisstoy.github.io`; set Worker `CORS_ORIGINS` only for extra Origins.
 
 ## Deploy
 
@@ -97,9 +97,7 @@ Worker name is `tictacdoh-multiplayer` (`wrangler.jsonc`). First deploy applies
 Durable Object migration tag `v1` (`GameRoom`). Capture the printed HTTPS URL
 (no trailing slash) and set `EXPO_PUBLIC_MULTIPLAYER_URL` to that base when
 running `npm run build:native` / store release scripts for builds that should
-expose Online Create/Join. Custom scheme for joins: `tictacdoh://join/<code>`
-(see `deployment.md`). Facts and the two-device checklist live in
-`.agents/reference/deployment.md` (ADR 0004).
+expose Online Create/Join on native and web. Custom scheme: `tictacdoh://join/<code>`; Pages fallback `/?join=<code>` via `WEB_JOIN_BASE` (see `deployment.md`). Checklist: `.agents/reference/deployment.md` (ADR 0004/0005).
 
 Do **not** add or edit `.github/workflows/` for this target. Local iteration uses
 `npx wrangler dev` (or `npm run dev` in that package), not a Pages deploy.
@@ -111,7 +109,7 @@ Do **not** add or edit `.github/workflows/` for this target. Local iteration use
 - In DevTools → Application: manifest is valid and the service worker `sw.js` is registered with scope `/tictacdoh/`. After a deploy, a hard refresh (or closing all tabs) may be needed to pick up the new worker.
 - iOS: App Store Connect shows the build processing, then available. Wait for processing before treating the upload as done. TestFlight: https://appstoreconnect.apple.com/apps/6826927007/testflight/ios
 - Android: after `--apply`, the script prints the versionCode on the internal track. There is nothing to verify until the Play app exists.
-- multiplayer-worker: `GET ${EXPO_PUBLIC_MULTIPLAYER_URL}/health` returns OK; create a room from a native build with that env baked in; join landing at `/join/<code>` redirects toward `tictacdoh://join/<code>`. If WebView `fetch` fails with a CORS error, extend Worker `CORS_ORIGINS` for that Origin (see `deployment.md`) — do not invent a client workaround. Full two-device checklist is in `deployment.md`.
+- multiplayer-worker: `GET ${EXPO_PUBLIC_MULTIPLAYER_URL}/health` returns OK; create a room from a native or Pages build with that env baked in; join landing at `/join/<code>` offers app scheme and browser `?join=` fallback. If `fetch` fails with a CORS error, extend Worker `CORS_ORIGINS` (see `deployment.md`) — do not invent a client workaround. Full checklist is in `deployment.md`.
 
 ## Rollback
 

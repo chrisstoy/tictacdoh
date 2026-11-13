@@ -15,6 +15,7 @@ describe('cors helpers', () => {
       'http://localhost',
       'https://localhost',
       'ionic://localhost',
+      'https://chrisstoy.github.io',
     ]);
     expect(parseCorsOrigins(undefined)).toEqual([...DEFAULT_CORS_ORIGINS]);
     expect(parseCorsOrigins('')).toEqual([...DEFAULT_CORS_ORIGINS]);

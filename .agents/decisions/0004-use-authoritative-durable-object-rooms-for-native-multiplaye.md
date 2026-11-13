@@ -7,7 +7,10 @@ description: Use authoritative Durable Object rooms for native multiplayer
 
 ## Status
 
-Accepted
+Superseded in part by
+[0005](0005-enable-durable-object-multiplayer-on-the-web-pwa.md) (web/PWA online
+multiplayer is now in scope). Durable Object rooms and the watch exclusion
+remain in force.
 
 ## Context
 
