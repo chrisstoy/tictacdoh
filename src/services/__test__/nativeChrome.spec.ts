@@ -43,6 +43,24 @@ describe('native chrome', () => {
     expect(manifest).toContain('android:screenOrientation="portrait"');
   });
 
+  it('registers the tictacdoh:// custom URL scheme on iOS', () => {
+    const plist = fs.readFileSync(path.join(root, 'ios/App/App/Info.plist'), 'utf8');
+
+    expect(plist).toContain('<key>CFBundleURLTypes</key>');
+    expect(plist).toContain('<string>tictacdoh</string>');
+  });
+
+  it('registers the tictacdoh:// VIEW intent-filter on Android', () => {
+    const manifest = fs.readFileSync(
+      path.join(root, 'android/app/src/main/AndroidManifest.xml'),
+      'utf8'
+    );
+
+    expect(manifest).toContain('android.intent.action.VIEW');
+    expect(manifest).toContain('android:scheme="tictacdoh"');
+    expect(manifest).toContain('android:host="join"');
+  });
+
   it('uses the app background for the Capacitor splash and status bar', () => {
     expect(config.plugins?.SplashScreen?.backgroundColor).toBe('#fdde97');
     expect(config.plugins?.StatusBar).toMatchObject({
