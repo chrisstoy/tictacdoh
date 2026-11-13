@@ -1,5 +1,5 @@
 import Animated, { FadeIn, FadeOut, FadingTransition } from 'react-native-reanimated';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
 import { OnlineLobbyScreen } from '@/screens/lobby/OnlineLobbyScreen';
@@ -8,6 +8,8 @@ import { PlayGameScreen } from '@/screens/play/PlayGameScreen';
 import { SetupGameScreen } from '@/screens/setup/SetupGameScreen';
 import { TitleScreen } from '@/screens/title/TitleScreen';
 import { useAudioService } from '@/services/audioService';
+import { acceptDeepLinkJoin, startDeepLinkListener } from '@/services/online';
+import { useOnlineSessionStore } from '@/services/online/sessionStore';
 import { useFrameMaxWidth } from '@/services/useFrameMaxWidth';
 
 type ActiveMode = 'TITLE' | 'PLAY' | 'NEW' | 'OPTIONS' | 'LOBBY';
@@ -16,6 +18,7 @@ export default function Index() {
   const { playMusic, stopMusic } = useAudioService();
   const [gameMode, setGameMode] = useState<ActiveMode>('TITLE');
   const maxWidth = useFrameMaxWidth();
+  const joiningDeepLink = useRef(false);
 
   useEffect(() => {
     if (gameMode === 'TITLE' || gameMode === 'NEW' || gameMode === 'OPTIONS' || gameMode === 'LOBBY') {
@@ -28,6 +31,44 @@ export default function Index() {
       stopMusic();
     };
   }, [gameMode, playMusic, stopMusic]);
+
+  useEffect(() => {
+    let stop: (() => void) | undefined;
+    let cancelled = false;
+
+    void startDeepLinkListener({
+      onJoinCode: (code) => {
+        if (joiningDeepLink.current || cancelled) {
+          return;
+        }
+        joiningDeepLink.current = true;
+        void (async () => {
+          try {
+            await acceptDeepLinkJoin(code);
+            if (!cancelled) {
+              setGameMode('LOBBY');
+            }
+          } catch (e) {
+            const message = e instanceof Error ? e.message : 'Deep-link join failed';
+            useOnlineSessionStore.getState().applyError(message);
+          } finally {
+            joiningDeepLink.current = false;
+          }
+        })();
+      },
+    }).then((remove) => {
+      if (cancelled) {
+        remove();
+        return;
+      }
+      stop = remove;
+    });
+
+    return () => {
+      cancelled = true;
+      stop?.();
+    };
+  }, []);
 
   return (
     <View className="flex-1 self-center w-full" style={{ maxWidth }}>
