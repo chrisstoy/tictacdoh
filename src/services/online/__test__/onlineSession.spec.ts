@@ -1,7 +1,3 @@
-jest.mock('@react-native-async-storage/async-storage', () =>
-  require('@react-native-async-storage/async-storage/jest/async-storage-mock')
-);
-
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useMatchStore } from '../../matchState';
 import { useOptionsStore } from '../../optionsState';
@@ -19,6 +15,11 @@ import {
 import type { RoomSnapshot, ServerMessage } from '../protocol';
 import { ONLINE_SESSION_STORAGE_KEY, loadOnlineReconnectCreds } from '../reconnectStorage';
 import { useOnlineSessionStore } from '../sessionStore';
+
+jest.mock('@react-native-async-storage/async-storage', () =>
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  require('@react-native-async-storage/async-storage/jest/async-storage-mock')
+);
 
 type Listener = ((ev: MessageEvent | Event) => void) | null;
 

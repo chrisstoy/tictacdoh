@@ -1,12 +1,13 @@
-jest.mock('@react-native-async-storage/async-storage', () =>
-  require('@react-native-async-storage/async-storage/jest/async-storage-mock')
-);
-
 import { useMatchStore } from '../../matchState';
 import { useOptionsStore } from '../../optionsState';
 import { useRoundStore } from '../../roundState';
 import { applySyncToLocalStores } from '../applySync';
 import type { RoomSnapshot } from '../protocol';
+
+jest.mock('@react-native-async-storage/async-storage', () =>
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  require('@react-native-async-storage/async-storage/jest/async-storage-mock')
+);
 
 function baseSnapshot(overrides: Partial<RoomSnapshot> = {}): RoomSnapshot {
   return {

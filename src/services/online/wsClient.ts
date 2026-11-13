@@ -16,7 +16,7 @@ export type OnlineWsHandlers = {
  */
 export class OnlineWsClient {
   private socket: WebSocket | null = null;
-  private openWaiters: Array<() => void> = [];
+  private openWaiters: (() => void)[] = [];
 
   constructor(private readonly wsFactory: WsFactory = (url) => new WebSocket(url)) {}
 

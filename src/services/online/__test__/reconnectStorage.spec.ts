@@ -1,7 +1,3 @@
-jest.mock('@react-native-async-storage/async-storage', () =>
-  require('@react-native-async-storage/async-storage/jest/async-storage-mock')
-);
-
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   ONLINE_SESSION_STORAGE_KEY,
@@ -9,6 +5,11 @@ import {
   loadOnlineReconnectCreds,
   saveOnlineReconnectCreds,
 } from '../reconnectStorage';
+
+jest.mock('@react-native-async-storage/async-storage', () =>
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  require('@react-native-async-storage/async-storage/jest/async-storage-mock')
+);
 
 describe('reconnectStorage', () => {
   beforeEach(async () => {
