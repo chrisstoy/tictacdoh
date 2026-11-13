@@ -138,6 +138,19 @@ export const selectOnlineLastSnapshot = (s: SessionState) => s.lastSnapshot;
 export const selectOnlineReclaimDeadlineMs = (s: SessionState) => s.reclaimDeadlineMs;
 export const selectOnlineLastError = (s: SessionState) => s.lastError;
 
+/** Active online match (lobby→play or mid-reclaim). Idle/closed are local-only. */
+export const selectIsOnlineMatchActive = (s: SessionState) =>
+  s.seat != null &&
+  (s.status === 'connected' || s.status === 'disconnected' || s.status === 'reconnecting');
+
+export function selectIsOpponentDisconnected(s: SessionState): boolean {
+  if (!selectIsOnlineMatchActive(s) || s.reclaimDeadlineMs == null || s.seat == null) {
+    return false;
+  }
+  if (s.seat === 'X') return !s.guestConnected;
+  return !s.hostConnected;
+}
+
 export const useOnlineSessionActions = () =>
   useOnlineSessionStore(
     useShallow((s) => ({

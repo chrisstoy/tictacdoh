@@ -17,6 +17,17 @@ import {
   useMatchActions,
   useMatchStore,
 } from '@/services/matchState';
+import {
+  leaveOnlineSession,
+  selectIsOnlineMatchActive,
+  selectIsOpponentDisconnected,
+  selectOnlineReclaimDeadlineMs,
+  selectOnlineSeat,
+  sendMove,
+  sendNextRound,
+  sendRematch,
+  useOnlineSessionStore,
+} from '@/services/online';
 import { selectAutoReplay, useOptionsStore } from '@/services/optionsState';
 import {
   selectBoardState,
@@ -29,6 +40,7 @@ import {
 import { PlayerId } from '@/types';
 import { EndOfGame } from './components/EndOfGame';
 import { EndOfMatch } from './components/EndOfMatch';
+import { OpponentDisconnectedOverlay } from './components/OpponentDisconnectedOverlay';
 import { Scoreboard } from './components/Scoreboard';
 
 const CPU_MOVE_DELAY_MS = 500; // how long to delay CPU moves
@@ -60,6 +72,11 @@ export function PlayGameScreen({ onExitGame }: Props) {
 
   const autoReplay = useOptionsStore(selectAutoReplay);
 
+  const isOnlineMatch = useOnlineSessionStore(selectIsOnlineMatchActive);
+  const onlineSeat = useOnlineSessionStore(selectOnlineSeat);
+  const opponentDisconnected = useOnlineSessionStore(selectIsOpponentDisconnected);
+  const reclaimDeadlineMs = useOnlineSessionStore(selectOnlineReclaimDeadlineMs);
+
   const [aiMoving, setAIMoving] = useState(false);
   const [isDelaying, setIsDelaying] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -71,16 +88,69 @@ export function PlayGameScreen({ onExitGame }: Props) {
 
   const handleTileClick = useCallback(
     (pickedTile: number) => {
-      if (playMode !== 'PLAYING' || isPlayerCPU(currentTurn) || boardState[pickedTile] !== ' ') {
+      if (playMode !== 'PLAYING' || boardState[pickedTile] !== ' ') {
+        return;
+      }
+
+      if (isOnlineMatch) {
+        if (onlineSeat == null || currentTurn !== onlineSeat) {
+          return;
+        }
+        playSound('thump', 0.118);
+        sendMove(pickedTile);
+        return;
+      }
+
+      if (isPlayerCPU(currentTurn)) {
         return;
       }
       playSound('thump', 0.118);
       applyMove(pickedTile, currentTurn);
     },
-    [playMode, isPlayerCPU, currentTurn, boardState, playSound, applyMove]
+    [
+      playMode,
+      boardState,
+      isOnlineMatch,
+      onlineSeat,
+      currentTurn,
+      isPlayerCPU,
+      playSound,
+      applyMove,
+    ]
   );
 
+  const handleNextRound = useCallback(() => {
+    if (isOnlineMatch) {
+      sendNextRound();
+      return;
+    }
+    setPlayMode('SETUP_ROUND');
+  }, [isOnlineMatch, setPlayMode]);
+
+  const handlePlayAgain = useCallback(() => {
+    if (isOnlineMatch) {
+      sendRematch();
+      return;
+    }
+    setPlayMode('SETUP_MATCH');
+  }, [isOnlineMatch, setPlayMode]);
+
+  const handleQuit = useCallback(() => {
+    if (isOnlineMatch) {
+      void leaveOnlineSession().finally(() => {
+        onExitGame();
+      });
+      return;
+    }
+    onExitGame();
+  }, [isOnlineMatch, onExitGame]);
+
   useEffect(() => {
+    // Online matches are server-driven — never run local setup/CPU/autoReplay.
+    if (isOnlineMatch) {
+      return;
+    }
+
     if (playMode === 'SETUP_MATCH') {
       initNewMatch();
       initNewRound();
@@ -151,7 +221,16 @@ export function PlayGameScreen({ onExitGame }: Props) {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playMode, isGameOver, isMatchOver, currentTurn, aiMoving, autoReplay, isDelaying]);
+  }, [
+    playMode,
+    isGameOver,
+    isMatchOver,
+    currentTurn,
+    aiMoving,
+    autoReplay,
+    isDelaying,
+    isOnlineMatch,
+  ]);
 
   // Cleanup timeouts on unmount
   useEffect(() => {
@@ -185,7 +264,7 @@ export function PlayGameScreen({ onExitGame }: Props) {
       <View className="flex flex-row flex-none">
         <GameBoard
           boardState={boardState}
-          allowTileSelection={!isGameOver}
+          allowTileSelection={!isGameOver && !opponentDisconnected}
           highlightTiles={gameWinner?.line}
           onTileClick={handleTileClick}
         ></GameBoard>
@@ -197,33 +276,45 @@ export function PlayGameScreen({ onExitGame }: Props) {
         <View className="flex flex-row justify-center gap-16">
           {playMode === 'ROUND_OVER' && (
             <>
-              <PushButton className="h-16 w-1/3" onPress={() => setPlayMode('SETUP_ROUND')}>
+              <PushButton
+                className="h-16 w-1/3"
+                accessibilityLabel="Next round"
+                onPress={handleNextRound}
+              >
                 <NextRoundImage></NextRoundImage>
               </PushButton>
-              <PushButton className="h-16 w-1/3" onPress={onExitGame}>
+              <PushButton className="h-16 w-1/3" accessibilityLabel="Quit game" onPress={handleQuit}>
                 <QuitGameImage></QuitGameImage>
               </PushButton>
             </>
           )}
           {playMode === 'MATCH_OVER' && (
             <>
-              <PushButton className="h-16 w-1/3" onPress={() => setPlayMode('SETUP_MATCH')}>
+              <PushButton
+                className="h-16 w-1/3"
+                accessibilityLabel="Play again"
+                onPress={handlePlayAgain}
+              >
                 <NewMatchImage></NewMatchImage>
               </PushButton>
-              <PushButton className="h-16 w-1/3" onPress={onExitGame}>
+              <PushButton className="h-16 w-1/3" accessibilityLabel="Quit game" onPress={handleQuit}>
                 <QuitGameImage></QuitGameImage>
               </PushButton>
             </>
           )}
           {playMode === 'PLAYING' && (
             <>
-              <PushButton className="h-16 w-1/3" onPress={onExitGame}>
+              <PushButton className="h-16 w-1/3" accessibilityLabel="Quit game" onPress={handleQuit}>
                 <QuitGameImage></QuitGameImage>
               </PushButton>
             </>
           )}
         </View>
       </View>
+
+      {opponentDisconnected ? (
+        <OpponentDisconnectedOverlay reclaimDeadlineMs={reclaimDeadlineMs} />
+      ) : null}
     </View>
   );
 }
