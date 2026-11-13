@@ -7,6 +7,7 @@ declare namespace Cloudflare {
 		durableNamespaces: "GameRoom";
 	}
 	interface Env {
+		CORS_ORIGINS: string;
 		GAME_ROOM: DurableObjectNamespace<import("./src/index").GameRoom>;
 	}
 }

@@ -1,4 +1,5 @@
 import { isValidRoundsInMatch } from '../../../shared/gameRules';
+import { handlePreflight, parseCorsOrigins, withCors } from './cors';
 import { GameRoom } from './GameRoom';
 import { joinLandingHtml } from './joinLanding';
 
@@ -27,9 +28,28 @@ function json(data: unknown, status = 200): Response {
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
+    const allowlist = parseCorsOrigins(env.CORS_ORIGINS);
+
+    // WebSocket upgrade — browsers do not apply CORS preflight the same way; leave unchanged.
+    const wsMatch = url.pathname.match(/^\/rooms\/([A-Za-z0-9]+)\/ws$/);
+    if (wsMatch) {
+      if (request.headers.get('Upgrade')?.toLowerCase() !== 'websocket') {
+        return new Response('Expected Upgrade: websocket', { status: 426 });
+      }
+      const code = wsMatch[1]!.toUpperCase();
+      const id = env.GAME_ROOM.idFromName(code);
+      const stub = env.GAME_ROOM.get(id);
+      return stub.fetch(request);
+    }
+
+    if (request.method === 'OPTIONS') {
+      return handlePreflight(request, allowlist);
+    }
+
+    const respond = (response: Response) => withCors(response, request, allowlist);
 
     if (request.method === 'GET' && url.pathname === '/health') {
-      return json({ ok: true });
+      return respond(json({ ok: true }));
     }
 
     if (request.method === 'POST' && url.pathname === '/rooms') {
@@ -37,11 +57,11 @@ export default {
       try {
         body = (await request.json()) as typeof body;
       } catch {
-        return json({ error: 'Invalid JSON' }, 400);
+        return respond(json({ error: 'Invalid JSON' }, 400));
       }
       const roundsInMatch = body.roundsInMatch ?? 3;
       if (!isValidRoundsInMatch(roundsInMatch)) {
-        return json({ error: 'invalid roundsInMatch' }, 400);
+        return respond(json({ error: 'invalid roundsInMatch' }, 400));
       }
 
       const code = generateRoomCode();
@@ -57,38 +77,31 @@ export default {
       );
       if (!createRes.ok) {
         const err = await createRes.text();
-        return new Response(err, { status: createRes.status });
+        return respond(new Response(err, { status: createRes.status }));
       }
 
       const wsUrl = `${url.protocol === 'https:' ? 'wss:' : 'ws:'}//${url.host}/rooms/${code}/ws`;
-      return json({
-        code,
-        hostToken,
-        roundsInMatch,
-        wsUrl,
-        joinPath: `/join/${code}`,
-      });
+      return respond(
+        json({
+          code,
+          hostToken,
+          roundsInMatch,
+          wsUrl,
+          joinPath: `/join/${code}`,
+        })
+      );
     }
 
     const joinMatch = url.pathname.match(/^\/join\/([A-Za-z0-9]+)$/);
     if (request.method === 'GET' && joinMatch) {
       const code = joinMatch[1]!.toUpperCase();
-      return new Response(joinLandingHtml(code), {
-        headers: { 'content-type': 'text/html; charset=utf-8' },
-      });
+      return respond(
+        new Response(joinLandingHtml(code), {
+          headers: { 'content-type': 'text/html; charset=utf-8' },
+        })
+      );
     }
 
-    const wsMatch = url.pathname.match(/^\/rooms\/([A-Za-z0-9]+)\/ws$/);
-    if (wsMatch) {
-      if (request.headers.get('Upgrade')?.toLowerCase() !== 'websocket') {
-        return new Response('Expected Upgrade: websocket', { status: 426 });
-      }
-      const code = wsMatch[1]!.toUpperCase();
-      const id = env.GAME_ROOM.idFromName(code);
-      const stub = env.GAME_ROOM.get(id);
-      return stub.fetch(request);
-    }
-
-    return json({ error: 'Not found' }, 404);
+    return respond(json({ error: 'Not found' }, 404));
   },
 } satisfies ExportedHandler<Env>;
