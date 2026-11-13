@@ -47,3 +47,7 @@ __pycache__/
 *.pyc
 
 .agents/.dark-factory/
+
+# Cloudflare Workers local
+.wrangler/
+workers/**/.wrangler/

@@ -19,10 +19,13 @@ npm run web            # Browser
 Unit only (Jest, `jest-expo` preset). **No e2e runner is configured** (no Playwright/Cypress/Detox) — say so explicitly in PRs rather than assuming one.
 
 ```bash
-npm test               # all tests
+npm test               # all tests (Jest app + shared/gameRules)
 npm run test:watch
 npm run test:coverage
+npm run test:multiplayer   # workers/multiplayer Vitest (Miniflare / cloudflare:test)
 ```
+
+Worker-only (from `workers/multiplayer/`): `npm test`, `npm run dev` (`wrangler dev`).
 
 ## Code quality
 

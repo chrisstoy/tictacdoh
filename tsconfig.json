@@ -10,7 +10,17 @@
       ],
       "@/assets/*": [
         "assets/*"
+      ],
+      "@shared/*": [
+        "shared/*"
       ]
     }
-  }
+  },
+  "exclude": [
+    "workers",
+    "node_modules",
+    "dist",
+    "android",
+    "ios"
+  ]
 }
