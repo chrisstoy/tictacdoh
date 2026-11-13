@@ -6,6 +6,10 @@ export { applySyncToLocalStores, playPhaseToPlayMode } from './applySync';
 export type { CreateRoomResponse } from './http';
 export { createRoom, roomWsUrl, OnlineHttpError } from './http';
 export { isValidJoinCode, normalizeJoinCode } from './joinCode';
+export { parseJoinDeepLink } from './deepLink';
+export { startDeepLinkListener } from './deepLinkListener';
+export type { DeepLinkJoinHandler } from './deepLinkListener';
+export { acceptDeepLinkJoin } from './acceptDeepLinkJoin';
 export { isOnlineSetupAvailable } from './onlineSetupGate';
 export type {
   ClientMessage,
