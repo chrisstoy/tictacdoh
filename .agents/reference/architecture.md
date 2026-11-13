@@ -1,11 +1,11 @@
 ---
 name: architecture
-description: Stack, directory layout, Zustand stores and PlayMode state machine, screen flow, CPU AI, and audio.
+description: Stack, directory layout, shared gameRules, multiplayer Worker/DO, Zustand stores and PlayMode state machine, screen flow, CPU AI, and audio.
 ---
 
 # Architecture
 
-Tic-Tac-Doh: React Native tic-tac-toe on Expo SDK 54 (expo-router 6, React 19, RN 0.81, new arch enabled). The shipping web artifact is a static export and an installable PWA. iOS and Android apps are a Capacitor 8 shell (`capacitor.config.ts`, committed `ios/` and `android/`) that loads that same bundle from `webDir: dist` — not a remote URL. Expo stays the web toolchain (`expo start --web`, `scripts/build-pwa.js`, expo-router). The iPhone and Android apps are the Capacitor shell: `app.config.js` has no `ios` or `android` block, and `package.json` has no native Expo run or deploy script. The Apple Watch app is not that shell. It is a SwiftUI target embedded in the iOS app (ADR 0003). Modes on the phone: human vs human, human vs CPU, CPU vs CPU, with configurable match length (3/5/7/9/infinite rounds). The watch app has the same lengths and the same choices, including CPU vs CPU.
+Tic-Tac-Doh: React Native tic-tac-toe on Expo SDK 54 (expo-router 6, React 19, RN 0.81, new arch enabled). The shipping web artifact is a static export and an installable PWA. iOS and Android apps are a Capacitor 8 shell (`capacitor.config.ts`, committed `ios/` and `android/`) that loads that same bundle from `webDir: dist` — not a remote URL. Expo stays the web toolchain (`expo start --web`, `scripts/build-pwa.js`, expo-router). The iPhone and Android apps are the Capacitor shell: `app.config.js` has no `ios` or `android` block, and `package.json` has no native Expo run or deploy script. The Apple Watch app is not that shell. It is a SwiftUI target embedded in the iOS app (ADR 0003). Modes on the phone: human vs human, human vs CPU, CPU vs CPU, with configurable match length (3/5/7/9/infinite rounds). The watch app has the same lengths and the same choices, including CPU vs CPU. Online multiplayer (native shell only; client UI lands in later issues) is authoritative on a Cloudflare Worker + `GameRoom` Durable Object under `workers/multiplayer/`, sharing RN-free rules from `shared/gameRules`.
 
 ## Layout
 
@@ -13,12 +13,22 @@ Tic-Tac-Doh: React Native tic-tac-toe on Expo SDK 54 (expo-router 6, React 19, R
 - `src/screens/{title,setup,play,options}/` — one screen each; setup and play keep subcomponents in `components/`
 - `src/components/` — shared UI; `components/images/` wraps each PNG in `assets/`
 - `src/services/` — stores, game logic, audio, service-worker registration, `nativeShell.ts` (`isNativeShell()`)
+- `shared/` — RN-free `gameRules` + types used by the app and the multiplayer Worker (`determineWinner`, move validation, match-majority)
+- `workers/multiplayer/` — Cloudflare Worker package (`wrangler.jsonc`, hibernatable `GameRoom` DO, Vitest via `@cloudflare/vitest-plugin`)
 - `capacitor.config.ts` — `appId` `com.chrisstoy.tictacdoh` (the App Store Connect app, not `com.stoyco.tictacdoh`), `appName` `Tic-Tac-Doh`, `webDir` `dist`
 - `ios/`, `android/` — Capacitor native projects (generated web assets, Pods, and `local.properties` stay gitignored)
 - `src/animations/` — reanimated helpers (jiggle, push)
 - `scripts/` — PWA build pipeline; `public/icons/` generated icons
 - `design/game-state.md` — mermaid diagram + per-state behavior of the PlayMode machine
 - `ralph/`, `docs/plans/` — prd/ralph autonomous-loop scaffolding, not app code
+
+## Online multiplayer Worker (`workers/multiplayer/`)
+
+Server-authoritative rooms (epic #38). One SQLite-backed `GameRoom` Durable Object per room code (`idFromName(code)`), WebSocket hibernation.
+
+- **HTTP:** `POST /rooms` `{ roundsInMatch }` → `{ code, hostToken, wsUrl, joinPath }`; `GET /join/:code` HTML landing that deep-links `tictacdoh://join/<code>` (native scheme registration is a later issue); `GET /health`
+- **WS:** `GET /rooms/:code/ws` — client messages `join` / `move` / `nextRound` / `rematch` / `quit`; server `welcome` / `sync` / `disconnect` / `error` / `roomClosed`. Host seat = X, guest = O. Reconnect with seat token within 60s reclaim; idle empty-room TTL 30 minutes.
+- **Local:** `npm run test:multiplayer` (or `npm test` inside `workers/multiplayer/`). `npx wrangler dev` from that package for a local Worker. No CI deploy workflow yet (manual `wrangler deploy` later).
 
 ## State (Zustand v5)
 
@@ -43,10 +53,10 @@ Rules, `pickMove`, and the match/round machine are a Swift copy of `src/services
 
 ## CPU AI (`src/services/game.ts`)
 
-- `determineWinner()` checks the 8 winning lines.
+- `determineWinner()` lives in `shared/gameRules` (8 winning lines) and is re-exported from `game.ts` so Jest fixtures keep importing from `game.ts`.
 - `solveBoard()` builds the game tree recursively.
 - `pickMove()`: random tile on an empty board → immediate win → block opponent's win next turn → random valid move. (A "setup a future win" step is a comment only, not implemented.)
-- `pickNextMoveOnBoardForPlayer()` is the entry used by the play screen (CPU move delay `CPU_MOVE_DELAY_MS` = 500ms in `PlayGameScreen.tsx`; `design/game-state.md` still says 200ms and is stale).
+- `pickNextMoveOnBoardForPlayer()` is the entry used by the play screen (CPU move delay `CPU_MOVE_DELAY_MS` = 500ms in `PlayGameScreen.tsx`).
 
 ## Audio
 

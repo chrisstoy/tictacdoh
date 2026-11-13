@@ -14,6 +14,7 @@ module.exports = {
     '**/__tests__/**/*.(test|spec).(ts|tsx|js|jsx)',
     '**/*.(test|spec).(ts|tsx|js|jsx)',
   ],
+  testPathIgnorePatterns: ['/node_modules/', '/workers/'],
   moduleNameMapper: {
     '\\.mp3$': '<rootDir>/jest/fileMock.js',
     '^@/assets/(.*)$': '<rootDir>/assets/$1',

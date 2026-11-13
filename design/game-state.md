@@ -23,7 +23,7 @@ The active gameplay state where players alternate turns making moves on the boar
 **Behavior:**
 - Players alternate between X and O turns
 - If current player is CPU:
-  - AI delays for `CPU_MOVE_DELAY_MS` (200ms)
+  - AI delays for `CPU_MOVE_DELAY_MS` (500ms)
   - Picks optimal move using `pickNextMoveOnBoardForPlayer()`
   - Applies move automatically
 - If current player is human:
