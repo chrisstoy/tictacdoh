@@ -5,7 +5,7 @@ description: Every npm command for dev, test, lint, format, build, and deploy in
 
 # Commands
 
-All via npm (`package-lock.json`). No monorepo tooling.
+All via npm (`package-lock.json`). No monorepo tooling. `npm install` / `npm ci` run `postinstall` → `scripts/patch-native-audio-android.js`, which patches `@capacitor-community/native-audio`'s Android `stop()` / `unload()` to clear the plugin resume list (see `architecture.md` Audio).
 
 ## Development
 
