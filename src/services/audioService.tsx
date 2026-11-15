@@ -10,7 +10,12 @@ import {
   selectAudioBackend,
 } from './audioBackend';
 import { isNativeShell } from './nativeShell';
-import { selectEnableMusic, selectEnableSound, useOptionsStore } from './optionsState';
+import {
+  selectEnableMusic,
+  selectEnableSound,
+  selectOptionsHydrated,
+  useOptionsStore,
+} from './optionsState';
 
 export type SoundKey =
   | 'squish'
@@ -144,6 +149,8 @@ function createReadyGate(): { promise: Promise<void>; resolve: () => void } {
 function NativeAudioServiceProvider({ children }: AudioServiceProviderProps) {
   const soundEnabled = useOptionsStore(selectEnableSound);
   const musicEnabled = useOptionsStore(selectEnableMusic);
+  const optionsHydrated = useOptionsStore(selectOptionsHydrated);
+  const musicAllowed = optionsHydrated && musicEnabled;
   const desiredPlaying = useRef(false);
   const loopMusic = useRef(true);
   const musicOffset = useRef(0);
@@ -177,8 +184,9 @@ function NativeAudioServiceProvider({ children }: AudioServiceProviderProps) {
 
     void App.addListener('appStateChange', ({ isActive }) => {
       appIsActive.current = isActive;
+      const options = useOptionsStore.getState();
       const transport = nextMusicTransport({
-        musicEnabled: useOptionsStore.getState().enableMusic,
+        musicEnabled: options.hydrated && options.enableMusic,
         wasPlaying: desiredPlaying.current,
         isActive,
       });
@@ -212,7 +220,7 @@ function NativeAudioServiceProvider({ children }: AudioServiceProviderProps) {
       return;
     }
 
-    if (!musicEnabled) {
+    if (!musicAllowed) {
       desiredPlaying.current = false;
       void ready.then(() => silenceNativeMusic());
       return;
@@ -232,7 +240,7 @@ function NativeAudioServiceProvider({ children }: AudioServiceProviderProps) {
       musicStarted.current = true;
       await startNativeMusic(loopMusic.current, musicOffset.current);
     });
-  }, [musicEnabled, ready]);
+  }, [musicAllowed, ready]);
 
   const playSound = (soundKey: SoundKey, offset = 0) => {
     if (!soundEnabled) return;
@@ -246,10 +254,10 @@ function NativeAudioServiceProvider({ children }: AudioServiceProviderProps) {
     activeMusic.current = musicKey;
     loopMusic.current = options?.loop ?? true;
     musicOffset.current = options?.offset ?? 0;
-    desiredPlaying.current = musicEnabled;
+    desiredPlaying.current = musicAllowed;
     musicStarted.current = false;
 
-    if (!musicEnabled || !appIsActive.current) return;
+    if (!musicAllowed || !appIsActive.current) return;
 
     void ready.then(async () => {
       if (!desiredPlaying.current || !appIsActive.current) return;
@@ -276,10 +284,13 @@ function NativeAudioServiceProvider({ children }: AudioServiceProviderProps) {
 function WebAudioServiceProvider({ children }: AudioServiceProviderProps) {
   const soundEnabled = useOptionsStore(selectEnableSound);
   const musicEnabled = useOptionsStore(selectEnableMusic);
+  const optionsHydrated = useOptionsStore(selectOptionsHydrated);
+  const musicAllowed = optionsHydrated && musicEnabled;
 
   const [soundPlayer, setSoundPlayer] = useState<AudioPlayer | null>(null);
   const [musicPlayer, setMusicPlayer] = useState<AudioPlayer | null>(null);
   const [loopMusic, setLoopMusic] = useState<boolean>(false);
+  const [activeMusic, setActiveMusic] = useState<MusicKey | null>(null);
 
   useEffect(() => {
     const _soundPlayer = createAudioPlayer();
@@ -305,14 +316,13 @@ function WebAudioServiceProvider({ children }: AudioServiceProviderProps) {
   }, []);
 
   useEffect(() => {
-    if (musicPlayer) {
-      if (musicEnabled) {
-        musicPlayer?.play();
-      } else {
-        musicPlayer?.pause();
-      }
+    if (!musicPlayer) return;
+    if (musicAllowed && activeMusic) {
+      musicPlayer.play();
+      return;
     }
-  }, [musicEnabled, musicPlayer]);
+    musicPlayer.pause();
+  }, [musicAllowed, musicPlayer, activeMusic]);
 
   const playSound = (soundKey: SoundKey, offset = 0) => {
     if (!soundPlayer) return;
@@ -333,12 +343,13 @@ function WebAudioServiceProvider({ children }: AudioServiceProviderProps) {
     const loop = _options?.loop ?? true;
 
     setLoopMusic(loop);
+    setActiveMusic(musicKey);
 
     const source = musicSources[musicKey];
     musicPlayer?.replace(source);
     musicPlayer?.seekTo(offset);
 
-    if (musicEnabled) {
+    if (musicAllowed) {
       musicPlayer?.play();
     }
   };
@@ -347,6 +358,7 @@ function WebAudioServiceProvider({ children }: AudioServiceProviderProps) {
     if (!musicPlayer) return;
 
     setLoopMusic(false);
+    setActiveMusic(null);
     musicPlayer.pause();
     return musicPlayer.currentTime;
   };

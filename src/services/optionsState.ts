@@ -11,18 +11,25 @@ type OptionsActions = {
   setEnableMusic(enableMusic: boolean): void;
 };
 
-type OptionsState = {
+type PersistedOptions = {
   autoReplay: boolean;
   enableSound: boolean;
   enableMusic: boolean;
 };
 
+type OptionsState = PersistedOptions & {
+  /** True after AsyncStorage load settles (or immediately when there is no window). Not persisted. */
+  hydrated: boolean;
+};
+
 // Load persisted options from AsyncStorage
-const loadPersistedOptions = async (): Promise<Partial<OptionsState>> => {
+const loadPersistedOptions = async (): Promise<Partial<PersistedOptions>> => {
   try {
     const storedData = await AsyncStorage.getItem(OPTIONS_STORAGE_KEY);
     if (storedData) {
-      return JSON.parse(storedData);
+      const parsed = JSON.parse(storedData) as Partial<PersistedOptions & { hydrated?: boolean }>;
+      const { hydrated: _ignored, ...persisted } = parsed;
+      return persisted;
     }
   } catch (error) {
     console.error('Failed to load persisted options:', error);
@@ -30,8 +37,8 @@ const loadPersistedOptions = async (): Promise<Partial<OptionsState>> => {
   return {};
 };
 
-// Save options to AsyncStorage
-const saveOptions = async (options: OptionsState): Promise<void> => {
+// Save options to AsyncStorage (never write the in-memory hydrated flag)
+const saveOptions = async (options: PersistedOptions): Promise<void> => {
   try {
     await AsyncStorage.setItem(OPTIONS_STORAGE_KEY, JSON.stringify(options));
   } catch (error) {
@@ -39,59 +46,44 @@ const saveOptions = async (options: OptionsState): Promise<void> => {
   }
 };
 
-// Default values for options
+const toPersisted = (state: OptionsState): PersistedOptions => ({
+  autoReplay: state.autoReplay,
+  enableSound: state.enableSound,
+  enableMusic: state.enableMusic,
+});
+
+// Default values for options. Browser starts unhydrated so music cannot blip
+// before AsyncStorage applies a saved music-off preference.
 const defaultOptions: OptionsState = {
   autoReplay: false,
   enableSound: true,
   enableMusic: true,
+  hydrated: typeof window === 'undefined',
 };
 
-// Initialize store with persisted values
-let initialOptions = defaultOptions;
-// Only load persisted options in browser environment (not during SSR)
-if (typeof window !== 'undefined') {
-  loadPersistedOptions().then((persisted) => {
-    const merged = { ...defaultOptions, ...persisted };
-    // Update the store after it's created
-    useOptionsStore.setState(merged);
-  });
+/** Apply AsyncStorage (or defaults) and mark the store hydrated. Safe to call more than once. */
+export async function hydrateOptionsStore(): Promise<void> {
+  const persisted = await loadPersistedOptions();
+  useOptionsStore.setState({ ...defaultOptions, ...persisted, hydrated: true });
 }
 
 export const useOptionsStore = create<OptionsState & OptionsActions>()(
   withZustandDevtools(
     (set, get) => ({
-      ...initialOptions,
+      ...defaultOptions,
 
       setAutoReplay(autoReplay: boolean) {
         set({ autoReplay });
-        // Persist after state update
-        const state = get();
-        saveOptions({
-          autoReplay: state.autoReplay,
-          enableSound: state.enableSound,
-          enableMusic: state.enableMusic,
-        });
+        saveOptions(toPersisted(get()));
       },
 
       setEnableSound(enableSound: boolean) {
         set({ enableSound });
-        // Persist after state update
-        const state = get();
-        saveOptions({
-          autoReplay: state.autoReplay,
-          enableSound: state.enableSound,
-          enableMusic: state.enableMusic,
-        });
+        saveOptions(toPersisted(get()));
       },
       setEnableMusic(enableMusic: boolean) {
         set({ enableMusic });
-        // Persist after state update
-        const state = get();
-        saveOptions({
-          autoReplay: state.autoReplay,
-          enableSound: state.enableSound,
-          enableMusic: state.enableMusic,
-        });
+        saveOptions(toPersisted(get()));
       },
     }),
     {
@@ -100,10 +92,16 @@ export const useOptionsStore = create<OptionsState & OptionsActions>()(
   )
 );
 
+// Only load persisted options in browser environment (not during SSR)
+if (typeof window !== 'undefined') {
+  void hydrateOptionsStore();
+}
+
 /** State Selectors */
 export const selectAutoReplay = (state: OptionsState) => state.autoReplay;
 export const selectEnableSound = (state: OptionsState) => state.enableSound;
 export const selectEnableMusic = (state: OptionsState) => state.enableMusic;
+export const selectOptionsHydrated = (state: OptionsState) => state.hydrated;
 
 /** Complex Selectors */
 

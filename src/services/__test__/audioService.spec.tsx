@@ -129,6 +129,7 @@ describe('AudioServiceProvider', () => {
       autoReplay: false,
       enableSound: true,
       enableMusic: true,
+      hydrated: true,
     });
   });
 
@@ -374,6 +375,193 @@ describe('AudioServiceProvider', () => {
     expect(mockedPause).not.toHaveBeenCalled();
     expect(mockedResume).not.toHaveBeenCalled();
     expect(mockedPlay).not.toHaveBeenCalled();
+  });
+
+
+  it('does not start native music before options hydrate when music will be off', async () => {
+    mockedIsNativeShell.mockReturnValue(true);
+    useOptionsStore.setState({
+      autoReplay: false,
+      enableSound: true,
+      enableMusic: true,
+      hydrated: false,
+    });
+
+    renderAudio();
+    await flush();
+
+    await act(async () => {
+      apiRef.current?.playMusic('setup', { loop: true });
+    });
+    await flush();
+
+    expect(mockedLoop).not.toHaveBeenCalled();
+    expect(mockedPlay).not.toHaveBeenCalled();
+
+    await act(async () => {
+      useOptionsStore.setState({ enableMusic: false, hydrated: true });
+    });
+    await flush();
+
+    expect(mockedLoop).not.toHaveBeenCalled();
+    expect(mockedPlay).not.toHaveBeenCalled();
+  });
+
+  it('starts native music after options hydrate when music stays on', async () => {
+    mockedIsNativeShell.mockReturnValue(true);
+    useOptionsStore.setState({
+      autoReplay: false,
+      enableSound: true,
+      enableMusic: true,
+      hydrated: false,
+    });
+
+    renderAudio();
+    await flush();
+
+    await act(async () => {
+      apiRef.current?.playMusic('setup', { loop: true });
+    });
+    await flush();
+
+    expect(mockedLoop).not.toHaveBeenCalled();
+
+    await act(async () => {
+      useOptionsStore.setState({ enableMusic: true, hydrated: true });
+    });
+    await flush();
+
+    expect(mockedLoop).toHaveBeenCalledWith({ assetId: 'music' });
+  });
+
+  it('does not start native music when options hydrate before preload finishes', async () => {
+    mockedIsNativeShell.mockReturnValue(true);
+    useOptionsStore.setState({
+      autoReplay: false,
+      enableSound: true,
+      enableMusic: true,
+      hydrated: false,
+    });
+    let releasePreload: () => void = () => {};
+    const pendingPreload = new Promise<void>((resolve) => {
+      releasePreload = () => resolve();
+    });
+    mockedPreload.mockImplementation(() => pendingPreload);
+
+    renderAudio();
+    await flush();
+
+    await act(async () => {
+      apiRef.current?.playMusic('setup', { loop: true });
+    });
+    await flush();
+
+    await act(async () => {
+      useOptionsStore.setState({ enableMusic: false, hydrated: true });
+    });
+    await flush();
+
+    await act(async () => {
+      releasePreload();
+    });
+    await flush();
+
+    expect(mockedLoop).not.toHaveBeenCalled();
+    expect(mockedPlay).not.toHaveBeenCalled();
+  });
+
+  it('does not start web music before options hydrate when music will be off', async () => {
+    mockedIsNativeShell.mockReturnValue(false);
+
+    const musicPlayer = {
+      addListener: jest.fn(),
+      play: jest.fn(),
+      pause: jest.fn(),
+      replace: jest.fn(),
+      seekTo: jest.fn(),
+      release: jest.fn(),
+    };
+    const soundPlayer = {
+      addListener: jest.fn(),
+      play: jest.fn(),
+      pause: jest.fn(),
+      replace: jest.fn(),
+      seekTo: jest.fn(),
+      release: jest.fn(),
+    };
+    (createAudioPlayer as jest.Mock).mockImplementationOnce(() => soundPlayer);
+    (createAudioPlayer as jest.Mock).mockImplementationOnce(() => musicPlayer);
+
+    useOptionsStore.setState({
+      autoReplay: false,
+      enableSound: true,
+      enableMusic: true,
+      hydrated: false,
+    });
+
+    renderAudio();
+    await flush();
+
+    await act(async () => {
+      apiRef.current?.playMusic('setup', { loop: true });
+    });
+    await flush();
+
+    expect(musicPlayer.play).not.toHaveBeenCalled();
+
+    await act(async () => {
+      useOptionsStore.setState({ enableMusic: false, hydrated: true });
+    });
+    await flush();
+
+    expect(musicPlayer.play).not.toHaveBeenCalled();
+  });
+
+  it('starts web music after options hydrate when music stays on', async () => {
+    mockedIsNativeShell.mockReturnValue(false);
+
+    const musicPlayer = {
+      addListener: jest.fn(),
+      play: jest.fn(),
+      pause: jest.fn(),
+      replace: jest.fn(),
+      seekTo: jest.fn(),
+      release: jest.fn(),
+    };
+    const soundPlayer = {
+      addListener: jest.fn(),
+      play: jest.fn(),
+      pause: jest.fn(),
+      replace: jest.fn(),
+      seekTo: jest.fn(),
+      release: jest.fn(),
+    };
+    (createAudioPlayer as jest.Mock).mockImplementationOnce(() => soundPlayer);
+    (createAudioPlayer as jest.Mock).mockImplementationOnce(() => musicPlayer);
+
+    useOptionsStore.setState({
+      autoReplay: false,
+      enableSound: true,
+      enableMusic: true,
+      hydrated: false,
+    });
+
+    renderAudio();
+    await flush();
+
+    await act(async () => {
+      apiRef.current?.playMusic('setup', { loop: true });
+    });
+    await flush();
+
+    expect(musicPlayer.play).not.toHaveBeenCalled();
+
+    await act(async () => {
+      useOptionsStore.setState({ enableMusic: true, hydrated: true });
+    });
+    await flush();
+
+    expect(musicPlayer.play).toHaveBeenCalled();
   });
 
   it('does not start music until native preload finishes', async () => {
