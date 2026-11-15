@@ -478,6 +478,75 @@ describe('AudioServiceProvider', () => {
     expect(mockedPlay).not.toHaveBeenCalled();
   });
 
+  it('on Android re-stops on foreground after stopMusic (resume-list race defense)', async () => {
+    mockedIsNativeShell.mockReturnValue(true);
+    mockedGetPlatform.mockReturnValue('android');
+
+    renderAudio();
+    await flush();
+
+    await act(async () => {
+      apiRef.current?.playMusic('setup', { loop: true });
+    });
+    await flush();
+    await act(async () => {
+      apiRef.current?.stopMusic();
+    });
+    await flush();
+    mockedStop.mockClear();
+    mockedPlay.mockClear();
+    mockedResume.mockClear();
+    mockedPause.mockClear();
+
+    await act(async () => {
+      onAppState({ isActive: false });
+      onAppState({ isActive: true });
+    });
+    await flush();
+
+    // Background silence + foreground noop both call stop — covers the case where
+    // the plugin's activity resume list briefly restarted the asset before JS ran.
+    expect(mockedStop).toHaveBeenCalledWith({ assetId: 'music' });
+    expect(mockedStop.mock.calls.length).toBeGreaterThanOrEqual(2);
+    expect(mockedPlay).not.toHaveBeenCalled();
+    expect(mockedResume).not.toHaveBeenCalled();
+    expect(mockedPause).not.toHaveBeenCalled();
+  });
+
+  it('on Android continues music via play after background when music should keep playing', async () => {
+    mockedIsNativeShell.mockReturnValue(true);
+    mockedGetPlatform.mockReturnValue('android');
+    mockedIsPlaying.mockImplementation(() => Promise.resolve({ isPlaying: false }));
+
+    renderAudio();
+    await flush();
+
+    await act(async () => {
+      apiRef.current?.playMusic('setup', { loop: true });
+    });
+    await flush();
+    mockedPlay.mockClear();
+    mockedStop.mockClear();
+    mockedLoop.mockClear();
+    mockedResume.mockClear();
+    mockedPause.mockClear();
+
+    await act(async () => {
+      onAppState({ isActive: false });
+    });
+    await flush();
+    expect(mockedStop).toHaveBeenCalledWith({ assetId: 'music' });
+    expect(mockedPause).not.toHaveBeenCalled();
+
+    await act(async () => {
+      onAppState({ isActive: true });
+    });
+    await flush();
+
+    expect(mockedPlay).toHaveBeenCalledWith({ assetId: 'music', time: 0 });
+    expect(mockedResume).not.toHaveBeenCalled();
+  });
+
 
   it('does not start native music before options hydrate when music will be off', async () => {
     mockedIsNativeShell.mockReturnValue(true);
