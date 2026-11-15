@@ -48,15 +48,18 @@ describe('multiplayer docs', () => {
   });
 
   it('includes Worker deploy steps in both deploy-app skill copies (no new Worker Actions)', () => {
-    for (const rel of [
-      '.agents/skills/deploy-app/SKILL.md',
-      '.claude/skills/deploy-app/SKILL.md',
+    for (const base of [
+      '.agents/skills/deploy-app',
+      '.claude/skills/deploy-app',
     ]) {
-      const skill = read(rel);
+      const skill = read(`${base}/SKILL.md`);
       expect(skill).toMatch(/wrangler deploy/);
       expect(skill).toMatch(/tictacdoh-multiplayer|workers\/multiplayer/);
-      expect(skill).toMatch(/EXPO_PUBLIC_MULTIPLAYER_URL/);
       expect(skill).not.toMatch(/\.github\/workflows\/.*multiplayer/);
+
+      // Env bake details live in the multiplayer-worker subskill, not the router.
+      const worker = read(`${base}/references/multiplayer-worker.md`);
+      expect(worker).toMatch(/EXPO_PUBLIC_MULTIPLAYER_URL/);
     }
   });
 });
