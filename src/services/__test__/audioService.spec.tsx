@@ -144,6 +144,107 @@ describe('AudioServiceProvider', () => {
     expect(mockedAddListener).not.toHaveBeenCalled();
   });
 
+  it('restarts web setup music on didJustFinish when loop was enabled after mount', async () => {
+    mockedIsNativeShell.mockReturnValue(false);
+
+    let onPlaybackStatus: ((status: {
+      isLoaded: boolean;
+      didJustFinish: boolean;
+    }) => void) | null = null;
+    const musicPlayer = {
+      addListener: jest.fn((_event: string, listener: typeof onPlaybackStatus) => {
+        onPlaybackStatus = listener;
+      }),
+      play: jest.fn(),
+      pause: jest.fn(),
+      replace: jest.fn(),
+      seekTo: jest.fn(),
+      release: jest.fn(),
+    };
+    const soundPlayer = {
+      addListener: jest.fn(),
+      play: jest.fn(),
+      pause: jest.fn(),
+      replace: jest.fn(),
+      seekTo: jest.fn(),
+      release: jest.fn(),
+    };
+    (createAudioPlayer as jest.Mock).mockImplementationOnce(() => soundPlayer);
+    (createAudioPlayer as jest.Mock).mockImplementationOnce(() => musicPlayer);
+
+    renderAudio();
+    await flush();
+
+    expect(onPlaybackStatus).not.toBeNull();
+
+    await act(async () => {
+      apiRef.current?.playMusic('setup', { loop: true });
+    });
+    await flush();
+
+    musicPlayer.seekTo.mockClear();
+    musicPlayer.play.mockClear();
+
+    await act(async () => {
+      onPlaybackStatus?.({ isLoaded: true, didJustFinish: true });
+    });
+
+    expect(musicPlayer.seekTo).toHaveBeenCalledWith(0);
+    expect(musicPlayer.play).toHaveBeenCalled();
+  });
+
+  it('does not restart web music on didJustFinish after stopMusic', async () => {
+    mockedIsNativeShell.mockReturnValue(false);
+
+    let onPlaybackStatus: ((status: {
+      isLoaded: boolean;
+      didJustFinish: boolean;
+    }) => void) | null = null;
+    const musicPlayer = {
+      addListener: jest.fn((_event: string, listener: typeof onPlaybackStatus) => {
+        onPlaybackStatus = listener;
+      }),
+      play: jest.fn(),
+      pause: jest.fn(),
+      replace: jest.fn(),
+      seekTo: jest.fn(),
+      release: jest.fn(),
+    };
+    const soundPlayer = {
+      addListener: jest.fn(),
+      play: jest.fn(),
+      pause: jest.fn(),
+      replace: jest.fn(),
+      seekTo: jest.fn(),
+      release: jest.fn(),
+    };
+    (createAudioPlayer as jest.Mock).mockImplementationOnce(() => soundPlayer);
+    (createAudioPlayer as jest.Mock).mockImplementationOnce(() => musicPlayer);
+
+    renderAudio();
+    await flush();
+
+    await act(async () => {
+      apiRef.current?.playMusic('setup', { loop: true });
+    });
+    await flush();
+
+    await act(async () => {
+      apiRef.current?.stopMusic();
+    });
+    await flush();
+
+    musicPlayer.seekTo.mockClear();
+    musicPlayer.play.mockClear();
+
+    await act(async () => {
+      onPlaybackStatus?.({ isLoaded: true, didJustFinish: true });
+    });
+
+    expect(musicPlayer.seekTo).not.toHaveBeenCalled();
+    expect(musicPlayer.play).not.toHaveBeenCalled();
+  });
+
   it('preloads bundled sound names once and uses an ambient session on iOS', async () => {
     mockedIsNativeShell.mockReturnValue(true);
 

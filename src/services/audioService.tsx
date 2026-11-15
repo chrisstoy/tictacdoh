@@ -289,7 +289,9 @@ function WebAudioServiceProvider({ children }: AudioServiceProviderProps) {
 
   const [soundPlayer, setSoundPlayer] = useState<AudioPlayer | null>(null);
   const [musicPlayer, setMusicPlayer] = useState<AudioPlayer | null>(null);
-  const [loopMusic, setLoopMusic] = useState<boolean>(false);
+  // Ref (not state): the playbackStatusUpdate listener is registered once with
+  // empty deps and must read the current loop flag, not the mount-time value.
+  const loopMusic = useRef(false);
   const [activeMusic, setActiveMusic] = useState<MusicKey | null>(null);
 
   useEffect(() => {
@@ -300,7 +302,7 @@ function WebAudioServiceProvider({ children }: AudioServiceProviderProps) {
     setMusicPlayer(_musicPlayer);
 
     _musicPlayer?.addListener('playbackStatusUpdate', (status) => {
-      if (status.isLoaded && status.didJustFinish && loopMusic) {
+      if (status.isLoaded && status.didJustFinish && loopMusic.current) {
         _musicPlayer?.seekTo(0);
         _musicPlayer.play();
       }
@@ -342,7 +344,7 @@ function WebAudioServiceProvider({ children }: AudioServiceProviderProps) {
     const offset = _options?.offset ?? 0;
     const loop = _options?.loop ?? true;
 
-    setLoopMusic(loop);
+    loopMusic.current = loop;
     setActiveMusic(musicKey);
 
     const source = musicSources[musicKey];
@@ -357,7 +359,7 @@ function WebAudioServiceProvider({ children }: AudioServiceProviderProps) {
   const stopMusic = () => {
     if (!musicPlayer) return;
 
-    setLoopMusic(false);
+    loopMusic.current = false;
     setActiveMusic(null);
     musicPlayer.pause();
     return musicPlayer.currentTime;
