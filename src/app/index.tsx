@@ -15,14 +15,21 @@ import { useFrameMaxWidth } from '@/services/useFrameMaxWidth';
 
 type ActiveMode = 'TITLE' | 'PLAY' | 'NEW' | 'OPTIONS' | 'LOBBY';
 
+function wantsMenuMusic(mode: ActiveMode): boolean {
+  return mode === 'TITLE' || mode === 'NEW' || mode === 'OPTIONS' || mode === 'LOBBY';
+}
+
 export default function Index() {
   const { playMusic, stopMusic } = useAudioService();
   const [gameMode, setGameMode] = useState<ActiveMode>('TITLE');
   const maxWidth = useFrameMaxWidth();
   const joiningDeepLink = useRef(false);
+  const menuMusicWanted = wantsMenuMusic(gameMode);
 
+  // Depend on menuMusicWanted (not gameMode) so TITLE↔NEW↔OPTIONS↔LOBBY keep
+  // the same looping setup track without stopMusic cleanup + playMusic restart.
   useEffect(() => {
-    if (gameMode === 'TITLE' || gameMode === 'NEW' || gameMode === 'OPTIONS' || gameMode === 'LOBBY') {
+    if (menuMusicWanted) {
       playMusic('setup', { loop: true });
     } else {
       stopMusic();
@@ -31,7 +38,7 @@ export default function Index() {
     return () => {
       stopMusic();
     };
-  }, [gameMode, playMusic, stopMusic]);
+  }, [menuMusicWanted, playMusic, stopMusic]);
 
   useEffect(() => {
     let stop: (() => void) | undefined;
