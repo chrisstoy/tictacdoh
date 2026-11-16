@@ -11,6 +11,9 @@ import { PlayerId } from '@/types';
 
 const TITLE_FILL = '#f06c1c';
 const TITLE_OUTLINE = '#582008';
+/** Mark glyph size and clear air below it before the Wins pill (pt). */
+const MARK_SIZE = 40;
+const MARK_TO_WINS_GAP = 36;
 
 interface Props extends React.ComponentProps<typeof View> {
   player: PlayerId;
@@ -25,11 +28,12 @@ export function Player({ player, className, ...rest }: Props) {
 
   return (
     <View
-      className={`${className} p-2 flex-1 ${isPlayersTurn ? 'bg-highlight border-border border-solid border-2 rounded-xl' : ''}`}
+      className={`${className} p-2 flex-1 justify-center ${isPlayersTurn ? 'bg-highlight border-border border-solid border-2 rounded-xl' : ''}`}
       {...rest}
     >
       <View
         className="flex-none items-center justify-center"
+        style={localSeat ? undefined : { height: 44, width: '100%', marginBottom: 8 }}
         testID={
           localSeat ? (isLocalPlayer ? `local-player-${player}` : `remote-player-${player}`) : undefined
         }
@@ -40,7 +44,13 @@ export function Player({ player, className, ...rest }: Props) {
             className="text-center"
             outlineColor={TITLE_OUTLINE}
             outlineWidth={1}
-            style={{ fontFamily: 'PoppinsBlack', color: TITLE_FILL, fontSize: 20, lineHeight: 26 }}
+            style={{
+              fontFamily: 'PoppinsBlack',
+              color: TITLE_FILL,
+              fontSize: 20,
+              lineHeight: 26,
+              marginBottom: 8,
+            }}
           >
             {isLocalPlayer ? 'Local' : 'Remote'}
           </OutlineText>
@@ -50,12 +60,20 @@ export function Player({ player, className, ...rest }: Props) {
           <MeatbagImage />
         )}
       </View>
-      <View className="flex-1 mt-1 min-h-0">
-        {player === 'X' && <XImage></XImage>}
-        {player === 'O' && <OImage></OImage>}
+
+      <View
+        testID={`player-mark-${player}`}
+        className="w-full flex-none items-center justify-center"
+        style={{ height: MARK_SIZE }}
+      >
+        {/* Fixed size — width/height 100% was overflowing the scoreboard and eating the Wins gap. */}
+        {player === 'X' && <XImage size={MARK_SIZE} />}
+        {player === 'O' && <OImage size={MARK_SIZE} />}
       </View>
 
-      <View className="flex-none items-center justify-center pt-3">
+      <View testID={`player-mark-wins-gap-${player}`} style={{ height: MARK_TO_WINS_GAP }} />
+
+      <View className="flex-none items-center justify-center">
         {/* <TextWithBackground className="text-white text-xs px-">{`Wins: ${wins}`}</TextWithBackground> */}
         <Text className="text-xs color-white text-background px-2">{`Wins: ${wins}`}</Text>
       </View>

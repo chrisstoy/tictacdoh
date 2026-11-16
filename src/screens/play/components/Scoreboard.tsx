@@ -10,13 +10,13 @@ interface Props {
 export function Scoreboard({ currentRound, roundsInMatch }: Props) {
   return (
     <View className="flex-1 flex justify-center">
-      <View className="h-1/4 flex items-center my-4">
+      <View className="flex-none items-center mb-2">
         <TextWithBackground className="text-white text-2xl px-4">
           Round: {currentRound} / {roundsInMatch === -1 ? '∞' : roundsInMatch}
         </TextWithBackground>
       </View>
 
-      <View className="flex flex-row flex-1">
+      <View className="flex flex-row flex-1 min-h-0">
         <View className="h-full flex-1 flex-row justify-evenly">
           <Player className="w-1/3" player={'X'}></Player>
           <Player className="w-1/3" player={'O'}></Player>
