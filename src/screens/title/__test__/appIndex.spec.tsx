@@ -45,11 +45,11 @@ jest.mock('@/screens/setup/SetupGameScreen', () => {
     SetupGameScreen: ({
       onStartGame,
       onOptions,
-      onEnterLobby,
+      onPlayOnline,
     }: {
       onStartGame: () => void;
       onOptions?: () => void;
-      onEnterLobby?: () => void;
+      onPlayOnline?: () => void;
     }) => (
       <View>
         <Pressable accessibilityLabel="Start match" onPress={onStartGame}>
@@ -60,9 +60,9 @@ jest.mock('@/screens/setup/SetupGameScreen', () => {
             <Text>open options</Text>
           </Pressable>
         ) : null}
-        {onEnterLobby ? (
-          <Pressable accessibilityLabel="Enter lobby" onPress={onEnterLobby}>
-            <Text>enter lobby</Text>
+        {onPlayOnline ? (
+          <Pressable accessibilityLabel="Play Online" onPress={onPlayOnline}>
+            <Text>play online</Text>
           </Pressable>
         ) : null}
       </View>
@@ -90,6 +90,30 @@ jest.mock('@/screens/options/OptionsScreen', () => {
       <Pressable accessibilityLabel="Exit options" onPress={onExit}>
         <Text>options screen</Text>
       </Pressable>
+    ),
+  };
+});
+
+jest.mock('@/screens/online/OnlinePlayScreen', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { Pressable, Text, View } = require('react-native');
+  return {
+    OnlinePlayScreen: ({
+      onEnterLobby,
+      onBack,
+    }: {
+      onEnterLobby: () => void;
+      onBack: () => void;
+    }) => (
+      <View>
+        <Text>online screen</Text>
+        <Pressable accessibilityLabel="Enter lobby" onPress={onEnterLobby}>
+          <Text>enter lobby</Text>
+        </Pressable>
+        <Pressable accessibilityLabel="Back" onPress={onBack}>
+          <Text>back</Text>
+        </Pressable>
+      </View>
     ),
   };
 });
@@ -176,7 +200,7 @@ describe('Index', () => {
     expect(playMusic).toHaveBeenCalledTimes(1);
   });
 
-  it('does not stop or restart setup music when entering the lobby from setup', () => {
+  it('does not stop or restart setup music when opening Play Online and the lobby', () => {
     const playMusic = useAudioService().playMusic as jest.Mock;
     const stopMusic = useAudioService().stopMusic as jest.Mock;
     const view = render(<Index />);
@@ -184,6 +208,11 @@ describe('Index', () => {
     fireEvent.press(view.getByLabelText('Play'));
     playMusic.mockClear();
     stopMusic.mockClear();
+
+    fireEvent.press(view.getByLabelText('Play Online'));
+    expect(view.getByText('online screen')).toBeTruthy();
+    expect(stopMusic).not.toHaveBeenCalled();
+    expect(playMusic).not.toHaveBeenCalled();
 
     fireEvent.press(view.getByLabelText('Enter lobby'));
     expect(view.getByText('lobby screen')).toBeTruthy();
@@ -206,10 +235,13 @@ describe('Index', () => {
     expect(useAudioService().playMusic).toHaveBeenLastCalledWith('setup', { loop: true });
   });
 
-  it('routes setup → lobby → play and lobby cancel back to setup', () => {
+  it('routes Play Online → lobby → play, and lobby cancel returns to Play Online', () => {
     const view = render(<Index />);
 
     fireEvent.press(view.getByLabelText('Play'));
+    fireEvent.press(view.getByLabelText('Play Online'));
+    expect(view.getByText('online screen')).toBeTruthy();
+
     fireEvent.press(view.getByLabelText('Enter lobby'));
     expect(view.getByText('lobby screen')).toBeTruthy();
     expect(useAudioService().playMusic).toHaveBeenLastCalledWith('setup', { loop: true });
@@ -219,8 +251,12 @@ describe('Index', () => {
     expect(useAudioService().stopMusic).toHaveBeenCalled();
 
     fireEvent.press(view.getByLabelText('Quit match'));
+    fireEvent.press(view.getByLabelText('Play Online'));
     fireEvent.press(view.getByLabelText('Enter lobby'));
     fireEvent.press(view.getByLabelText('Leave lobby'));
+    expect(view.getByText('online screen')).toBeTruthy();
+
+    fireEvent.press(view.getByLabelText('Back'));
     expect(view.getByText('setup screen')).toBeTruthy();
   });
 

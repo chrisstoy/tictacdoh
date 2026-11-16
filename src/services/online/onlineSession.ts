@@ -13,6 +13,23 @@ import { OnlineWsClient, type WsFactory } from './wsClient';
 let wsClient = new OnlineWsClient();
 let pendingInviteUrl: string | undefined;
 
+const GAME_UNAVAILABLE = 'The game is not available';
+
+type JoinWaiter = {
+  resolve: () => void;
+  reject: (error: Error) => void;
+};
+
+let pendingGuestJoin: JoinWaiter | null = null;
+
+function settleGuestJoin(error?: Error): void {
+  const waiter = pendingGuestJoin;
+  if (!waiter) return;
+  pendingGuestJoin = null;
+  if (error) waiter.reject(error);
+  else waiter.resolve();
+}
+
 /** Test seam — swap WebSocket factory / reset singleton client. */
 export function __setOnlineWsFactoryForTests(factory?: WsFactory): void {
   wsClient.close();
@@ -37,6 +54,7 @@ function handleServerMessage(msg: ServerMessage): void {
         inviteUrl: pendingInviteUrl,
       });
       applySyncToLocalStores(msg.snapshot);
+      settleGuestJoin();
       break;
     }
     case 'sync': {
@@ -50,12 +68,14 @@ function handleServerMessage(msg: ServerMessage): void {
     }
     case 'error': {
       store.applyError(msg.message);
+      settleGuestJoin(new Error(GAME_UNAVAILABLE));
       break;
     }
     case 'roomClosed': {
       void clearOnlineReconnectCreds();
       store.applyRoomClosed(msg.reason);
       wsClient.close();
+      settleGuestJoin(new Error(GAME_UNAVAILABLE));
       break;
     }
   }
@@ -116,10 +136,38 @@ export async function createOnlineSession(roundsInMatch: number): Promise<{
 }
 
 export async function joinOnlineSession(code: string): Promise<void> {
-  await connectAndJoin({
-    code,
-    status: 'connecting',
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const result = new Promise<void>((resolve, reject) => {
+    timer = setTimeout(() => {
+      pendingGuestJoin = null;
+      reject(new Error('Timed out waiting for the room'));
+    }, 5000);
+    pendingGuestJoin = {
+      resolve: () => {
+        clearTimeout(timer);
+        resolve();
+      },
+      reject: (error) => {
+        clearTimeout(timer);
+        reject(error);
+      },
+    };
   });
+
+  try {
+    await connectAndJoin({
+      code,
+      status: 'connecting',
+    });
+    await result;
+  } catch (error) {
+    clearTimeout(timer);
+    pendingGuestJoin = null;
+    wsClient.close();
+    await clearOnlineReconnectCreds();
+    useOnlineSessionStore.getState().reset();
+    throw error;
+  }
 }
 
 export async function reconnectOnlineSession(): Promise<boolean> {

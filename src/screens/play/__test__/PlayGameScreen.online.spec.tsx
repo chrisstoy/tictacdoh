@@ -1,4 +1,6 @@
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
+import { Platform } from 'react-native';
+import { useMatchStore } from '@/services/matchState';
 import {
   leaveOnlineSession,
   sendMove,
@@ -8,7 +10,6 @@ import {
 } from '@/services/online';
 import { applySyncToLocalStores } from '@/services/online/applySync';
 import type { RoomSnapshot } from '@/services/online/protocol';
-import { useMatchStore } from '@/services/matchState';
 import { useRoundStore } from '@/services/roundState';
 import { PlayGameScreen } from '../PlayGameScreen';
 
@@ -87,6 +88,8 @@ function enterOnlinePlay(seat: 'X' | 'O' = 'X', snap: RoomSnapshot = snapshot())
 }
 
 describe('PlayGameScreen online', () => {
+  const originalOS = Platform.OS;
+
   beforeEach(() => {
     mockedSendMove.mockClear();
     mockedSendNextRound.mockClear();
@@ -95,12 +98,24 @@ describe('PlayGameScreen online', () => {
     useOnlineSessionStore.getState().reset();
     useMatchStore.getState().initNewMatch();
     useRoundStore.getState().initNewRound();
+    Platform.OS = originalOS;
   });
 
   it('sends move on my turn when PLAYING and applies opponent move via sync', () => {
+    Platform.OS = 'web';
     enterOnlinePlay('X');
     const onExitGame = jest.fn();
     const view = render(<PlayGameScreen onExitGame={onExitGame} />);
+
+    expect(view.getByTestId('local-player-X')).toBeTruthy();
+    expect(view.getByTestId('remote-player-O')).toBeTruthy();
+    expect(view.queryByText('You')).toBeNull();
+    const localStyle = JSON.stringify(view.getByText('Local').props.style);
+    const remoteStyle = JSON.stringify(view.getByText('Remote').props.style);
+    expect(localStyle).toContain('PoppinsBlack');
+    expect(localStyle).toContain('#f06c1c');
+    expect(remoteStyle).toContain('2px #582008');
+    expect(remoteStyle).toContain('stroke fill');
 
     fireEvent.press(view.getByTestId('tile-4'));
     expect(mockedSendMove).toHaveBeenCalledWith(4);
@@ -129,6 +144,9 @@ describe('PlayGameScreen online', () => {
       })
     );
     const view = render(<PlayGameScreen onExitGame={jest.fn()} />);
+
+    expect(view.getByTestId('local-player-O')).toBeTruthy();
+    expect(view.getByTestId('remote-player-X')).toBeTruthy();
 
     fireEvent.press(view.getByTestId('tile-0'));
     expect(mockedSendMove).not.toHaveBeenCalled();
@@ -169,32 +187,34 @@ describe('PlayGameScreen online', () => {
     });
   });
 
-  it('shows opponent disconnected overlay and clears on reconnect', () => {
-    const deadline = Date.now() + 30_000;
-    enterOnlinePlay(
-      'X',
-      snapshot({
-        guestConnected: false,
-        reclaimDeadlineMs: deadline,
-      })
-    );
-    useOnlineSessionStore.setState({
-      status: 'disconnected',
-      guestConnected: false,
-      reclaimDeadlineMs: deadline,
-    });
-
-    const view = render(<PlayGameScreen onExitGame={jest.fn()} />);
-    expect(view.getByTestId('opponent-disconnected-overlay')).toBeTruthy();
-    expect(view.getByText(/Opponent disconnected/i)).toBeTruthy();
+  it('shows player disconnected and ends the match when the opponent leaves', async () => {
+    enterOnlinePlay('X');
+    const onExitGame = jest.fn();
+    const view = render(<PlayGameScreen onExitGame={onExitGame} />);
 
     act(() => {
-      const reconnected = snapshot({ guestConnected: true, reclaimDeadlineMs: null });
-      useOnlineSessionStore.getState().applySync(reconnected);
-      applySyncToLocalStores(reconnected);
+      const ended = snapshot({
+        phase: 'MATCH_OVER',
+        matchWinner: 'X',
+        guestConnected: false,
+        forfeitedBy: 'O',
+      });
+      useOnlineSessionStore.getState().applySync(ended);
+      applySyncToLocalStores(ended);
     });
 
-    expect(view.queryByTestId('opponent-disconnected-overlay')).toBeNull();
+    expect(view.getByTestId('player-disconnected-overlay')).toBeTruthy();
+    const message = view.getByText('Player disconnected');
+    expect(JSON.stringify(message.props.style)).toContain('Komigo');
+    expect(view.getByLabelText('Quit game')).toBeTruthy();
+    expect(useMatchStore.getState().playMode).toBe('MATCH_OVER');
+    expect(useMatchStore.getState().winner).toBe('X');
+
+    fireEvent.press(view.getByLabelText('Quit game'));
+    await waitFor(() => {
+      expect(mockedLeave).toHaveBeenCalled();
+      expect(onExitGame).toHaveBeenCalled();
+    });
   });
 
   it('does not run CPU moves in an online match', () => {

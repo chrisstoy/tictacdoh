@@ -186,11 +186,10 @@ describe('onlineSession', () => {
   });
 
   it('joinOnlineSession connects without host token and maps sync', async () => {
-    await joinOnlineSession('abcd12');
+    const pending = joinOnlineSession('abcd12');
     await flush();
     const ws = MockWebSocket.instances[0]!;
     expect(ws.url).toContain('/rooms/ABCD12/ws');
-    await flush();
     expect(ws.sent.some((s) => JSON.parse(s).type === 'join' && !JSON.parse(s).token)).toBe(true);
 
     ws.emit({
@@ -199,6 +198,7 @@ describe('onlineSession', () => {
       token: 'guest-tok',
       snapshot: snapshot({ guestConnected: true, phase: 'PLAYING' }),
     });
+    await pending;
     await flush();
 
     ws.emit({
@@ -218,8 +218,19 @@ describe('onlineSession', () => {
     expect(useMatchStore.getState().playMode).toBe('PLAYING');
   });
 
+  it('rejects a join when the room is missing or no longer waiting', async () => {
+    const pending = joinOnlineSession('ABCD12');
+    await flush();
+    const ws = MockWebSocket.instances[0]!;
+    ws.emit({ type: 'error', message: 'The game is not available' });
+
+    await expect(pending).rejects.toThrow('The game is not available');
+    expect(useOnlineSessionStore.getState().status).toBe('idle');
+    expect(useOnlineSessionStore.getState().seat).toBeUndefined();
+  });
+
   it('sendMove / nextRound / rematch / leave talk to the socket', async () => {
-    await joinOnlineSession('ABCD12');
+    const pending = joinOnlineSession('ABCD12');
     await flush();
     const ws = MockWebSocket.instances[0]!;
     ws.readyState = MockWebSocket.OPEN;
@@ -229,7 +240,7 @@ describe('onlineSession', () => {
       token: 'guest-tok',
       snapshot: snapshot({ phase: 'PLAYING', guestConnected: true }),
     });
-    await flush();
+    await pending;
 
     sendMove(4);
     sendNextRound();

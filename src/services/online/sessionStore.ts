@@ -144,11 +144,16 @@ export const selectIsOnlineMatchActive = (s: SessionState) =>
   (s.status === 'connected' || s.status === 'disconnected' || s.status === 'reconnecting');
 
 export function selectIsOpponentDisconnected(s: SessionState): boolean {
-  if (!selectIsOnlineMatchActive(s) || s.reclaimDeadlineMs == null || s.seat == null) {
+  if (s.seat == null) return false;
+  if (s.status !== 'connected' && s.status !== 'disconnected' && s.status !== 'reconnecting') {
     return false;
   }
-  if (s.seat === 'X') return !s.guestConnected;
-  return !s.hostConnected;
+  const opponentConnected = s.seat === 'X' ? s.guestConnected : s.hostConnected;
+  if (opponentConnected) return false;
+  const forfeitedBy = s.lastSnapshot?.forfeitedBy;
+  if (forfeitedBy != null && forfeitedBy !== s.seat) return true;
+  const phase = s.lastSnapshot?.phase;
+  return phase === 'PLAYING' || phase === 'ROUND_OVER' || phase === 'MATCH_OVER';
 }
 
 export const useOnlineSessionActions = () =>

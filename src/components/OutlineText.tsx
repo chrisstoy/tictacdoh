@@ -22,10 +22,14 @@ export function OutlineText({
         style={[
           style,
           {
-            // @ts-ignore - WebkitTextStroke is not in RN types but works on web
-            WebkitTextStroke: `${outlineWidth}px ${outlineColor}`,
+            // Stroke is centered on the path. Paint it behind the fill and use
+            // twice the width so the visible outer edge is outlineWidth.
+            // @ts-ignore - web-only stroke properties
+            WebkitTextStroke: `${outlineWidth * 2}px ${outlineColor}`,
             // @ts-ignore
-            textStroke: `${outlineWidth}px ${outlineColor}`,
+            textStroke: `${outlineWidth * 2}px ${outlineColor}`,
+            // @ts-ignore
+            paintOrder: 'stroke fill',
           },
         ]}
       >
@@ -53,6 +57,9 @@ export function OutlineText({
         <RNText
           key={index}
           {...props}
+          accessible={false}
+          accessibilityElementsHidden
+          importantForAccessibility="no"
           className={className}
           style={[
             style,

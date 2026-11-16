@@ -1,41 +1,29 @@
-import { useEffect, useState } from 'react';
-import { Text, View } from 'react-native';
+import { Modal, Text, View } from 'react-native';
+import { PushButton } from '@/components/PushButton';
+import { TextWithBackground } from '@/components/TextWithBackground';
 
 type Props = {
-  reclaimDeadlineMs: number | null;
+  onQuit: () => void;
 };
 
-function secondsLeft(deadlineMs: number | null): number | null {
-  if (deadlineMs == null) return null;
-  return Math.max(0, Math.ceil((deadlineMs - Date.now()) / 1000));
-}
-
-export function OpponentDisconnectedOverlay({ reclaimDeadlineMs }: Props) {
-  const [remaining, setRemaining] = useState(() => secondsLeft(reclaimDeadlineMs));
-
-  useEffect(() => {
-    setRemaining(secondsLeft(reclaimDeadlineMs));
-    if (reclaimDeadlineMs == null) return;
-    const id = setInterval(() => {
-      setRemaining(secondsLeft(reclaimDeadlineMs));
-    }, 250);
-    return () => clearInterval(id);
-  }, [reclaimDeadlineMs]);
-
+export function OpponentDisconnectedOverlay({ onQuit }: Props) {
   return (
-    <View
-      className="absolute top-0 left-0 right-0 bottom-0 items-center justify-center bg-black/60 px-4 z-50"
-      testID="opponent-disconnected-overlay"
-      pointerEvents="box-none"
-    >
-      <Text className="text-text text-xl text-center" testID="opponent-disconnected-message">
-        Opponent disconnected…
-      </Text>
-      {remaining != null ? (
-        <Text className="text-text text-lg text-center mt-2" testID="opponent-disconnected-countdown">
-          {remaining}s
+    <Modal transparent visible animationType="none" statusBarTranslucent>
+      <View
+        className="flex-1 items-center justify-center bg-black/60 px-6 gap-8"
+        testID="player-disconnected-overlay"
+      >
+        <Text
+          className="text-4xl text-center"
+          style={{ fontFamily: 'Komigo', color: '#fdde97' }}
+          testID="player-disconnected-message"
+        >
+          Player disconnected
         </Text>
-      ) : null}
-    </View>
+        <PushButton className="h-14 w-2/3" accessibilityLabel="Quit game" onPress={onQuit}>
+          <TextWithBackground className="text-text text-2xl">Quit Game</TextWithBackground>
+        </PushButton>
+      </View>
+    </Modal>
   );
 }

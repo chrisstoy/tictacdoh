@@ -1,9 +1,8 @@
 import { SELF, env, runInDurableObject } from 'cloudflare:test';
-import { describe, expect, it } from 'vitest';
-
+import { describe, expect, it, vi } from 'vitest';
 import type { GameRoom } from '../src/GameRoom';
 import type { ClientMessage, ServerMessage } from '../src/protocol';
-import { IDLE_TTL_MS, RECLAIM_MS } from '../src/protocol';
+import { IDLE_TTL_MS } from '../src/protocol';
 
 type CreateRoomResponse = {
   code: string;
@@ -38,16 +37,9 @@ function send(ws: WebSocket, msg: ClientMessage): void {
   ws.send(JSON.stringify(msg));
 }
 
-function nextMessage(
-  ws: WebSocket,
-  timeoutMs = 3000,
-  label = 'message'
-): Promise<ServerMessage> {
+function nextMessage(ws: WebSocket, timeoutMs = 3000, label = 'message'): Promise<ServerMessage> {
   return new Promise((resolve, reject) => {
-    const timer = setTimeout(
-      () => reject(new Error(`timeout waiting for WS ${label}`)),
-      timeoutMs
-    );
+    const timer = setTimeout(() => reject(new Error(`timeout waiting for WS ${label}`)), timeoutMs);
     const onMessage = (event: MessageEvent) => {
       clearTimeout(timer);
       ws.removeEventListener('message', onMessage);
@@ -226,58 +218,82 @@ describe('GameRoom websocket protocol', () => {
       const a = nextMessage(host.ws);
       const b = nextMessage(guest.ws);
       send(host.ws, { type: 'quit' });
-      expect((await a).type).toBe('roomClosed');
-      expect((await b).type).toBe('roomClosed');
+      const quitHost = await a;
+      const quitGuest = await b;
+      expect(quitHost.type).toBe('sync');
+      expect(quitGuest.type).toBe('sync');
+      if (quitGuest.type === 'sync') {
+        expect(quitGuest.snapshot.phase).toBe('MATCH_OVER');
+        expect(quitGuest.snapshot.forfeitedBy).toBe('X');
+        expect(quitGuest.snapshot.matchWinner).toBe('O');
+        expect(quitGuest.snapshot.hostConnected).toBe(false);
+      }
     }
   });
 
-  it('disconnect starts reclaim; reconnect with token; timeout forfeits', async () => {
+  it('tells a guest the game is not available when the room is missing or not waiting', async () => {
+    const missing = await openWs('ZZZZZZ');
+    const missingReply = nextMessage(missing, 3000, 'missing room');
+    send(missing, { type: 'join' });
+    const missingMsg = await missingReply;
+    expect(missingMsg.type).toBe('roomClosed');
+
+    const room = await createRoom(3);
+    const host = await joinAsHost(room.code, room.hostToken);
+    const hostSync = nextMessage(host.ws, 3000, 'guest joined');
+    await joinAsGuest(room.code);
+    await hostSync;
+
+    const late = await openWs(room.code);
+    const lateReply = nextMessage(late, 3000, 'late guest');
+    send(late, { type: 'join' });
+    const lateMsg = await lateReply;
+    expect(lateMsg).toEqual({ type: 'error', message: 'The game is not available' });
+  });
+
+  it('disconnect before the guest joins can still be reclaimed', async () => {
+    const room = await createRoom(3);
+    const host = await joinAsHost(room.code, room.hostToken);
+    host.ws.close(1000, 'refresh');
+
+    const id = env.GAME_ROOM.idFromName(room.code);
+    const stub = env.GAME_ROOM.get(id);
+    await vi.waitFor(async () => {
+      const pending = await runInDurableObject(stub, (instance: GameRoom) =>
+        instance.hasPendingReclaim()
+      );
+      expect(pending).toBe(true);
+    });
+
+    const again = await openWs(room.code);
+    const pending = nextMessage(again, 3000, 'host reclaim welcome');
+    send(again, { type: 'join', token: room.hostToken });
+    const welcome = await pending;
+    expect(welcome.type).toBe('welcome');
+    if (welcome.type === 'welcome') {
+      expect(welcome.seat).toBe('X');
+      expect(welcome.snapshot.phase).toBe('WAITING');
+      expect(welcome.snapshot.hostConnected).toBe(true);
+      expect(welcome.snapshot.reclaimDeadlineMs).toBeNull();
+    }
+  });
+
+  it('disconnect during a match ends it immediately', async () => {
     const room = await createRoom(3);
     const host = await joinAsHost(room.code, room.hostToken);
     const hostSync = nextMessage(host.ws);
     const guest = await joinAsGuest(room.code);
     await hostSync;
-    const guestToken = guest.welcome.token;
 
-    const disconnectNotice = nextMessage(host.ws);
-    guest.ws.close(1000, 'temp');
-    const notice = await disconnectNotice;
-    expect(notice.type).toBe('disconnect');
-    if (notice.type === 'disconnect') {
-      expect(notice.seat).toBe('O');
-      expect(notice.reclaimMs).toBe(RECLAIM_MS);
-    }
-
-    const hostRejoinSync = nextMessage(host.ws, 3000, 'guest rejoin sync');
-    const rejoin = await openWs(room.code);
-    const welcomePending = nextMessage(rejoin, 3000, 'guest rejoin welcome');
-    send(rejoin, { type: 'join', token: guestToken });
-    const welcome = await welcomePending;
-    expect(welcome.type).toBe('welcome');
-    if (welcome.type === 'welcome') {
-      expect(welcome.seat).toBe('O');
-      expect(welcome.snapshot.guestConnected).toBe(true);
-      expect(welcome.snapshot.reclaimDeadlineMs).toBeNull();
-    }
-    expect((await hostRejoinSync).type).toBe('sync');
-
-    const disc2 = nextMessage(host.ws, 3000, 'second disconnect');
-    rejoin.close(1000, 'gone');
-    expect((await disc2).type).toBe('disconnect');
-
-    const id = env.GAME_ROOM.idFromName(room.code);
-    const stub = env.GAME_ROOM.get(id);
-
-    const forfeitSync = nextMessage(host.ws, 3000, 'forfeit sync');
-    await runInDurableObject(stub, async (instance: GameRoom) => {
-      await instance.runDueAlarms(Date.now() + RECLAIM_MS + 1);
-    });
-    const sync = await forfeitSync;
+    const left = nextMessage(host.ws, 3000, 'guest left');
+    guest.ws.close(1000, 'left');
+    const sync = await left;
     expect(sync.type).toBe('sync');
     if (sync.type === 'sync') {
       expect(sync.snapshot.phase).toBe('MATCH_OVER');
       expect(sync.snapshot.forfeitedBy).toBe('O');
       expect(sync.snapshot.matchWinner).toBe('X');
+      expect(sync.snapshot.guestConnected).toBe(false);
     }
 
     host.ws.close(1000, 'done');

@@ -18,6 +18,8 @@ describe('OutlineText', () => {
       </OutlineText>
     );
 
-    expect(JSON.stringify(view.getByText('PLAY').props.style)).toContain('3px #51200b');
+    const style = JSON.stringify(view.getByText('PLAY').props.style);
+    expect(style).toContain('6px #51200b');
+    expect(style).toContain('stroke fill');
   });
 });

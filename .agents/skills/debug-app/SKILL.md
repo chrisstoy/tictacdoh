@@ -18,7 +18,8 @@ your tool provides.
 
 ## Run it with the lights on
 
-- `npm run web` is the fastest loop (browser DevTools).
+- `npm run web` is the fastest loop (browser DevTools). Play Online stays hidden unless `EXPO_PUBLIC_MULTIPLAYER_URL` is set.
+- `npm run web:multiplayer` is the online loop: local Worker at `http://127.0.0.1:8787` plus Expo web at `http://localhost:8081`. Play → Play Online → Create Game in one tab, then open the join link (or Join Game with the code) in a second tab. Each tab keeps its own seat in `sessionStorage`. The scoreboard labels that seat “You”. In dev, the Redux DevTools extension shows the `online-session` store along with match/round/options. Worker logs stay in the terminal that started the script.
 - Capacitor shell: `npm run build:native && npm run cap:sync`, then `npx cap run ios` or `npx cap run android` to launch a simulator or emulator. `npm run cap:ios` and `npm run cap:android` open Xcode and Android Studio. There is no Expo dev client and no `npm run ios` / `npm run android`.
 - Webview logs: for the iOS simulator, Safari → Develop → Simulator → the app's webview. For Android, open `chrome://inspect` and select the webview. Xcode and `adb logcat` show native logs, including `Native audio preload failed` when a copied mp3 is missing.
 - Native audio plays only in that Capacitor shell. iOS uses an ambient session, so the hardware silent switch mutes the game.
@@ -30,6 +31,7 @@ your tool provides.
 
 - No error-tracking service (no Sentry/Datadog dependency); evidence is the browser console, the webview inspector, Xcode, or `adb logcat`. Metro logs apply to `npm run web` / `npm start` only.
 - Persisted options: AsyncStorage key `@tic-tac-doh:options` (browser: localStorage; clear it to reset options). Load/save failures are logged via `console.error`.
+- Online reconnect creds: key `@tic-tac-doh:online-session`. Browser: `sessionStorage` (per tab). Native shell: AsyncStorage. Clear the tab’s session storage to drop a stuck web seat.
 - Service worker state: DevTools → Application → Service Workers / Cache Storage.
 - Deploy logs: GitHub Actions run for `Build and Deploy to Pages`.
 
@@ -41,10 +43,13 @@ your tool provides.
 - **Native shell has no sound:** rebuild with `npm run build:native && npm run cap:sync` and run `npx cap run ios` or `npx cap run android`. Playback uses `ios/App/App/sounds` and `android/app/src/main/assets/sounds`, not the web bundle URL.
 - **CPU hangs/odd moves:** logic in `src/services/game.ts` (`pickMove`, `solveBoard`); covered by `src/services/__test__/game.spec.ts`. Play-state flow bugs: see the PlayMode machine in `design/game-state.md` and `matchState.spec.ts`.
 - **Round recorded after match is won:** `recordRound` warns "Cannot record round: match already has a winner".
+- **Play Online missing on web:** `EXPO_PUBLIC_MULTIPLAYER_URL` is unset. Use `npm run web:multiplayer`, or export the Worker base URL before `npm run web`.
+- **Create room fails from Expo web (CORS):** the page Origin must be loopback (`http://localhost:8081` or `http://127.0.0.1:<port>`). A LAN IP is not allowlisted.
+- **Second tab steals the first seat:** both tabs shared one reconnect token. Web seats are per-tab `sessionStorage`; a hard reload of one tab reclaims only that tab.
 
 ## Reproducing against real dependencies
 
-No external services or backend; everything runs client-side. Reproduce on the real target platform (device/simulator, or the built `dist/` PWA) rather than only in Jest, since audio, reanimated, and service worker behavior don't exist under `jest-expo`.
+Offline modes run client-side. Online multiplayer needs the Worker: `npm run web:multiplayer` for two browser tabs against local `wrangler dev`, or a deployed Worker URL baked into the client. Reproduce on the real target platform (browser, device/simulator, or the built `dist/` PWA) rather than only in Jest, since audio, reanimated, service worker, and WebSocket behavior don't exist under `jest-expo`.
 
 Prefer reproducing against real local infrastructure over mocks. A bug that only
 reproduces against a mock is usually a bug in the mock.

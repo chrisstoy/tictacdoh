@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, Text, TextInput, View } from 'react-native';
-import { useAudioService } from '@/services/audioService';
+import { ActivityIndicator, Text, TextInput, View } from 'react-native';
+import { PushButton } from '@/components/PushButton';
+import { TextWithBackground } from '@/components/TextWithBackground';
 import { selectRoundsInMatch, useMatchStore } from '@/services/matchState';
 import { createOnlineSession, joinOnlineSession } from '@/services/online';
 import { isValidJoinCode, normalizeJoinCode } from '@/services/online/joinCode';
@@ -20,19 +21,15 @@ function OnlineTextButton({
   onPress: () => void;
   testID?: string;
 }) {
-  const { playSound } = useAudioService();
   return (
-    <Pressable
+    <PushButton
       accessibilityLabel={accessibilityLabel ?? label}
       testID={testID}
-      className="flex-1 mx-1 h-11 rounded-xl border-2 border-border bg-highlight items-center justify-center"
-      onPress={() => {
-        playSound('push');
-        onPress();
-      }}
+      className="h-14 w-2/3"
+      onPress={onPress}
     >
-      <Text className="text-background text-base font-bold text-center">{label}</Text>
-    </Pressable>
+      <TextWithBackground className="text-text text-2xl">{label}</TextWithBackground>
+    </PushButton>
   );
 }
 
@@ -73,10 +70,10 @@ export function OnlineSetupPanel({ onEnterLobby }: Props) {
   return (
     <View className="w-full px-3" testID="online-setup-panel">
       {!showJoin ? (
-        <View className="flex-row justify-center">
-          <OnlineTextButton label="Online Create" onPress={handleCreate} testID="online-create" />
+        <View className="items-center gap-3">
+          <OnlineTextButton label="Create Game" onPress={handleCreate} testID="online-create" />
           <OnlineTextButton
-            label="Online Join"
+            label="Join Game"
             onPress={() => {
               setShowJoin(true);
               setError(undefined);
@@ -85,7 +82,7 @@ export function OnlineSetupPanel({ onEnterLobby }: Props) {
           />
         </View>
       ) : (
-        <View className="gap-2">
+        <View className="gap-3">
           <TextInput
             accessibilityLabel="Room code"
             autoCapitalize="characters"
@@ -95,9 +92,10 @@ export function OnlineSetupPanel({ onEnterLobby }: Props) {
             onChangeText={setJoinCode}
             placeholder="Room code"
             className="border-2 border-border rounded-md px-3 py-2 text-center text-text text-xl bg-background"
+            style={{ fontFamily: 'Komigo' }}
             editable={!busy}
           />
-          <View className="flex-row justify-center">
+          <View className="items-center gap-3">
             <OnlineTextButton
               label="Join"
               accessibilityLabel="Join room"

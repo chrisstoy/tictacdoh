@@ -6,19 +6,33 @@ export function resolveWebJoinBase(envValue: string | undefined): string {
   return raw.replace(/\/+$/, '');
 }
 
+/** Production invite pages try the native app. Local Expo links stay in the browser. */
+export function shouldAutoOpenNativeApp(webJoinBase: string): boolean {
+  try {
+    const url = new URL(webJoinBase);
+    const host = url.hostname.replace(/^\[|\]$/g, '');
+    return host !== 'localhost' && host !== '127.0.0.1' && host !== '::1';
+  } catch {
+    return true;
+  }
+}
+
 export function webJoinUrl(code: string, webJoinBase: string = DEFAULT_WEB_JOIN_BASE): string {
   const safeCode = code.replace(/[^A-Z0-9]/gi, '').toUpperCase();
   const base = resolveWebJoinBase(webJoinBase);
   return `${base}/?join=${encodeURIComponent(safeCode)}`;
 }
 
-export function joinLandingHtml(
-  code: string,
-  webJoinBase: string = DEFAULT_WEB_JOIN_BASE
-): string {
+export function joinLandingHtml(code: string, webJoinBase: string = DEFAULT_WEB_JOIN_BASE): string {
   const safeCode = code.replace(/[^A-Z0-9]/gi, '').toUpperCase();
   const deepLink = `tictacdoh://join/${encodeURIComponent(safeCode)}`;
   const browserLink = webJoinUrl(safeCode, webJoinBase);
+  const autoOpen = shouldAutoOpenNativeApp(webJoinBase)
+    ? `<script>
+    // Prefer the native app when installed; browser link remains for web/PWA.
+    setTimeout(function () { location.href = ${JSON.stringify(deepLink)}; }, 50);
+  </script>`
+    : '';
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -42,10 +56,7 @@ export function joinLandingHtml(
     <p><a id="open-browser" href="${browserLink}">Open in browser</a></p>
     <p>If the app did not open, use Open in browser or type the code in the game.</p>
   </main>
-  <script>
-    // Prefer the native app when installed; browser link remains for web/PWA.
-    setTimeout(function () { location.href = ${JSON.stringify(deepLink)}; }, 50);
-  </script>
+  ${autoOpen}
 </body>
 </html>`;
 }

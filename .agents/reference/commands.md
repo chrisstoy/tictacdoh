@@ -11,7 +11,8 @@ All via npm (`package-lock.json`). No monorepo tooling. `npm install` / `npm ci`
 
 ```bash
 npm start              # Expo dev server (platform menu)
-npm run web            # Browser
+npm run web            # Browser (Online stays hidden unless EXPO_PUBLIC_MULTIPLAYER_URL is set)
+npm run web:multiplayer  # Local Worker :8787 + Expo web :8081 with Online enabled
 ```
 
 ## Tests

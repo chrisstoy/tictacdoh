@@ -62,19 +62,19 @@ export function OnlineLobbyScreen({ onReadyToPlay, onLeave }: Props) {
       </View>
 
       <View className="flex-1 items-center justify-center gap-4 px-4">
-        <Text className="text-text text-xl text-center">Room code</Text>
+        <Text className="ui-text text-xl text-center">Room code</Text>
         <Text
-          className="text-text text-4xl text-center tracking-widest"
+          className="ui-text text-4xl text-center tracking-widest"
           testID="lobby-room-code"
           accessibilityLabel={`Room code ${roomCode ?? ''}`}
         >
           {roomCode ?? '————'}
         </Text>
-        <Text className="text-text text-lg text-center" testID="lobby-waiting">
+        <Text className="ui-text text-lg text-center" testID="lobby-waiting">
           {waitingLabel}
         </Text>
         {lastError ? (
-          <Text className="text-highlight text-center" testID="lobby-error">
+          <Text className="ui-text text-highlight text-center" testID="lobby-error">
             {lastError}
           </Text>
         ) : null}
