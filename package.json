@@ -16,6 +16,7 @@
     "generate:manifest": "node scripts/generate-manifest.js",
     "generate:sw": "node scripts/generate-sw.js",
     "web": "expo start --web",
+    "web:multiplayer": "node scripts/web-multiplayer.js",
     "lint": "expo lint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

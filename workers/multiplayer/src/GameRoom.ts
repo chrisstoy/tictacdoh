@@ -1,5 +1,4 @@
 import { DurableObject } from 'cloudflare:workers';
-
 import {
   applyMove,
   determineWinner,
@@ -11,10 +10,10 @@ import {
 } from '../../../shared/gameRules';
 import type { PlayerId, TileState, Winner } from '../../../shared/types';
 import {
-  IDLE_TTL_MS,
-  RECLAIM_MS,
   type ClientMessage,
+  IDLE_TTL_MS,
   type PlayPhase,
+  RECLAIM_MS,
   type RoomSnapshot,
   type ServerMessage,
   parseClientMessage,
@@ -139,7 +138,12 @@ export class GameRoom extends DurableObject {
     await this.dispatch(ws, parsed);
   }
 
-  async webSocketClose(ws: WebSocket, code: number, reason: string, _wasClean: boolean): Promise<void> {
+  async webSocketClose(
+    ws: WebSocket,
+    code: number,
+    reason: string,
+    _wasClean: boolean
+  ): Promise<void> {
     await this.handleDisconnect(ws);
     try {
       ws.close(code, reason);
@@ -170,12 +174,16 @@ export class GameRoom extends DurableObject {
     }
 
     if (now - this.room.lastActivityMs >= IDLE_TTL_MS) {
-      const connected =
-        (this.room.host?.connected ? 1 : 0) + (this.room.guest?.connected ? 1 : 0);
+      const connected = (this.room.host?.connected ? 1 : 0) + (this.room.guest?.connected ? 1 : 0);
       if (connected < 2) {
         await this.closeRoom('idle timeout');
       }
     }
+  }
+
+  /** Test seam: true after a lobby disconnect arms the reclaim timer. */
+  async hasPendingReclaim(): Promise<boolean> {
+    return this.room?.reclaimDeadlineMs != null;
   }
 
   private async dispatch(ws: WebSocket, msg: ClientMessage): Promise<void> {
@@ -240,9 +248,9 @@ export class GameRoom extends DurableObject {
         this.room.reclaimDeadlineMs = null;
       }
     } else {
-      // New guest join
-      if (this.room.guest) {
-        this.send(ws, { type: 'error', message: 'Guest seat taken' });
+      // A typed code can only sit down while the host is still waiting for an opponent.
+      if (this.room.phase !== 'WAITING' || this.room.guest) {
+        this.send(ws, { type: 'error', message: 'The game is not available' });
         return;
       }
       assignedToken = newToken();
@@ -349,9 +357,30 @@ export class GameRoom extends DurableObject {
     this.broadcastAll({ type: 'sync', snapshot: this.snapshot() });
   }
 
+  private markSeatDisconnected(seat: PlayerId): void {
+    if (!this.room) return;
+    if (seat === 'X' && this.room.host) {
+      this.room.host.connected = false;
+    }
+    if (seat === 'O' && this.room.guest) {
+      this.room.guest.connected = false;
+    }
+  }
+
+  /** A started match ends as soon as a seat quits or drops. The lobby still reclaims. */
+  private matchInProgress(): boolean {
+    return this.room?.phase === 'PLAYING' || this.room?.phase === 'ROUND_OVER';
+  }
+
   private async handleQuit(ws: WebSocket): Promise<void> {
-    if (!this.seatForWs(ws) || !this.room) {
+    const seat = this.seatForWs(ws);
+    if (!seat || !this.room) {
       this.send(ws, { type: 'error', message: 'Not joined' });
+      return;
+    }
+    if (this.matchInProgress()) {
+      this.markSeatDisconnected(seat);
+      await this.forfeit(seat, 'quit');
       return;
     }
     await this.closeRoom('quit');
@@ -362,11 +391,18 @@ export class GameRoom extends DurableObject {
     const seat = this.seatForWs(ws);
     if (!seat) return;
 
-    if (seat === 'X' && this.room.host) {
-      this.room.host.connected = false;
+    this.markSeatDisconnected(seat);
+
+    if (this.matchInProgress()) {
+      await this.forfeit(seat, 'disconnect');
+      return;
     }
-    if (seat === 'O' && this.room.guest) {
-      this.room.guest.connected = false;
+
+    if (this.room.phase === 'MATCH_OVER') {
+      this.touch();
+      await this.persist();
+      this.broadcastExcept(ws, { type: 'sync', snapshot: this.snapshot() });
+      return;
     }
 
     this.room.reclaimSeat = seat;
@@ -492,4 +528,3 @@ export class GameRoom extends DurableObject {
     }
   }
 }
-

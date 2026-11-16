@@ -1,5 +1,4 @@
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
-import { createOnlineSession, joinOnlineSession } from '@/services/online';
+import { fireEvent, render } from '@testing-library/react-native';
 import { isOnlineSetupAvailable } from '@/services/online/onlineSetupGate';
 import { SetupGameScreen } from '../SetupGameScreen';
 
@@ -35,86 +34,34 @@ jest.mock('@/services/online/onlineSetupGate', () => ({
   isOnlineSetupAvailable: jest.fn(() => false),
 }));
 
-jest.mock('@/services/online', () => {
-  const actual = jest.requireActual('@/services/online');
-  return {
-    ...actual,
-    createOnlineSession: jest.fn(),
-    joinOnlineSession: jest.fn(),
-  };
-});
-
 const mockedGate = isOnlineSetupAvailable as jest.Mock;
-const mockedCreate = createOnlineSession as jest.Mock;
-const mockedJoin = joinOnlineSession as jest.Mock;
 
 describe('SetupGameScreen online entry', () => {
   beforeEach(() => {
     mockedGate.mockReturnValue(false);
-    mockedCreate.mockReset();
-    mockedJoin.mockReset();
   });
 
-  it('hides Online Create/Join when online setup is unavailable', () => {
+  it('hides Play Online when online setup is unavailable', () => {
     const view = render(
-      <SetupGameScreen onStartGame={jest.fn()} onOptions={jest.fn()} onEnterLobby={jest.fn()} />
+      <SetupGameScreen onStartGame={jest.fn()} onOptions={jest.fn()} onPlayOnline={jest.fn()} />
     );
 
-    expect(view.queryByLabelText('Online Create')).toBeNull();
-    expect(view.queryByLabelText('Online Join')).toBeNull();
-    expect(view.queryByTestId('online-setup-panel')).toBeNull();
+    expect(view.queryByLabelText('Play Online')).toBeNull();
+    expect(view.queryByLabelText('Create Game')).toBeNull();
+    expect(view.queryByLabelText('Join Game')).toBeNull();
   });
 
-  it('shows Online Create/Join when available and create enters lobby', async () => {
+  it('shows Play Online and leaves create/join off this screen', () => {
     mockedGate.mockReturnValue(true);
-    mockedCreate.mockResolvedValue({ code: 'ABCD12', inviteUrl: 'https://mp.example/join/ABCD12' });
-    const onEnterLobby = jest.fn();
+    const onPlayOnline = jest.fn();
 
     const view = render(
-      <SetupGameScreen onStartGame={jest.fn()} onOptions={jest.fn()} onEnterLobby={onEnterLobby} />
+      <SetupGameScreen onStartGame={jest.fn()} onOptions={jest.fn()} onPlayOnline={onPlayOnline} />
     );
 
-    expect(view.getByLabelText('Online Create')).toBeTruthy();
-    expect(view.getByLabelText('Online Join')).toBeTruthy();
-
-    fireEvent.press(view.getByLabelText('Online Create'));
-
-    await waitFor(() => {
-      expect(mockedCreate).toHaveBeenCalled();
-      expect(onEnterLobby).toHaveBeenCalledTimes(1);
-    });
-  });
-
-  it('join flow validates code then enters lobby', async () => {
-    mockedGate.mockReturnValue(true);
-    mockedJoin.mockResolvedValue(undefined);
-    const onEnterLobby = jest.fn();
-
-    const view = render(
-      <SetupGameScreen onStartGame={jest.fn()} onOptions={jest.fn()} onEnterLobby={onEnterLobby} />
-    );
-
-    fireEvent.press(view.getByLabelText('Online Join'));
-    fireEvent.changeText(view.getByLabelText('Room code'), 'ab12cd');
-    fireEvent.press(view.getByLabelText('Join room'));
-
-    await waitFor(() => {
-      expect(mockedJoin).toHaveBeenCalledWith('AB12CD');
-      expect(onEnterLobby).toHaveBeenCalledTimes(1);
-    });
-  });
-
-  it('shows an error when join code is invalid', () => {
-    mockedGate.mockReturnValue(true);
-    const view = render(
-      <SetupGameScreen onStartGame={jest.fn()} onOptions={jest.fn()} onEnterLobby={jest.fn()} />
-    );
-
-    fireEvent.press(view.getByLabelText('Online Join'));
-    fireEvent.changeText(view.getByLabelText('Room code'), 'ab');
-    fireEvent.press(view.getByLabelText('Join room'));
-
-    expect(mockedJoin).not.toHaveBeenCalled();
-    expect(view.getByText(/valid 6-character/i)).toBeTruthy();
+    expect(view.queryByLabelText('Create Game')).toBeNull();
+    expect(view.queryByLabelText('Join Game')).toBeNull();
+    fireEvent.press(view.getByLabelText('Play Online'));
+    expect(onPlayOnline).toHaveBeenCalledTimes(1);
   });
 });

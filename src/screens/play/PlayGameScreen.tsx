@@ -21,7 +21,6 @@ import {
   leaveOnlineSession,
   selectIsOnlineMatchActive,
   selectIsOpponentDisconnected,
-  selectOnlineReclaimDeadlineMs,
   selectOnlineSeat,
   sendMove,
   sendNextRound,
@@ -75,7 +74,6 @@ export function PlayGameScreen({ onExitGame }: Props) {
   const isOnlineMatch = useOnlineSessionStore(selectIsOnlineMatchActive);
   const onlineSeat = useOnlineSessionStore(selectOnlineSeat);
   const opponentDisconnected = useOnlineSessionStore(selectIsOpponentDisconnected);
-  const reclaimDeadlineMs = useOnlineSessionStore(selectOnlineReclaimDeadlineMs);
 
   const [aiMoving, setAIMoving] = useState(false);
   const [isDelaying, setIsDelaying] = useState(false);
@@ -272,49 +270,61 @@ export function PlayGameScreen({ onExitGame }: Props) {
 
       <View className="flex-1"></View>
 
-      <View className="flex-none m-2">
-        <View className="flex flex-row justify-center gap-16">
-          {playMode === 'ROUND_OVER' && (
-            <>
-              <PushButton
-                className="h-16 w-1/3"
-                accessibilityLabel="Next round"
-                onPress={handleNextRound}
-              >
-                <NextRoundImage></NextRoundImage>
-              </PushButton>
-              <PushButton className="h-16 w-1/3" accessibilityLabel="Quit game" onPress={handleQuit}>
-                <QuitGameImage></QuitGameImage>
-              </PushButton>
-            </>
-          )}
-          {playMode === 'MATCH_OVER' && (
-            <>
-              <PushButton
-                className="h-16 w-1/3"
-                accessibilityLabel="Play again"
-                onPress={handlePlayAgain}
-              >
-                <NewMatchImage></NewMatchImage>
-              </PushButton>
-              <PushButton className="h-16 w-1/3" accessibilityLabel="Quit game" onPress={handleQuit}>
-                <QuitGameImage></QuitGameImage>
-              </PushButton>
-            </>
-          )}
-          {playMode === 'PLAYING' && (
-            <>
-              <PushButton className="h-16 w-1/3" accessibilityLabel="Quit game" onPress={handleQuit}>
-                <QuitGameImage></QuitGameImage>
-              </PushButton>
-            </>
-          )}
+      {!opponentDisconnected ? (
+        <View className="flex-none m-2">
+          <View className="flex flex-row justify-center gap-16">
+            {playMode === 'ROUND_OVER' && (
+              <>
+                <PushButton
+                  className="h-16 w-1/3"
+                  accessibilityLabel="Next round"
+                  onPress={handleNextRound}
+                >
+                  <NextRoundImage></NextRoundImage>
+                </PushButton>
+                <PushButton
+                  className="h-16 w-1/3"
+                  accessibilityLabel="Quit game"
+                  onPress={handleQuit}
+                >
+                  <QuitGameImage></QuitGameImage>
+                </PushButton>
+              </>
+            )}
+            {playMode === 'MATCH_OVER' && (
+              <>
+                <PushButton
+                  className="h-16 w-1/3"
+                  accessibilityLabel="Play again"
+                  onPress={handlePlayAgain}
+                >
+                  <NewMatchImage></NewMatchImage>
+                </PushButton>
+                <PushButton
+                  className="h-16 w-1/3"
+                  accessibilityLabel="Quit game"
+                  onPress={handleQuit}
+                >
+                  <QuitGameImage></QuitGameImage>
+                </PushButton>
+              </>
+            )}
+            {playMode === 'PLAYING' && (
+              <>
+                <PushButton
+                  className="h-16 w-1/3"
+                  accessibilityLabel="Quit game"
+                  onPress={handleQuit}
+                >
+                  <QuitGameImage></QuitGameImage>
+                </PushButton>
+              </>
+            )}
+          </View>
         </View>
-      </View>
-
-      {opponentDisconnected ? (
-        <OpponentDisconnectedOverlay reclaimDeadlineMs={reclaimDeadlineMs} />
       ) : null}
+
+      {opponentDisconnected ? <OpponentDisconnectedOverlay onQuit={handleQuit} /> : null}
     </View>
   );
 }

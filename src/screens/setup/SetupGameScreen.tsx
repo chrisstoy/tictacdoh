@@ -1,26 +1,27 @@
 import { View } from 'react-native';
 import { JiggleButton } from '@/components/JiggleButton';
+import { PushButton } from '@/components/PushButton';
+import { TextWithBackground } from '@/components/TextWithBackground';
 import { ChoosePlayersImage } from '@/components/images/ChoosePlayersImage';
 import { GearImage } from '@/components/images/GearImage';
 import { StartGameImage } from '@/components/images/StartGameImage';
 import { TitleImage } from '@/components/images/TitleImage';
 import { selectIsPlayerCPU, useMatchActions, useMatchStore } from '@/services/matchState';
 import { isOnlineSetupAvailable } from '@/services/online/onlineSetupGate';
-import { OnlineSetupPanel } from './components/OnlineSetupPanel';
 import { PlayerChoice } from './components/PlayerChoice';
 import { RoundsInMatch } from './components/RoundsInMatch';
 
 interface Props {
   onStartGame: () => void;
   onOptions: () => void;
-  onEnterLobby?: () => void;
+  onPlayOnline?: () => void;
 }
 
-export function SetupGameScreen({ onStartGame, onOptions, onEnterLobby }: Props) {
+export function SetupGameScreen({ onStartGame, onOptions, onPlayOnline }: Props) {
   const { setPlayerIsCPU, setPlayMode } = useMatchActions();
   const isPlayerXCPU = useMatchStore(selectIsPlayerCPU('X'));
   const isPlayerOCPU = useMatchStore(selectIsPlayerCPU('O'));
-  const showOnline = isOnlineSetupAvailable() && typeof onEnterLobby === 'function';
+  const showOnline = isOnlineSetupAvailable() && typeof onPlayOnline === 'function';
 
   return (
     <View className="h-max flex-1 flex-col">
@@ -61,9 +62,15 @@ export function SetupGameScreen({ onStartGame, onOptions, onEnterLobby }: Props)
         <RoundsInMatch className="flex flex-1 items-center"></RoundsInMatch>
       </View>
 
-      {showOnline && onEnterLobby ? (
-        <View className="flex-[0.1] justify-center">
-          <OnlineSetupPanel onEnterLobby={onEnterLobby} />
+      {showOnline && onPlayOnline ? (
+        <View className="flex-[0.1] justify-center items-center">
+          <PushButton
+            className="h-12 w-2/3"
+            accessibilityLabel="Play Online"
+            onPress={onPlayOnline}
+          >
+            <TextWithBackground className="text-text text-xl">Play Online</TextWithBackground>
+          </PushButton>
         </View>
       ) : null}
 

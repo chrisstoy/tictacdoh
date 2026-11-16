@@ -33,6 +33,9 @@ describe('multiplayer docs', () => {
     expect(arch).toMatch(/ADR 0004|0004/);
     expect(arch).toMatch(/0005|web\/PWA/);
     expect(arch).toMatch(/\?join=/);
+    expect(arch).toMatch(/web:multiplayer/);
+    expect(arch).toMatch(/sessionStorage/);
+    expect(arch).toMatch(/localhost:8081/);
   });
 
   it('documents wrangler deploy, Pages env, CORS, and join dual-path in deployment.md', () => {
@@ -48,10 +51,7 @@ describe('multiplayer docs', () => {
   });
 
   it('includes Worker deploy steps in both deploy-app skill copies (no new Worker Actions)', () => {
-    for (const base of [
-      '.agents/skills/deploy-app',
-      '.claude/skills/deploy-app',
-    ]) {
+    for (const base of ['.agents/skills/deploy-app', '.claude/skills/deploy-app']) {
       const skill = read(`${base}/SKILL.md`);
       expect(skill).toMatch(/wrangler deploy/);
       expect(skill).toMatch(/tictacdoh-multiplayer|workers\/multiplayer/);

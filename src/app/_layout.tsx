@@ -11,8 +11,8 @@ import './globals.css';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const [loaded, error] = useFonts({
-    // TODO - add fonts here
     Komigo: require('@/assets/fonts/komigo-font/Komigo3DRegular-rg1lK.ttf'),
+    PoppinsBlack: require('@/assets/fonts/poppins/Poppins-Black.ttf'),
   });
 
   useEffect(() => {

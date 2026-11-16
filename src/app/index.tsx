@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
 import { OnlineLobbyScreen } from '@/screens/lobby/OnlineLobbyScreen';
+import { OnlinePlayScreen } from '@/screens/online/OnlinePlayScreen';
 import { OptionsScreen } from '@/screens/options/OptionsScreen';
 import { PlayGameScreen } from '@/screens/play/PlayGameScreen';
 import { SetupGameScreen } from '@/screens/setup/SetupGameScreen';
@@ -13,10 +14,16 @@ import { useOnlineSessionStore } from '@/services/online/sessionStore';
 import { consumeWebJoinQuery } from '@/services/online/webJoinListener';
 import { useFrameMaxWidth } from '@/services/useFrameMaxWidth';
 
-type ActiveMode = 'TITLE' | 'PLAY' | 'NEW' | 'OPTIONS' | 'LOBBY';
+type ActiveMode = 'TITLE' | 'PLAY' | 'NEW' | 'OPTIONS' | 'ONLINE' | 'LOBBY';
 
 function wantsMenuMusic(mode: ActiveMode): boolean {
-  return mode === 'TITLE' || mode === 'NEW' || mode === 'OPTIONS' || mode === 'LOBBY';
+  return (
+    mode === 'TITLE' ||
+    mode === 'NEW' ||
+    mode === 'OPTIONS' ||
+    mode === 'ONLINE' ||
+    mode === 'LOBBY'
+  );
 }
 
 export default function Index() {
@@ -108,10 +115,23 @@ export default function Index() {
                 setGameMode('PLAY');
               }}
               onOptions={() => setGameMode('OPTIONS')}
-              onEnterLobby={() => setGameMode('LOBBY')}
+              onPlayOnline={() => setGameMode('ONLINE')}
             ></SetupGameScreen>
           </Animated.View>
         </View>
+      )}
+      {gameMode === 'ONLINE' && (
+        <Animated.View
+          entering={FadeIn}
+          exiting={FadeOut}
+          layout={FadingTransition.duration(100)}
+          style={{ flex: 1 }}
+        >
+          <OnlinePlayScreen
+            onEnterLobby={() => setGameMode('LOBBY')}
+            onBack={() => setGameMode('NEW')}
+          />
+        </Animated.View>
       )}
       {gameMode === 'LOBBY' && (
         <Animated.View
@@ -122,7 +142,7 @@ export default function Index() {
         >
           <OnlineLobbyScreen
             onReadyToPlay={() => setGameMode('PLAY')}
-            onLeave={() => setGameMode('NEW')}
+            onLeave={() => setGameMode('ONLINE')}
           />
         </Animated.View>
       )}

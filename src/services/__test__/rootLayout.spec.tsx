@@ -5,6 +5,7 @@ import RootLayout from '../../app/_layout';
 
 jest.mock('../../app/globals.css', () => ({}));
 jest.mock('@/assets/fonts/komigo-font/Komigo3DRegular-rg1lK.ttf', () => 1);
+jest.mock('@/assets/fonts/poppins/Poppins-Black.ttf', () => 2);
 jest.mock('react-native-safe-area-context', () => {
   const { View } = jest.requireActual('react-native');
   return { SafeAreaProvider: View, SafeAreaView: View };
@@ -32,6 +33,17 @@ describe('RootLayout', () => {
   // The static export prerenders the full tree (expo-font reports loaded on the
   // server). Returning null while the font loads makes the first client render
   // differ from that HTML: React error #418 on hydration.
+  it('loads Komigo and Poppins Black', () => {
+    render(<RootLayout>{null}</RootLayout>);
+
+    expect(mockedUseFonts).toHaveBeenCalledWith(
+      expect.objectContaining({
+        Komigo: expect.anything(),
+        PoppinsBlack: expect.anything(),
+      })
+    );
+  });
+
   it('renders the route before the font has loaded so hydration matches the prerender', () => {
     const { getByText } = render(<RootLayout>{null}</RootLayout>);
 

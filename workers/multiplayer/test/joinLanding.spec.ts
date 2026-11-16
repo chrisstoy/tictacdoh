@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-
 import {
   DEFAULT_WEB_JOIN_BASE,
   joinLandingHtml,
@@ -23,5 +22,13 @@ describe('joinLanding', () => {
     expect(html).toContain('id="open-app"');
     expect(html).toContain('id="open-browser"');
     expect(html).toContain('<code>AB12CD</code>');
+    expect(html).toContain('location.href');
+  });
+
+  it('does not auto-open the native scheme when the browser link is loopback', () => {
+    const html = joinLandingHtml('ab12cd', 'http://localhost:8081');
+    expect(html).toContain('http://localhost:8081/?join=AB12CD');
+    expect(html).toContain('tictacdoh://join/AB12CD');
+    expect(html).not.toContain('location.href');
   });
 });

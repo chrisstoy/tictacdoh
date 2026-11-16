@@ -1,6 +1,5 @@
 import { SELF } from 'cloudflare:test';
 import { describe, expect, it } from 'vitest';
-
 import {
   DEFAULT_CORS_ORIGINS,
   corsHeaders,
@@ -28,9 +27,7 @@ describe('cors helpers', () => {
 
   it('echoes only allowlisted origins and sets Vary', () => {
     const allowlist = parseCorsOrigins('https://app.example.com');
-    expect(resolveAllowedOrigin('capacitor://localhost', allowlist)).toBe(
-      'capacitor://localhost'
-    );
+    expect(resolveAllowedOrigin('capacitor://localhost', allowlist)).toBe('capacitor://localhost');
     expect(resolveAllowedOrigin('https://evil.example', allowlist)).toBeNull();
     expect(resolveAllowedOrigin(null, allowlist)).toBeNull();
 
@@ -43,6 +40,18 @@ describe('cors helpers', () => {
 
     const denied = corsHeaders('https://evil.example', allowlist);
     expect(denied['Access-Control-Allow-Origin']).toBeUndefined();
+  });
+
+  it('allows Expo web loopback origins on any port', () => {
+    const allowlist = parseCorsOrigins(undefined);
+    expect(resolveAllowedOrigin('http://localhost:8081', allowlist)).toBe('http://localhost:8081');
+    expect(resolveAllowedOrigin('http://127.0.0.1:8081', allowlist)).toBe('http://127.0.0.1:8081');
+    expect(resolveAllowedOrigin('https://localhost:19006', allowlist)).toBe(
+      'https://localhost:19006'
+    );
+    expect(resolveAllowedOrigin('http://localhost.evil.com', allowlist)).toBeNull();
+    expect(resolveAllowedOrigin('http://evil.localhost', allowlist)).toBeNull();
+    expect(resolveAllowedOrigin('http://192.168.1.5:8081', allowlist)).toBeNull();
   });
 });
 
@@ -75,6 +84,14 @@ describe('multiplayer worker CORS (HTTP routes)', () => {
     });
     expect(res.status).toBe(204);
     expect(res.headers.get('Access-Control-Allow-Origin')).toBeNull();
+  });
+
+  it('GET /health allows the Expo web origin http://localhost:8081', async () => {
+    const res = await SELF.fetch('https://example.com/health', {
+      headers: { Origin: 'http://localhost:8081' },
+    });
+    expect(res.status).toBe(200);
+    expect(res.headers.get('Access-Control-Allow-Origin')).toBe('http://localhost:8081');
   });
 
   it('GET /health includes CORS headers for allowlisted Origin', async () => {
