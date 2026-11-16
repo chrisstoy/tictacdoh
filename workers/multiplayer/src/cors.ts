@@ -48,7 +48,8 @@ export type CorsHeaderMap = Record<string, string>;
 export function corsHeaders(origin: string | null, allowlist: string[]): CorsHeaderMap {
   const headers: CorsHeaderMap = {
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    // Accept is often included in browser preflights alongside Content-Type.
+    'Access-Control-Allow-Headers': 'Content-Type, Accept',
     'Access-Control-Max-Age': '86400',
   };
   const allowed = resolveAllowedOrigin(origin, allowlist);
