@@ -50,12 +50,12 @@ export function Player({ player, className, ...rest }: Props) {
           <MeatbagImage />
         )}
       </View>
-      <View className="flex-[2] my-1 min-h-0">
+      <View className="flex-1 mt-1 min-h-0">
         {player === 'X' && <XImage></XImage>}
         {player === 'O' && <OImage></OImage>}
       </View>
 
-      <View className="flex-[1] items-center justify-center">
+      <View className="flex-none items-center justify-center pt-3">
         {/* <TextWithBackground className="text-white text-xs px-">{`Wins: ${wins}`}</TextWithBackground> */}
         <Text className="text-xs color-white text-background px-2">{`Wins: ${wins}`}</Text>
       </View>
