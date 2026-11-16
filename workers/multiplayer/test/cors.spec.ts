@@ -36,6 +36,7 @@ describe('cors helpers', () => {
     expect(allowed['Vary']).toBe('Origin');
     expect(allowed['Access-Control-Allow-Methods']).toContain('POST');
     expect(allowed['Access-Control-Allow-Headers']).toMatch(/content-type/i);
+    expect(allowed['Access-Control-Allow-Headers']).toMatch(/accept/i);
     expect(allowed['Access-Control-Allow-Credentials']).toBeUndefined();
 
     const denied = corsHeaders('https://evil.example', allowlist);

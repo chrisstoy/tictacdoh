@@ -45,6 +45,7 @@ your tool provides.
 - **Round recorded after match is won:** `recordRound` warns "Cannot record round: match already has a winner".
 - **Play Online missing on web:** `EXPO_PUBLIC_MULTIPLAYER_URL` is unset. Use `npm run web:multiplayer`, or export the Worker base URL before `npm run web`.
 - **Create room fails from Expo web (CORS):** the page Origin must be loopback (`http://localhost:8081` or `http://127.0.0.1:<port>`). A LAN IP is not allowlisted.
+- **iOS Create Game shows “Load failed”:** WKWebView `fetch` from `capacitor://localhost` to the Worker HTTPS URL. Native create uses `CapacitorHttp` (`src/services/online/http.ts`); if that regresses to `fetch`, this error returns. Web/PWA still uses `fetch` + Worker CORS.
 - **Second tab steals the first seat:** both tabs shared one reconnect token. Web seats are per-tab `sessionStorage`; a hard reload of one tab reclaims only that tab.
 
 ## Reproducing against real dependencies
