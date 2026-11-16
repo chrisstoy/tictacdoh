@@ -6,8 +6,9 @@ Deploys from `main` with a clean tree via `scripts/release-ios.sh`.
 ## Extra preflight
 
 - [ ] `package.json` `"version"` equals the App Store Connect version string you
-  are shipping. Today that version is `1.0` (`PREPARE_FOR_SUBMISSION`).
-  `1.0.0` is a different string and will not attach to version `1.0`.
+  are shipping. Today that version is `1.1` (`PREPARE_FOR_SUBMISSION`).
+  `1.0` is `READY_FOR_SALE` and closed for new builds. `1.1.0` is a different
+  string and will not attach to version `1.1`.
 - [ ] Xcode is signed into an Apple ID that can manage profiles for team
   `J866FQ2YZ9`. The API key at
   `~/.appstoreconnect/private_keys/AuthKey_8LQQQ646C6.p8` is only the
@@ -49,5 +50,5 @@ console action.
 
 - Xcode → Settings → Accounts stays signed in for iOS signing.
 - After the iOS upload finishes processing: add the build to a TestFlight
-  group, select it on version `1.0`, and submit for review. Submitting for
+  group, select it on version `1.1`, and submit for review. Submitting for
   review is a human step.
