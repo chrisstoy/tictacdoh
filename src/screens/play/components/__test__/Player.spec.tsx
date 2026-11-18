@@ -31,13 +31,15 @@ function titleTestId(player: 'X' | 'O', seat?: 'X' | 'O') {
   return seat === player ? `local-player-${player}` : `remote-player-${player}`;
 }
 
-function renderPlayer(
-  player: 'X' | 'O',
-  options: { cpu?: boolean; turn?: 'X' | 'O'; seat?: 'X' | 'O' }
-) {
+type RenderOptions = { cpu?: boolean; turn?: 'X' | 'O'; seat?: 'X' | 'O' };
+
+function renderPlayer(player: 'X' | 'O', options: RenderOptions) {
   mockedMatch.mockImplementation((selector) =>
     selector({
-      isCPU: { X: options.cpu === true && player === 'X', O: options.cpu === true && player === 'O' },
+      isCPU: {
+        X: options.cpu === true && player === 'X',
+        O: options.cpu === true && player === 'O',
+      },
       wins: { X: 1, O: 2 },
     })
   );
@@ -61,7 +63,7 @@ describe('Player scoreboard column', () => {
     expect(view.getByText('Wins: 1')).toBeTruthy();
   });
 
-  it.each([
+  it.each<[string, 'X' | 'O', RenderOptions]>([
     ['human X', 'X' as const, {}],
     ['human O', 'O' as const, {}],
     ['clanker X', 'X' as const, { cpu: true }],
