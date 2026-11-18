@@ -11,6 +11,12 @@ import { PlayerId } from '@/types';
 
 const TITLE_FILL = '#f06c1c';
 const TITLE_OUTLINE = '#582008';
+/** Shared slot so Meatbag, Clanker, Local, and Remote line up across columns. */
+const TITLE_SLOT_HEIGHT = 40;
+/** Fixed square so the glyph cannot grow and swallow the gaps around it. */
+const MARK_SIZE = 56;
+/** Small inset above the title and below Wins. Gaps between the three rows are equal. */
+const COLUMN_EDGE = 8;
 
 interface Props extends React.ComponentProps<typeof View> {
   player: PlayerId;
@@ -25,14 +31,27 @@ export function Player({ player, className, ...rest }: Props) {
 
   return (
     <View
-      className={`${className} p-2 flex-1 ${isPlayersTurn ? 'bg-highlight border-border border-solid border-2 rounded-xl' : ''}`}
       {...rest}
+      testID={`player-column-${player}`}
+      className={`${className} h-full flex-1 rounded-xl border-2 border-solid ${
+        isPlayersTurn ? 'bg-highlight border-border' : 'border-transparent'
+      }`}
+      style={{
+        paddingHorizontal: COLUMN_EDGE,
+        paddingVertical: COLUMN_EDGE,
+        justifyContent: 'space-between',
+      }}
     >
       <View
-        className="flex-none items-center justify-center"
         testID={
-          localSeat ? (isLocalPlayer ? `local-player-${player}` : `remote-player-${player}`) : undefined
+          localSeat
+            ? isLocalPlayer
+              ? `local-player-${player}`
+              : `remote-player-${player}`
+            : `player-title-${player}`
         }
+        className="w-full flex-none items-center justify-center"
+        style={{ height: TITLE_SLOT_HEIGHT }}
       >
         {localSeat ? (
           <OutlineText
@@ -40,7 +59,12 @@ export function Player({ player, className, ...rest }: Props) {
             className="text-center"
             outlineColor={TITLE_OUTLINE}
             outlineWidth={1}
-            style={{ fontFamily: 'PoppinsBlack', color: TITLE_FILL, fontSize: 20, lineHeight: 26 }}
+            style={{
+              fontFamily: 'PoppinsBlack',
+              color: TITLE_FILL,
+              fontSize: 20,
+              lineHeight: 26,
+            }}
           >
             {isLocalPlayer ? 'Local' : 'Remote'}
           </OutlineText>
@@ -50,13 +74,17 @@ export function Player({ player, className, ...rest }: Props) {
           <MeatbagImage />
         )}
       </View>
-      <View className="flex-1 mt-1 min-h-0">
-        {player === 'X' && <XImage></XImage>}
-        {player === 'O' && <OImage></OImage>}
+
+      <View
+        testID={`player-mark-${player}`}
+        className="w-full flex-none items-center justify-center"
+        style={{ height: MARK_SIZE }}
+      >
+        {player === 'X' && <XImage size={MARK_SIZE} />}
+        {player === 'O' && <OImage size={MARK_SIZE} />}
       </View>
 
-      <View className="flex-none items-center justify-center pt-3">
-        {/* <TextWithBackground className="text-white text-xs px-">{`Wins: ${wins}`}</TextWithBackground> */}
+      <View testID={`player-wins-${player}`} className="flex-none items-center justify-center">
         <Text className="text-xs color-white text-background px-2">{`Wins: ${wins}`}</Text>
       </View>
     </View>

@@ -241,7 +241,7 @@ export function PlayGameScreen({ onExitGame }: Props) {
 
   return (
     <View className="h-max flex-1 flex-col">
-      <View className="h-1/5 flex-none m-2">
+      <View className="h-1/4 flex-none m-2">
         <View className="h-full">
           <Scoreboard currentRound={roundsPlayed + 1} roundsInMatch={roundsInMatch}></Scoreboard>
 
