@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useRef, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { LayoutChangeEvent, ScrollView, View, useWindowDimensions } from 'react-native';
 import { OutlineText } from '@/components/OutlineText';
 import { PushButton } from '@/components/PushButton';
@@ -10,42 +10,47 @@ import { isAndroidNativeShell } from '@/services/nativeShell';
 const TITLE_FILL = '#f06c1c';
 const TITLE_OUTLINE = '#582008';
 
-// Smallest frame-height drop treated as the soft keyboard opening (dp).
-const KEYBOARD_MIN_SHRINK = 100;
-
 type Props = {
   onEnterLobby: () => void;
   onBack: () => void;
 };
 
-function PinnedFrame({ children }: { children: ReactNode }) {
+type FocusCallback = (focused: boolean) => void;
+
+function PinnedFrame({ children }: { children: (onInputFocusChange: FocusCallback) => ReactNode }) {
   // Android native only. Capacitor's SystemBars pads the decor view by the IME height, so the
-  // viewport (and this frame) shrinks when the keyboard opens. Holding the pre-keyboard frame
-  // height pins the content to its pre-keyboard size (proportions never compress; the overflow
-  // scrolls). A window width change (rotation) starts over.
-  // The frame's own layout width cannot drive the reset: the app caps the frame width as a
-  // function of window height (useFrameMaxWidth), so it narrows when the keyboard opens. The
-  // window width does not change with the keyboard, and is read via the hook (an effect), not
-  // inside onLayout, so there is no ordering dependency on Dimensions updates.
+  // viewport (and this frame) shrinks when the keyboard opens. The keyboard only opens when the
+  // Room code input is focused, so on focus we pin the content minHeight to the frame height
+  // measured just before (the IME inset has not arrived yet) and hold it until blur; the overflow
+  // scrolls. While unfocused the natural frame height is tracked freely. A window width change
+  // (rotation) starts over.
+  // The window width is read via the hook (an effect), not inside onLayout: the frame's own width
+  // narrows with the keyboard (useFrameMaxWidth), so it can't drive the reset.
   const { width: windowWidth } = useWindowDimensions();
-  const [minHeight, setMinHeight] = useState<number | undefined>();
+  const [tracked, setTracked] = useState<number | undefined>();
+  const [pinned, setPinned] = useState<number | undefined>();
+  const lastHeight = useRef<number | undefined>(undefined);
+  const focused = useRef(false);
   const trackedWidth = useRef(windowWidth);
 
   useEffect(() => {
     if (trackedWidth.current === windowWidth) return;
     trackedWidth.current = windowWidth;
-    setMinHeight(undefined);
+    lastHeight.current = undefined;
+    setTracked(undefined);
+    setPinned(undefined);
   }, [windowWidth]);
 
   const handleLayout = ({ nativeEvent }: LayoutChangeEvent) => {
-    const { height } = nativeEvent.layout;
-    // A shrink of at least KEYBOARD_MIN_SHRINK is the keyboard opening: keep the pre-keyboard
-    // height. Anything else (growth, small shrink such as insets settling after mount) is the new
-    // baseline, so a transient oversize first layout can't leave the content taller than the frame.
-    setMinHeight((prev) =>
-      prev !== undefined && height < prev - KEYBOARD_MIN_SHRINK ? prev : height
-    );
+    if (focused.current) return;
+    lastHeight.current = nativeEvent.layout.height;
+    setTracked(nativeEvent.layout.height);
   };
+
+  const handleFocusChange = useCallback((isFocused: boolean) => {
+    focused.current = isFocused;
+    setPinned(isFocused ? lastHeight.current : undefined);
+  }, []);
 
   return (
     <View className="flex-1 w-full" onLayout={handleLayout} testID="online-play-frame">
@@ -54,16 +59,16 @@ function PinnedFrame({ children }: { children: ReactNode }) {
         testID="online-play-scroll"
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ flexGrow: 1, minHeight }}
+        contentContainerStyle={{ flexGrow: 1, minHeight: pinned ?? tracked }}
       >
-        {children}
+        {children(handleFocusChange)}
       </ScrollView>
     </View>
   );
 }
 
 export function OnlinePlayScreen({ onEnterLobby, onBack }: Props) {
-  const content = (
+  const renderContent = (onInputFocusChange?: FocusCallback) => (
     <View className="flex-1 flex-col" testID="online-play-screen">
       <View className="flex-[0.25] m-2">
         <TitleImage />
@@ -84,7 +89,7 @@ export function OnlinePlayScreen({ onEnterLobby, onBack }: Props) {
         >
           Online Play
         </OutlineText>
-        <OnlineSetupPanel onEnterLobby={onEnterLobby} />
+        <OnlineSetupPanel onEnterLobby={onEnterLobby} onInputFocusChange={onInputFocusChange} />
       </View>
 
       <View className="flex-none m-4">
@@ -95,5 +100,5 @@ export function OnlinePlayScreen({ onEnterLobby, onBack }: Props) {
     </View>
   );
 
-  return isAndroidNativeShell() ? <PinnedFrame>{content}</PinnedFrame> : content;
+  return isAndroidNativeShell() ? <PinnedFrame>{renderContent}</PinnedFrame> : renderContent();
 }

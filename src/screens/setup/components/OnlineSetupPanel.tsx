@@ -3,11 +3,14 @@ import { ActivityIndicator, Text, TextInput, View } from 'react-native';
 import { PushButton } from '@/components/PushButton';
 import { TextWithBackground } from '@/components/TextWithBackground';
 import { selectRoundsInMatch, useMatchStore } from '@/services/matchState';
+import { isAndroidNativeShell } from '@/services/nativeShell';
 import { createOnlineSession, joinOnlineSession } from '@/services/online';
 import { isValidJoinCode, normalizeJoinCode } from '@/services/online/joinCode';
 
 type Props = {
   onEnterLobby: () => void;
+  /** Room code input focus changes (drives the Android keyboard pin). */
+  onInputFocusChange?: (focused: boolean) => void;
 };
 
 function OnlineTextButton({
@@ -33,7 +36,7 @@ function OnlineTextButton({
   );
 }
 
-export function OnlineSetupPanel({ onEnterLobby }: Props) {
+export function OnlineSetupPanel({ onEnterLobby, onInputFocusChange }: Props) {
   const roundsInMatch = useMatchStore(selectRoundsInMatch);
   const [showJoin, setShowJoin] = useState(false);
   const [joinCode, setJoinCode] = useState('');
@@ -67,6 +70,27 @@ export function OnlineSetupPanel({ onEnterLobby }: Props) {
     void run(() => joinOnlineSession(code));
   };
 
+  const android = isAndroidNativeShell();
+  const status = (
+    <>
+      {busy ? (
+        <View className="items-center mt-1" testID="online-setup-busy">
+          <ActivityIndicator accessibilityLabel={android ? 'Loading' : undefined} />
+        </View>
+      ) : null}
+
+      {error ? (
+        <Text
+          className="text-center text-highlight mt-1"
+          accessibilityRole={android ? 'alert' : undefined}
+          testID="online-setup-error"
+        >
+          {error}
+        </Text>
+      ) : null}
+    </>
+  );
+
   return (
     <View className="w-full px-3" testID="online-setup-panel">
       {!showJoin ? (
@@ -94,6 +118,8 @@ export function OnlineSetupPanel({ onEnterLobby }: Props) {
             className="border-2 border-border rounded-md px-3 py-2 text-center text-text text-xl bg-background"
             style={{ fontFamily: 'Komigo' }}
             editable={!busy}
+            onFocus={() => onInputFocusChange?.(true)}
+            onBlur={() => onInputFocusChange?.(false)}
           />
           <View className="items-center gap-3">
             <OnlineTextButton
@@ -116,30 +142,19 @@ export function OnlineSetupPanel({ onEnterLobby }: Props) {
         </View>
       )}
 
-      {/* Fixed-height slot so the panel height never depends on busy/error state (keeps the
-          Android keyboard layout stable). */}
-      <View
-        className="items-center justify-center mt-1"
-        style={{ height: 24 }}
-        testID="online-setup-error-slot"
-      >
-        {busy ? (
-          <View testID="online-setup-busy">
-            <ActivityIndicator />
-          </View>
-        ) : null}
-        {error ? (
-          <Text
-            className="text-center text-highlight"
-            numberOfLines={1}
-            accessibilityRole="alert"
-            accessibilityLiveRegion="polite"
-            testID="online-setup-error"
-          >
-            {error}
-          </Text>
-        ) : null}
-      </View>
+      {android ? (
+        // Android only: reserve a minimum height (it grows for wrapped errors / large font scale)
+        // so the panel doesn't jump when the spinner or error appears. Stacked, never overlapping.
+        <View
+          className="items-center justify-center"
+          style={{ minHeight: 24 }}
+          testID="online-setup-status-slot"
+        >
+          {status}
+        </View>
+      ) : (
+        status
+      )}
     </View>
   );
 }
