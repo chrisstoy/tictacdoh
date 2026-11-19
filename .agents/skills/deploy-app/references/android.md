@@ -23,15 +23,15 @@ python3 scripts/upload-android.py --apply   # internal track, only after a human
 Promoting past internal testing is a Play Console action a human approves;
 this skill does not do it.
 
-The first `--apply` cannot succeed until a human has created the Play app,
-enrolled Play App Signing, and saved a service-account JSON at the path in
-`credentials.json` (`~/.android/release-keys/tictacdoh-play-service-account.json`).
-Say that and stop. Do not invent a Play app from this script.
+The Play app exists (Play App Signing enrolled; versionCode 100 is on the
+internal track). `--apply` needs the service-account JSON at the path in
+`credentials.json` (`~/.android/release-keys/tictacdoh-play-service-account.json`);
+if it is missing, say so and stop.
 
 ## Verify after deploying
 
 After `--apply`, the script prints the versionCode on the internal track.
-There is nothing to verify until the Play app exists.
+Install it from the internal testing link and confirm Play Online is visible.
 
 ## Rollback
 
@@ -41,9 +41,9 @@ action.
 
 ## Manual steps
 
-- Create the Play Console app for `com.chrisstoy.tictacdoh`, enroll Play App
-  Signing, and grant a service account testing-track access. Then `--apply`
-  can upload.
+- Before the first production release: data safety, content rating, target
+  audience, ads declaration, app access, pricing/countries, and (personal
+  accounts created after Nov 2023) a 12-tester / 14-day closed test.
 - Back up `~/.android/release-keys/tictacdoh-upload.keystore` and
   `tictacdoh-upload-keystore-passwords.txt`. That keystore is the only upload
   key.

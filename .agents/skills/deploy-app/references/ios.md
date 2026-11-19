@@ -6,7 +6,7 @@ Deploys from `main` with a clean tree via `scripts/release-ios.sh`.
 ## Extra preflight
 
 - [ ] `package.json` `"version"` equals the App Store Connect version string you
-  are shipping. Today that version is `1.1` (`PREPARE_FOR_SUBMISSION`).
+  are shipping. Today that version is `1.1` (build 100 submitted for review 2026-11-19).
   `1.0` is `READY_FOR_SALE` and closed for new builds. `1.1.0` is a different
   string and will not attach to version `1.1`.
 - [ ] Xcode is signed into an Apple ID that can manage profiles for team
