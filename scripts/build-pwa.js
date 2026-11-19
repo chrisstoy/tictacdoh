@@ -122,8 +122,10 @@ function main() {
   // Step 1: Generate icons
   runCommand('npm run generate:icons', 'Generate PWA icons');
 
-  // Step 2: Expo export
-  runCommand('npx expo export --platform web', 'Expo export for web');
+  // Step 2: Expo export. --clear: Metro's transform cache does not key on
+  // EXPO_PUBLIC_* values, so a warm cache can ship a bundle without
+  // EXPO_PUBLIC_MULTIPLAYER_URL (Online play hidden).
+  runCommand('npx expo export --platform web --clear', 'Expo export for web');
 
   // Step 3: Copy icons to dist
   copyIcons();

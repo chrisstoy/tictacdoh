@@ -35,6 +35,11 @@ describe('release-preflight.sh multiplayer URL', () => {
     expect(result.stdout.trim()).toBe('https://mp.example.com');
   });
 
+  it('build-pwa.js exports with --clear so a cached bundle cannot drop EXPO_PUBLIC_* values', () => {
+    const script = fs.readFileSync(path.join(root, 'scripts/build-pwa.js'), 'utf8');
+    expect(script).toMatch(/npx expo export --platform web --clear/);
+  });
+
   describe('assert_multiplayer_baked', () => {
     let dir: string;
     beforeEach(() => {
