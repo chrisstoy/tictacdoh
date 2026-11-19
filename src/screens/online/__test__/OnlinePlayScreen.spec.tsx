@@ -1,5 +1,6 @@
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
-import { Platform } from 'react-native';
+import { act } from 'react';
+import { Dimensions, Platform, StyleSheet } from 'react-native';
 import { createOnlineSession, joinOnlineSession } from '@/services/online';
 import { OnlinePlayScreen } from '../OnlinePlayScreen';
 
@@ -130,5 +131,43 @@ describe('OnlinePlayScreen', () => {
 
     fireEvent.press(view.getByLabelText('Back'));
     expect(onBack).toHaveBeenCalledTimes(1);
+  });
+
+  it('pins content minHeight to the initial layout height when the viewport later shrinks', () => {
+    const spy = jest.spyOn(Dimensions, 'get');
+    spy.mockReturnValue({ width: 400, height: 800, scale: 1, fontScale: 1 });
+    const view = render(<OnlinePlayScreen onEnterLobby={jest.fn()} onBack={jest.fn()} />);
+    const layout = (width: number, height: number) =>
+      act(() => {
+        fireEvent(view.getByTestId('online-play-frame'), 'layout', {
+          nativeEvent: { layout: { x: 0, y: 0, width, height } },
+        });
+      });
+    const minHeight = () =>
+      StyleSheet.flatten(view.getByTestId('online-play-scroll').props.contentContainerStyle)
+        .minHeight;
+    expect(minHeight()).toBeUndefined();
+
+    layout(400, 800);
+    expect(minHeight()).toBe(800);
+
+    // keyboard opens: height shrinks, width unchanged
+    layout(400, 480);
+    expect(minHeight()).toBe(800);
+
+    // transient height growth is tracked
+    layout(400, 850);
+    expect(minHeight()).toBe(850);
+
+    // rotation: window width changes, start over
+    spy.mockReturnValue({ width: 800, height: 400, scale: 1, fontScale: 1 });
+    layout(800, 400);
+    expect(minHeight()).toBe(400);
+    spy.mockRestore();
+  });
+
+  it('keeps taps working while a text input is focused', () => {
+    const view = render(<OnlinePlayScreen onEnterLobby={jest.fn()} onBack={jest.fn()} />);
+    expect(view.getByTestId('online-play-scroll').props.keyboardShouldPersistTaps).toBe('handled');
   });
 });

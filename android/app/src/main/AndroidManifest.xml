@@ -14,7 +14,6 @@
             android:theme="@style/AppTheme.NoActionBarLaunch"
             android:screenOrientation="portrait"
             android:launchMode="singleTask"
-            android:windowSoftInputMode="adjustPan"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
