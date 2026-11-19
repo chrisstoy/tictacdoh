@@ -18,6 +18,7 @@ Tic-Tac-Doh: React Native tic-tac-toe on Expo SDK 54 (expo-router 6, React 19, R
 - `workers/multiplayer/` — Cloudflare Worker package (`wrangler.jsonc`, hibernatable `GameRoom` DO, Vitest via `@cloudflare/vitest-plugin`)
 - `capacitor.config.ts` — `appId` `com.chrisstoy.tictacdoh` (the App Store Connect app, not `com.stoyco.tictacdoh`), `appName` `Tic-Tac-Doh`, `webDir` `dist`
 - `ios/`, `android/` — Capacitor native projects (generated web assets, Pods, and `local.properties` stay gitignored)
+- Android soft keyboard: `MainActivity` sets `android:windowSoftInputMode="adjustPan"` in `android/app/src/main/AndroidManifest.xml` (no `@capacitor/keyboard`). The window pans over the keyboard instead of resizing the WebView, so the flex layout is not compressed (logo/title/Back/Cancel stay put on Online Play → Join Game). Guarded by `scripts/__test__/androidManifest.spec.ts`. iOS and web are unchanged.
 - `src/animations/` — reanimated helpers (jiggle, push)
 - `scripts/` — PWA build pipeline; `public/icons/` generated icons
 - `design/game-state.md` — mermaid diagram + per-state behavior of the PlayMode machine
