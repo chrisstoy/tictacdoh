@@ -45,7 +45,7 @@ improvising around them.
 | `multiplayer-worker` | any clean tree | Manual `npx wrangler deploy` from `workers/multiplayer/` — **no** GitHub Actions |
 
 No preview/staging target exists. Web hosting is GitHub Pages only. There is
-no EAS, no fastlane, and no store workflow in CI. Play Console has no app yet.
+no EAS, no fastlane, and no store workflow in CI. The Play Console app exists; uploads go to the internal track only.
 Do **not** create a Worker deploy workflow unless the human explicitly approves
 Actions changes (AGENTS.md).
 

@@ -21,7 +21,7 @@ module.exports = {
     ],
     name: 'tic-tac-doh',
     slug: 'tic-tac-doh',
-    version: '1.0.0',
+    version: require('./package.json').version,
     orientation: 'portrait',
     icon: './assets/icon.png',
     userInterfaceStyle: 'light',
