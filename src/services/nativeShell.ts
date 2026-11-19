@@ -11,3 +11,8 @@ export function isNativeShell(): boolean {
 
   return Capacitor.isNativePlatform();
 }
+
+/** True only inside the Capacitor Android shell (not iOS, not the browser). */
+export function isAndroidNativeShell(): boolean {
+  return isNativeShell() && Capacitor.getPlatform() === 'android';
+}
