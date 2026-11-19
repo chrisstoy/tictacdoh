@@ -16,6 +16,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 # shellcheck source=release-preflight.sh
 source "$ROOT/scripts/release-preflight.sh"
 release_preflight "$ROOT"
+release_multiplayer_env
 
 APP_ID="6826927007"
 KEY_ID="8LQQQ646C6"
@@ -81,6 +82,7 @@ fi
 
 echo "Building web bundle (base path /)..."
 (cd "$ROOT" && npm run build:native && npm run cap:sync)
+assert_multiplayer_baked "$ROOT/dist"
 
 if [[ -n "$(git -C "$ROOT" status --porcelain)" ]]; then
     echo "Error: cap sync changed tracked files. Commit that drift, then release." >&2
@@ -112,4 +114,4 @@ xcodebuild -exportArchive \
 echo ""
 echo "Done. v$VERSION (build $BUILD) uploaded to App Store Connect."
 echo "TestFlight: https://appstoreconnect.apple.com/apps/${APP_ID}/testflight/ios"
-echo "Version 1.0 (prepare for submission): https://appstoreconnect.apple.com/apps/${APP_ID}/appstore/ios/version/inflight"
+echo "Version $VERSION (prepare for submission): https://appstoreconnect.apple.com/apps/${APP_ID}/appstore/ios/version/inflight"

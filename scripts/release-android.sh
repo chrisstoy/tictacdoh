@@ -20,6 +20,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 # shellcheck source=release-preflight.sh
 source "$ROOT/scripts/release-preflight.sh"
 release_preflight "$ROOT"
+release_multiplayer_env
 
 CREDS="$ROOT/credentials.json"
 if [[ ! -f "$CREDS" ]]; then
@@ -55,6 +56,7 @@ JS
 
 echo "Building web bundle (base path /)..."
 (cd "$ROOT" && npm run build:native && npm run cap:sync)
+assert_multiplayer_baked "$ROOT/dist"
 
 if [[ -n "$(git -C "$ROOT" status --porcelain)" ]]; then
     echo "Error: the release build changed tracked files. Commit that drift, then release." >&2
