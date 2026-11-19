@@ -42,3 +42,22 @@ release_preflight() {
         exit 1
     fi
 }
+
+# Store builds must expose Online play. EXPO_PUBLIC_MULTIPLAYER_URL is baked into
+# the web bundle at build time; unset, the Online entry is hidden. The Pages
+# workflow sets it in main.yml; native releases default to the same Worker here.
+RELEASE_MULTIPLAYER_URL_DEFAULT="https://tictacdoh-multiplayer.chrisstoy.workers.dev"
+
+release_multiplayer_env() {
+    export EXPO_PUBLIC_MULTIPLAYER_URL="${EXPO_PUBLIC_MULTIPLAYER_URL:-$RELEASE_MULTIPLAYER_URL_DEFAULT}"
+    echo "Multiplayer Worker: $EXPO_PUBLIC_MULTIPLAYER_URL" >&2
+}
+
+# Fails unless the built web bundle in $1 contains EXPO_PUBLIC_MULTIPLAYER_URL.
+assert_multiplayer_baked() {
+    local dist="$1"
+    if [[ -z "${EXPO_PUBLIC_MULTIPLAYER_URL:-}" ]] || ! grep -rqF "$EXPO_PUBLIC_MULTIPLAYER_URL" "$dist/_expo"; then
+        echo "Error: $dist/_expo does not contain EXPO_PUBLIC_MULTIPLAYER_URL ('${EXPO_PUBLIC_MULTIPLAYER_URL:-}'). Online play would be hidden." >&2
+        exit 1
+    fi
+}
