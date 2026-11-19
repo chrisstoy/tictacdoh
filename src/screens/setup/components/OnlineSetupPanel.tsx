@@ -116,17 +116,30 @@ export function OnlineSetupPanel({ onEnterLobby }: Props) {
         </View>
       )}
 
-      {busy ? (
-        <View className="items-center mt-1" testID="online-setup-busy">
-          <ActivityIndicator />
-        </View>
-      ) : null}
-
-      {error ? (
-        <Text className="text-center text-highlight mt-1" testID="online-setup-error">
-          {error}
-        </Text>
-      ) : null}
+      {/* Fixed-height slot so the panel height never depends on busy/error state (keeps the
+          Android keyboard layout stable). */}
+      <View
+        className="items-center justify-center mt-1"
+        style={{ height: 24 }}
+        testID="online-setup-error-slot"
+      >
+        {busy ? (
+          <View testID="online-setup-busy">
+            <ActivityIndicator />
+          </View>
+        ) : null}
+        {error ? (
+          <Text
+            className="text-center text-highlight"
+            numberOfLines={1}
+            accessibilityRole="alert"
+            accessibilityLiveRegion="polite"
+            testID="online-setup-error"
+          >
+            {error}
+          </Text>
+        ) : null}
+      </View>
     </View>
   );
 }

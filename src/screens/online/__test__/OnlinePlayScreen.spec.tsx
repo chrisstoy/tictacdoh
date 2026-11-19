@@ -1,6 +1,7 @@
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 import { act } from 'react';
 import { Dimensions, Platform, StyleSheet } from 'react-native';
+import { isAndroidNativeShell } from '@/services/nativeShell';
 import { createOnlineSession, joinOnlineSession } from '@/services/online';
 import { OnlinePlayScreen } from '../OnlinePlayScreen';
 
@@ -34,6 +35,12 @@ jest.mock('@/services/online', () => {
   };
 });
 
+jest.mock('@/services/nativeShell', () => ({
+  isNativeShell: jest.fn(() => false),
+  isAndroidNativeShell: jest.fn(() => false),
+}));
+
+const mockedAndroidShell = isAndroidNativeShell as jest.Mock;
 const mockedCreate = createOnlineSession as jest.Mock;
 const mockedJoin = joinOnlineSession as jest.Mock;
 
@@ -133,41 +140,80 @@ describe('OnlinePlayScreen', () => {
     expect(onBack).toHaveBeenCalledTimes(1);
   });
 
-  it('pins content minHeight to the initial layout height when the viewport later shrinks', () => {
-    const spy = jest.spyOn(Dimensions, 'get');
-    spy.mockReturnValue({ width: 400, height: 800, scale: 1, fontScale: 1 });
-    const view = render(<OnlinePlayScreen onEnterLobby={jest.fn()} onBack={jest.fn()} />);
-    const layout = (width: number, height: number) =>
+  describe('keyboard height pin', () => {
+    const layout = (view: ReturnType<typeof render>, width: number, height: number) =>
       act(() => {
         fireEvent(view.getByTestId('online-play-frame'), 'layout', {
           nativeEvent: { layout: { x: 0, y: 0, width, height } },
         });
       });
-    const minHeight = () =>
+    const minHeight = (view: ReturnType<typeof render>) =>
       StyleSheet.flatten(view.getByTestId('online-play-scroll').props.contentContainerStyle)
         .minHeight;
-    expect(minHeight()).toBeUndefined();
 
-    layout(400, 800);
-    expect(minHeight()).toBe(800);
+    afterEach(() => {
+      mockedAndroidShell.mockReturnValue(false);
+    });
 
-    // keyboard opens: height shrinks, width unchanged
-    layout(400, 480);
-    expect(minHeight()).toBe(800);
+    it('is inactive on web and iOS: same tree as before, no scroll wrapper or minHeight', () => {
+      mockedAndroidShell.mockReturnValue(false);
+      const view = render(<OnlinePlayScreen onEnterLobby={jest.fn()} onBack={jest.fn()} />);
+      expect(view.queryByTestId('online-play-frame')).toBeNull();
+      expect(view.queryByTestId('online-play-scroll')).toBeNull();
+      expect(view.getByTestId('online-play-screen')).toBeTruthy();
+    });
 
-    // transient height growth is tracked
-    layout(400, 850);
-    expect(minHeight()).toBe(850);
+    it('pins minHeight to the pre-keyboard height on Android native', () => {
+      mockedAndroidShell.mockReturnValue(true);
+      const view = render(<OnlinePlayScreen onEnterLobby={jest.fn()} onBack={jest.fn()} />);
+      expect(minHeight(view)).toBeUndefined();
 
-    // rotation: window width changes, start over
-    spy.mockReturnValue({ width: 800, height: 400, scale: 1, fontScale: 1 });
-    layout(800, 400);
-    expect(minHeight()).toBe(400);
-    spy.mockRestore();
+      layout(view, 400, 800);
+      expect(minHeight(view)).toBe(800);
+      // keyboard opens: height shrinks, width unchanged
+      layout(view, 400, 480);
+      expect(minHeight(view)).toBe(800);
+      layout(view, 400, 850);
+      expect(minHeight(view)).toBe(850);
+      // keyboard closes, and a small settling shrink (insets) is the new baseline, not pinned
+      layout(view, 400, 826);
+      expect(minHeight(view)).toBe(826);
+    });
+
+    it('resets when the window width changes (rotation), not when only the frame narrows', () => {
+      mockedAndroidShell.mockReturnValue(true);
+      const spy = jest.spyOn(Dimensions, 'get');
+      spy.mockReturnValue({ width: 400, height: 800, scale: 1, fontScale: 1 });
+      const view = render(<OnlinePlayScreen onEnterLobby={jest.fn()} onBack={jest.fn()} />);
+      layout(view, 400, 800);
+      // keyboard: the capped frame also narrows (useFrameMaxWidth), window width unchanged
+      layout(view, 330, 480);
+      expect(minHeight(view)).toBe(800);
+
+      // rotation: window width changes
+      spy.mockReturnValue({ width: 800, height: 400, scale: 1, fontScale: 1 });
+      act(() => {
+        Dimensions.set({ window: { width: 800, height: 400, scale: 1, fontScale: 1 } });
+      });
+      layout(view, 700, 400);
+      expect(minHeight(view)).toBe(400);
+      spy.mockRestore();
+    });
   });
 
-  it('keeps taps working while a text input is focused', () => {
+  it('reserves the same error slot height with and without an error', () => {
+    mockedJoin.mockRejectedValue(new Error('The game is not available'));
     const view = render(<OnlinePlayScreen onEnterLobby={jest.fn()} onBack={jest.fn()} />);
-    expect(view.getByTestId('online-play-scroll').props.keyboardShouldPersistTaps).toBe('handled');
+    fireEvent.press(view.getByLabelText('Join Game'));
+    const slotStyle = () =>
+      StyleSheet.flatten(view.getByTestId('online-setup-error-slot').props.style);
+    const before = slotStyle();
+    expect(before.height).toBeGreaterThan(0);
+    expect(view.queryByTestId('online-setup-error')).toBeNull();
+
+    fireEvent.changeText(view.getByLabelText('Room code'), 'ab');
+    fireEvent.press(view.getByLabelText('Join room'));
+    expect(view.getByTestId('online-setup-error')).toBeTruthy();
+    expect(slotStyle()).toEqual(before);
   });
 });
