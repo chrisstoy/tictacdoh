@@ -57,7 +57,7 @@ xcodebuild test -project ios/App/App.xcodeproj -scheme TicTacDohWatch \
   -destination 'platform=watchOS Simulator,name=Apple Watch Series 11 (46mm),OS=26.5'
 ```
 
-`scripts/add-watchos-target.py` re-adds the target and shared scheme if `project.pbxproj` loses them. `node scripts/generate-game-fixtures.mjs` rewrites `test-fixtures/game-cases.json`. `python3 -I scripts/build-mascot-assets.py` rewrites `assets/mascot/*.png` from `assets/splash-screen.png` (needs Pillow); rerun it only if that artwork changes.
+`scripts/add-watchos-target.py` re-adds the target and shared scheme if `project.pbxproj` loses them. It writes both shared schemes in Xcode's own format (3-space indent, watch scheme `version = "1.3"`) and takes `MARKETING_VERSION` from `package.json`, so opening the project in Xcode leaves the tree clean; `scripts/__test__/xcschemes.spec.ts` guards this. If Xcode starts rewriting a scheme again (new Xcode version), commit Xcode's output and update the script and spec to match. `node scripts/generate-game-fixtures.mjs` rewrites `test-fixtures/game-cases.json`. `python3 -I scripts/build-mascot-assets.py` rewrites `assets/mascot/*.png` from `assets/splash-screen.png` (needs Pillow); rerun it only if that artwork changes.
 
 ## Capacitor shell
 

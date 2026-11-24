@@ -4,12 +4,15 @@
 Idempotent. Re-run if `cap sync` drops the watch target from project.pbxproj.
 """
 
+import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PBX = ROOT / "ios/App/App.xcodeproj/project.pbxproj"
 SCHEME = ROOT / "ios/App/App.xcodeproj/xcshareddata/xcschemes/TicTacDohWatch.xcscheme"
 APP_SCHEME = ROOT / "ios/App/App.xcodeproj/xcshareddata/xcschemes/App.xcscheme"
+# Same source as the App target (versionSync.spec.ts keeps them equal).
+MARKETING_VERSION = json.loads((ROOT / "package.json").read_text())["version"]
 
 WATCH_TARGET = "A11C0D220000000000000001"
 TEST_TARGET = "A11C0D220000000000000002"
@@ -99,7 +102,7 @@ def watch_settings(name: str) -> str:
 \t\t\t\t\t"$(inherited)",
 \t\t\t\t\t"@executable_path/Frameworks",
 \t\t\t\t);
-\t\t\t\tMARKETING_VERSION = 1.0;
+\t\t\t\tMARKETING_VERSION = {MARKETING_VERSION};
 \t\t\t\tPRODUCT_BUNDLE_IDENTIFIER = com.chrisstoy.tictacdoh.watchkitapp;
 \t\t\t\tPRODUCT_NAME = "$(TARGET_NAME)";
 \t\t\t\tSDKROOT = watchos;
@@ -129,7 +132,7 @@ def test_settings(name: str) -> str:
 \t\t\t\t\t"@executable_path/Frameworks",
 \t\t\t\t\t"@loader_path/Frameworks",
 \t\t\t\t);
-\t\t\t\tMARKETING_VERSION = 1.0;
+\t\t\t\tMARKETING_VERSION = {MARKETING_VERSION};
 \t\t\t\tPRODUCT_BUNDLE_IDENTIFIER = com.chrisstoy.tictacdoh.watchkitapp.tests;
 \t\t\t\tPRODUCT_NAME = "$(TARGET_NAME)";
 \t\t\t\tSDKROOT = watchos;
@@ -157,22 +160,25 @@ def main() -> None:
     SCHEME.write_text(scheme_xml())
     app = APP_SCHEME.read_text()
     if WATCH_TARGET not in app:
-        entry = f"""\t\t<BuildActionEntry
-\t\t\tbuildForTesting = "YES"
-\t\t\tbuildForRunning = "YES"
-\t\t\tbuildForProfiling = "YES"
-\t\t\tbuildForArchiving = "YES"
-\t\t\tbuildForAnalyzing = "YES">
-\t\t\t<BuildableReference
-\t\t\t\tBuildableIdentifier = "primary"
-\t\t\t\tBlueprintIdentifier = "{WATCH_TARGET}"
-\t\t\t\tBuildableName = "TicTacDohWatch.app"
-\t\t\t\tBlueprintName = "TicTacDohWatch"
-\t\t\t\tReferencedContainer = "container:App.xcodeproj">
-\t\t\t</BuildableReference>
-\t\t</BuildActionEntry>
+        # Xcode's own format (3 spaces per level, no tabs) so opening the
+        # project in Xcode does not rewrite the committed scheme.
+        entry = f"""         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "{WATCH_TARGET}"
+               BuildableName = "TicTacDohWatch.app"
+               BlueprintName = "TicTacDohWatch"
+               ReferencedContainer = "container:App.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
 """
-        app = app.replace("</BuildActionEntries>", entry + "      </BuildActionEntries>", 1)
+        closing = "      </BuildActionEntries>"
+        app = app.replace(closing, entry + closing, 1)
         APP_SCHEME.write_text(app)
         print("updated App scheme")
     else:
@@ -529,7 +535,7 @@ def scheme_xml() -> str:
     return f"""<?xml version="1.0" encoding="UTF-8"?>
 <Scheme
    LastUpgradeVersion = "1600"
-   version = "1.7">
+   version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
       buildImplicitDependencies = "YES">
