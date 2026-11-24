@@ -43,7 +43,10 @@ describe('shared Xcode schemes match what Xcode writes', () => {
 
   it('add-watchos-target.py writes the App scheme watch entry without tabs', () => {
     const source = fs.readFileSync(script, 'utf8');
-    const entry = source.slice(source.indexOf('if WATCH_TARGET not in app:'), source.indexOf('APP_SCHEME.write_text(app)'));
+    const entry = source.slice(
+      source.indexOf('if WATCH_TARGET not in app:'),
+      source.indexOf('APP_SCHEME.write_text(app)')
+    );
     expect(entry).not.toMatch(/\\t/);
   });
 
